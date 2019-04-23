@@ -16,6 +16,12 @@ using UserManage.Configuration;
 using UserManage.Identity;
 
 using Abp.AspNetCore.SignalR.Hubs;
+using Abp.IdentityServer4;
+using IdentityServer4.AspNetIdentity;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using UserManage.Authentication.JwtBearer;
+using UserManage.Authorization.Users;
+using UserManage.Validator;
 
 namespace UserManage.Web.Host.Startup
 {
@@ -39,7 +45,17 @@ namespace UserManage.Web.Host.Startup
 
             IdentityRegistrar.Register(services);
             AuthConfigurer.Configure(services, _appConfiguration);
-
+            services.AddIdentityServer()
+                .AddDeveloperSigningCredential()
+                .AddInMemoryIdentityResources(IdentityServerConfig.GetIdentityResources())
+                .AddInMemoryApiResources(IdentityServerConfig.GetApiResources())
+                .AddInMemoryClients(IdentityServerConfig.GetClients())
+                .AddAbpPersistedGrants<IAbpPersistedGrantDbContext>()
+         
+                .AddExtensionGrantValidator<ExternalValidator>()
+                .AddAbpIdentityServer<User>()
+                .AddResourceOwnerValidator<ResourceOwnerPasswordValidator>()
+               .AddProfileService<ProfileService>();
             services.AddSignalR();
 
             // Configure CORS for angular2 UI
@@ -75,7 +91,13 @@ namespace UserManage.Web.Host.Startup
                     Type = "apiKey"
                 });
             });
-
+            services.AddAuthentication()
+                .AddIdentityServerAuthentication("IdentityBearer", options =>
+            {
+                options.ApiName = "api1";
+                options.Authority = "http://localhost:21021/";
+                options.RequireHttpsMetadata = false;
+            });
             // Configure Abp and Dependency Injection
             return services.AddAbp<UserManageWebHostModule>(
                 // Configure Log4Net logging
@@ -93,7 +115,9 @@ namespace UserManage.Web.Host.Startup
 
             app.UseStaticFiles();
 
-            app.UseAuthentication();
+            //app.UseAuthentication();
+            app.UseJwtTokenMiddleware("IdentityBearer");
+            app.UseIdentityServer();
 
             app.UseAbpRequestLocalization();
 
@@ -123,6 +147,7 @@ namespace UserManage.Web.Host.Startup
                 options.IndexStream = () => Assembly.GetExecutingAssembly()
                     .GetManifestResourceStream("UserManage.Web.Host.wwwroot.swagger.ui.index.html");
             }); // URL: /swagger
+      
         }
     }
 }

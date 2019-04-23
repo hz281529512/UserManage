@@ -1,0 +1,25 @@
+ERROR 2019-04-22 16:29:08,587 [1    ] IdentityServer4.Startup                  - Authentication scheme JwtBearer is configured for IdentityServer, but it is not a scheme that supports signin (like cookies). Either configure the default authentication scheme with cookies or set the CookieAuthenticationScheme on the IdentityServerOptions.
+ERROR 2019-04-22 16:29:16,463 [13   ] Mvc.ExceptionHandling.AbpExceptionFilter - Can't create component 'UserManage.Controllers.TokenAuthController' as it has dependencies to be satisfied.
+
+'UserManage.Controllers.TokenAuthController' is waiting for the following dependencies:
+- Service 'Microsoft.AspNetCore.Identity.IdentityOptions' which was not registered.
+
+Castle.MicroKernel.Handlers.HandlerException: Can't create component 'UserManage.Controllers.TokenAuthController' as it has dependencies to be satisfied.
+
+'UserManage.Controllers.TokenAuthController' is waiting for the following dependencies:
+- Service 'Microsoft.AspNetCore.Identity.IdentityOptions' which was not registered.
+
+   at Castle.MicroKernel.Handlers.DefaultHandler.AssertNotWaitingForDependency()
+   at Castle.MicroKernel.Handlers.DefaultHandler.ResolveCore(CreationContext context, Boolean requiresDecommission, Boolean instanceRequired, Burden& burden)
+   at Castle.MicroKernel.Handlers.DefaultHandler.Resolve(CreationContext context, Boolean instanceRequired)
+   at Castle.MicroKernel.DefaultKernel.ResolveComponent(IHandler handler, Type service, IDictionary additionalArguments, IReleasePolicy policy, Boolean ignoreParentContext)
+   at Castle.MicroKernel.DefaultKernel.Castle.MicroKernel.IKernelInternal.Resolve(Type service, IDictionary arguments, IReleasePolicy policy, Boolean ignoreParentContext)
+   at Castle.MicroKernel.DefaultKernel.Resolve(Type service, IDictionary arguments)
+   at Castle.Windsor.MsDependencyInjection.ScopedWindsorServiceProvider.GetServiceInternal(Type serviceType, Boolean isOptional) in D:\Github\castle-windsor-ms-adapter\src\Castle.Windsor.MsDependencyInjection\ScopedWindsorServiceProvider.cs:line 55
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass5_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ResourceInvoker.InvokeNextExceptionFilterAsync()
+ERROR 2019-04-22 16:30:45,472 [1    ] IdentityServer4.Startup                  - Authentication scheme JwtBearer is configured for IdentityServer, but it is not a scheme that supports signin (like cookies). Either configure the default authentication scheme with cookies or set the CookieAuthenticationScheme on the IdentityServerOptions.
+ERROR 2019-04-22 16:38:54,147 [1    ] IdentityServer4.Startup                  - Authentication scheme JwtBearer is configured for IdentityServer, but it is not a scheme that supports signin (like cookies). Either configure the default authentication scheme with cookies or set the CookieAuthenticationScheme on the IdentityServerOptions.
+ERROR 2019-04-22 16:42:18,465 [1    ] IdentityServer4.Startup                  - Authentication scheme JwtBearer is configured for IdentityServer, but it is not a scheme that supports signin (like cookies). Either configure the default authentication scheme with cookies or set the CookieAuthenticationScheme on the IdentityServerOptions.

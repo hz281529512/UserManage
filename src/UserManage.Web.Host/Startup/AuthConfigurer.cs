@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Abp.Runtime.Security;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.IdentityModel.Logging;
 
 namespace UserManage.Web.Host.Startup
 {
@@ -49,6 +51,20 @@ namespace UserManage.Web.Host.Startup
                         OnMessageReceived = QueryStringTokenResolver
                     };
                 });
+            }
+            else if (bool.Parse(configuration["Authentication:IdentityServer4:IsEnabled"]))
+            {
+                IdentityModelEventSource.ShowPII = true;
+                services.AddAuthentication()
+                    .AddIdentityServerAuthentication(JwtBearerDefaults.AuthenticationScheme, options =>
+                    {
+                        options.ApiName = configuration["Authentication:IdentityServer4:ApiName"];
+                        options.Authority = configuration["Authentication:IdentityServer4:Authority"];
+
+                        options.RequireHttpsMetadata = false;
+                    });
+
+
             }
         }
 

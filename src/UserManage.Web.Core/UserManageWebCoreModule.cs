@@ -53,12 +53,26 @@ namespace UserManage
         {
             IocManager.Register<TokenAuthConfiguration>();
             var tokenAuthConfig = IocManager.Resolve<TokenAuthConfiguration>();
+            if (bool.Parse(_appConfiguration["Authentication:JwtBearer:IsEnabled"]))
+            {
+                tokenAuthConfig.SecurityKey =
+                    new SymmetricSecurityKey(
+                        Encoding.ASCII.GetBytes(_appConfiguration["Authentication:JwtBearer:SecurityKey"]));
+                tokenAuthConfig.Issuer = _appConfiguration["Authentication:JwtBearer:Issuer"];
+                tokenAuthConfig.Audience = _appConfiguration["Authentication:JwtBearer:Audience"];
+                tokenAuthConfig.SigningCredentials =
+                    new SigningCredentials(tokenAuthConfig.SecurityKey, SecurityAlgorithms.HmacSha256);
+                tokenAuthConfig.Expiration = TimeSpan.FromDays(1);
+            }
+            else if (bool.Parse(_appConfiguration["Authentication:IdentityServer4:IsEnabled"]))
+            {
 
-            tokenAuthConfig.SecurityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_appConfiguration["Authentication:JwtBearer:SecurityKey"]));
-            tokenAuthConfig.Issuer = _appConfiguration["Authentication:JwtBearer:Issuer"];
-            tokenAuthConfig.Audience = _appConfiguration["Authentication:JwtBearer:Audience"];
-            tokenAuthConfig.SigningCredentials = new SigningCredentials(tokenAuthConfig.SecurityKey, SecurityAlgorithms.HmacSha256);
-            tokenAuthConfig.Expiration = TimeSpan.FromDays(1);
+                tokenAuthConfig.Authority = _appConfiguration["Authentication:IdentityServer4:Authority"];
+                tokenAuthConfig.ClientId = _appConfiguration["Authentication:IdentityServer4:ClientId"];
+                tokenAuthConfig.Secret = _appConfiguration["Authentication:IdentityServer4:Secret"];
+
+            }
+
         }
 
         public override void Initialize()

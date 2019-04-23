@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
@@ -11,12 +13,15 @@ using Abp.Authorization.Users;
 using Abp.MultiTenancy;
 using Abp.Runtime.Security;
 using Abp.UI;
+using IdentityModel.Client;
+using IdentityServer4.Validation;
 using UserManage.Authentication.External;
 using UserManage.Authentication.JwtBearer;
 using UserManage.Authorization;
 using UserManage.Authorization.Users;
 using UserManage.Models.TokenAuth;
 using UserManage.MultiTenancy;
+using UserManage.Validator;
 
 namespace UserManage.Controllers
 {
@@ -30,6 +35,7 @@ namespace UserManage.Controllers
         private readonly IExternalAuthConfiguration _externalAuthConfiguration;
         private readonly IExternalAuthManager _externalAuthManager;
         private readonly UserRegistrationManager _userRegistrationManager;
+    
 
         public TokenAuthController(
             LogInManager logInManager,
@@ -47,26 +53,56 @@ namespace UserManage.Controllers
             _externalAuthConfiguration = externalAuthConfiguration;
             _externalAuthManager = externalAuthManager;
             _userRegistrationManager = userRegistrationManager;
+    
         }
 
         [HttpPost]
         public async Task<AuthenticateResultModel> Authenticate([FromBody] AuthenticateModel model)
         {
-            var loginResult = await GetLoginResultAsync(
-                model.UserNameOrEmailAddress,
-                model.Password,
-                GetTenancyNameOrNull()
-            );
+            //var loginResult = await GetLoginResultAsync(
+            //    model.UserNameOrEmailAddress,
+            //    model.Password,
+            //    GetTenancyNameOrNull()
+            //);
 
-            var accessToken = CreateAccessToken(CreateJwtClaims(loginResult.Identity));
 
-            return new AuthenticateResultModel
+            //var accessToken = CreateAccessToken(CreateJwtClaims(loginResult.Identity));
+
+            //return new AuthenticateResultModel
+            //{
+            //    AccessToken = accessToken,
+            //    EncryptedAccessToken = GetEncrpyedAccessToken(accessToken),
+            //    ExpireInSeconds = (int)_configuration.Expiration.TotalSeconds,
+            //    UserId = loginResult.User.Id
+            //};
+ 
+              var httpHandler = new HttpClientHandler();
+            httpHandler.CookieContainer.Add(
+                new Uri(_configuration.Authority),
+                new Cookie(MultiTenancyConsts.TenantIdResolveKey, AbpSession.TenantId?.ToString())
+            ); //Set TenantId
+            var tokenClient = new TokenClient(
+                $"{_configuration.Authority}/connect/token",
+                "api1",
+                _configuration.Secret,
+                httpHandler);
+            var tokenResponse = tokenClient
+                .RequestResourceOwnerPasswordAsync(model.UserNameOrEmailAddress, model.Password)
+                .ConfigureAwait(false)
+                .GetAwaiter().GetResult();
+
+            if (tokenResponse.IsError)
             {
-                AccessToken = accessToken,
-                EncryptedAccessToken = GetEncrpyedAccessToken(accessToken),
-                ExpireInSeconds = (int)_configuration.Expiration.TotalSeconds,
-                UserId = loginResult.User.Id
+                throw new UserFriendlyException(tokenResponse.Error);
+            }
+            var data = new AuthenticateResultModel
+            {
+                AccessToken = tokenResponse.AccessToken,
+                EncryptedAccessToken = GetEncrpyedAccessToken(tokenResponse.AccessToken),
+                ExpireInSeconds = tokenResponse.ExpiresIn,
+              
             };
+            return data;
         }
 
         [HttpGet]
@@ -137,10 +173,12 @@ namespace UserManage.Controllers
         {
             var user = await _userRegistrationManager.RegisterAsync(
                 externalUser.Name,
-                externalUser.Surname,
+                externalUser.PhoneNumber,
+                //externalUser.Surname,
                 externalUser.EmailAddress,
                 externalUser.EmailAddress,
-                Authorization.Users.User.CreateRandomPassword(),
+                //Authorization.Users.User.CreateRandomPassword(),
+                "000000",
                 true
             );
 
@@ -212,7 +250,7 @@ namespace UserManage.Controllers
         private static List<Claim> CreateJwtClaims(ClaimsIdentity identity)
         {
             var claims = identity.Claims.ToList();
-            var nameIdClaim = claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            var nameIdClaim = claims.First(c => c.Type == JwtRegisteredClaimNames.Sub);
 
             // Specifically add the jti (random nonce), iat (issued timestamp), and sub (subject/user) claims.
             claims.AddRange(new[]
