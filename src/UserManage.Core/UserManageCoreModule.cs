@@ -33,6 +33,11 @@ namespace UserManage
             AppRoleConfig.Configure(Configuration.Modules.Zero().RoleManagement);
 
             Configuration.Settings.Providers.Add<AppSettingProvider>();
+
+            //Wechat Access Token
+            Configuration.Caching.Configure(UserManageConsts.Abp_Wechat_Access_Token_Cache, cache => {
+                cache.DefaultSlidingExpireTime = System.TimeSpan.FromHours(2);
+            });
         }
 
         public override void Initialize()

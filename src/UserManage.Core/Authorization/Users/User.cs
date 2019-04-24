@@ -7,6 +7,25 @@ namespace UserManage.Authorization.Users
 {
     public class User : AbpUser<User>
     {
+        /// <summary>
+        /// 职务
+        /// </summary>
+        public string Position { get; set; }
+        /// <summary>
+        /// 性别
+        /// </summary>
+        public bool Sex { get; set; }
+
+        /// <summary>
+        /// 公司id
+        /// </summary>
+        public string CompanyId { get; set; }
+
+        /// <summary>
+        /// 地区权限过滤
+        /// </summary>
+        public string SelectDistrict { get; set; }
+
         public const string DefaultPassword = "123qwe";
 
         public static string CreateRandomPassword()

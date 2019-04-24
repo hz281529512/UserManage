@@ -24,5 +24,16 @@ namespace UserManage.Authorization.Roles
 
         [StringLength(MaxDescriptionLength)]
         public string Description {get; set;}
+
+        /// <summary>
+        /// 本地 标签 Id
+        /// </summary>
+        public int? TagId { get; set; }
+
+        /// <summary>
+        /// 角色组别
+        /// </summary>
+        public int? RoleType { get; set; }
+
     }
 }
