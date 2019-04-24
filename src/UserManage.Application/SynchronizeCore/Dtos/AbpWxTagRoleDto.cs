@@ -12,6 +12,11 @@ namespace UserManage.SynchronizeCore.Dtos
         public int? WechatTagId { get; set; }
 
         /// <summary>
+        /// 权限名
+        /// </summary>
+        public string RoleName { get; set; }
+
+        /// <summary>
         /// 标签名
         /// </summary>
         public string TagName { get; set; }
