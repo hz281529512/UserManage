@@ -28,7 +28,7 @@ namespace UserManage.Authorization.Roles
         /// <summary>
         /// 微信 标签 Id
         /// </summary>
-        public string WxTagId { get; set; }
+        public int? WxTagId { get; set; }
 
         /// <summary>
         /// 角色组别

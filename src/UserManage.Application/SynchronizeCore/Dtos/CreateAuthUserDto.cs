@@ -21,9 +21,5 @@ namespace UserManage.SynchronizeCore.Dtos
         /// </summary>
         public string AuthenticationSource { get; set; }
 
-        /// <summary>
-        /// 别名？
-        /// </summary>
-        public string Surname { get; set; }
     }
 }
