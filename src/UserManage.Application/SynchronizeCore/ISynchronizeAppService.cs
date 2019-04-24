@@ -37,6 +37,11 @@ namespace UserManage.SynchronizeCore
         /// <returns></returns>
         Task<MatchResultDto> MatchDepartmentUsers();
 
+        /// <summary>
+        /// 根据企业微信标签导入用户
+        /// </summary>
+        /// <returns></returns>
+        Task<MatchResultDto> MatchTag();
     }
 }
 

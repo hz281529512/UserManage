@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using UserManage.AbpExternalCore;
 using UserManage.AbpExternalCore.DomainService;
 using UserManage.AbpOrganizationUnitCore;
+using UserManage.Authorization.Roles;
 using UserManage.Authorization.Users;
 using UserManage.SynchronizeCore.Dtos;
 
@@ -33,13 +34,10 @@ namespace UserManage.SynchronizeCore
         private readonly IRepository<UserLogin, long> _userLoginRepository;
         private readonly IPasswordHasher<User> _passwordHasher;
 
-        ////标签
-        //private readonly IRepository<AbpTag, int> _tagRepository;
-        //private readonly IRepository<AbpUserTag, int> _userTagRepository;
 
         ////角色
-        //private readonly IRepository<Role, int> _roleRepository;
-        //private readonly IRepository<UserRole, long> _userRoleRepository;
+        private readonly IRepository<Role, int> _roleRepository;
+        private readonly IRepository<UserRole, long> _userRoleRepository;
 
         public SynchronizeAppService(
             IAbpWeChatManager weChatManager,
@@ -256,18 +254,20 @@ namespace UserManage.SynchronizeCore
         /// <summary>
         /// 再次尝试获取企业微信用户与本地用户full join
         /// </summary>
-        /// <param name="wx_dept"></param>
+        /// <param name="wx_users"></param>
         /// <returns></returns>
         private List<AbpWxUserDto> GetWxAbpUsers(ICollection<AbpWeChatUser> wx_users)
         {
             var left_query = from u in _userRepository.GetAll()
-                             join ul in _userLoginRepository.GetAll() on u.Id equals ul.UserId
-                             join wum in wx_users.AsQueryable() on new { key = ul.ProviderKey, type = ul.LoginProvider } equals new { key = wum.userid, type = "Wechat" } into wuo
+                             join ulm in _userLoginRepository.GetAll() on u.Id equals ulm.UserId into ulo
+                             from ul in ulo.DefaultIfEmpty()
+                             join wum in wx_users.AsQueryable() on u.EmailAddress equals wum.email into wuo
                              from wu in wuo.DefaultIfEmpty()
                              where u.TenantId == AbpSession.TenantId
                              select new AbpWxUserDto
                              {
                                  AbpUserId = u.Id,
+                                 AbpRelationId = (ul == null ? 0 : ul.Id),
                                  AbpUserName = u.UserName,
                                  wx_alias = (wu == null ? "" : wu.alias),
                                  wx_avatar = (wu == null ? "" : wu.avatar),
@@ -286,6 +286,7 @@ namespace UserManage.SynchronizeCore
                               {
                                   AbpUserId = 0,
                                   AbpUserName = wu.email.Substring(0, wu.email.IndexOf('@')),
+                                  AbpRelationId = 0,
                                   wx_alias = wu.alias,
                                   wx_avatar = wu.avatar,
                                   wx_email = wu.email,
@@ -317,147 +318,80 @@ namespace UserManage.SynchronizeCore
         {
             //初始化结果[添加用户数,新建关联数,同步后离职人员数量]
             MatchResultDto result = new MatchResultDto { CreateCount = 0, MatchCount = 0, DeleteCount = 0 };
-            try
+
+            var top_dept = await _organizationUnitRepository.FirstOrDefaultAsync(x => x.WXParentDeptId == 0);
+            if (top_dept != null)
             {
-                var top_dept = await _organizationUnitRepository.FirstOrDefaultAsync(x => x.WXParentDeptId == 0);
-                if (top_dept != null)
+                //企业微信用户list
+                var elist = await _weChatManager.GetAllUsersByDepartment(1);
+                if (elist != null)
                 {
-                    //企业微信用户list
-                    var elist = await _weChatManager.GetAllUsersByDepartment(1);
-                    if (elist != null)
+                    var full_list = this.GetWxAbpUsers(elist);
+                    if (full_list?.Count > 0)
                     {
-                        var full_list = this.GetWxAbpUsers(elist);
-                        if (full_list?.Count > 0)
+                        foreach (var item in full_list)
                         {
-                            foreach (var item in full_list)
+                            if (item.AbpUserName.ToLower().Equals("admin"))
+                                continue;
+                            if (item.AbpUserId != 0)
                             {
-                                if (item.AbpUserName.ToLower().Equals("admin"))
-                                    continue;
-                                if (item.AbpUserId != 0)
+                                var entity = await UserManager.GetUserByIdAsync(item.AbpUserId.Value);
+                                if (string.IsNullOrEmpty(item.wx_userid))
                                 {
-                                    var entity = await UserManager.GetUserByIdAsync(item.AbpUserId.Value);
-                                    if (string.IsNullOrEmpty(item.wx_userid))
-                                    {
-                                        await UserManager.DeleteAsync(entity);
-                                        result.DeleteCount++;
-                                    }
-                                    else
-                                    {
-                                        entity.EmailAddress = item.wx_email;
-                                        entity.Surname = item.wx_alias;
-                                        entity.Name = item.wx_name;
-                                    }
+                                    await UserManager.DeleteAsync(entity);
+                                    result.DeleteCount++;
                                 }
                                 else
                                 {
-                                    var user_id = await this.AuthCreate(new CreateAuthUserDto()
+                                    entity.EmailAddress = item.wx_email;
+                                    entity.Surname = item.wx_alias;
+                                    entity.Name = item.wx_name;
+                                    await UserManager.UpdateAsync(entity);
+
+                                    if (item.AbpRelationId == 0)
                                     {
-                                        EmailAddress = item.wx_email,
-                                        Name = item.wx_name,
-                                        PhoneNumber = item.wx_mobile,
-                                        IsActive = true,
-                                        Position = item.wx_position,
-                                        Sex = item.wx_gender == "1" ? true : false,
-                                        Surname = item.wx_alias,
-                                        UserName = item.AbpUserName,
-                                        Password = "000000"
-                                    });
-                                    result.CreateCount++;
-                                    await _userLoginRepository.InsertAsync(new UserLogin
-                                    {
-                                        UserId = user_id,
-                                        LoginProvider = "Wechat",
-                                        ProviderKey = item.wx_userid,
-                                        TenantId = AbpSession.TenantId
-                                    });
-                                    result.MatchCount++;
+                                        await _userLoginRepository.InsertAsync(new UserLogin
+                                        {
+                                            UserId = item.AbpUserId.Value,
+                                            LoginProvider = "Wechat",
+                                            ProviderKey = item.wx_userid,
+                                            TenantId = AbpSession.TenantId
+                                        });
+                                        result.MatchCount++;
+                                    }
                                 }
                             }
-                            CurrentUnitOfWork.SaveChanges();
+                            else
+                            {
+                                var user_id = await this.AuthCreate(new CreateAuthUserDto()
+                                {
+                                    EmailAddress = item.wx_email,
+                                    Name = item.wx_name,
+                                    PhoneNumber = item.wx_mobile,
+                                    IsActive = true,
+                                    Position = item.wx_position,
+                                    Sex = item.wx_gender == "1" ? true : false,
+                                    Surname = item.wx_alias,
+                                    UserName = item.AbpUserName,
+                                    Password = "000000"
+                                });
+                                result.CreateCount++;
+                                await _userLoginRepository.InsertAsync(new UserLogin
+                                {
+                                    UserId = user_id,
+                                    LoginProvider = "Wechat",
+                                    ProviderKey = item.wx_userid,
+                                    TenantId = AbpSession.TenantId
+                                });
+                                result.MatchCount++;
+                            }
                         }
+                        CurrentUnitOfWork.SaveChanges();
                     }
                 }
-                #region 旧代码注释
-
-                //if (elist.Any())
-                //{
-                //    //abp用户包含微信用户的list
-                //    var ulist = await Repository.GetAll().ToListAsync();
-                //    var userLoginList = await _userLoginRepository.GetAll().Where(ul => ul.LoginProvider == "Wechat").ToListAsync();
-
-                //    foreach (var item in elist)
-                //    {
-                //        if (string.IsNullOrEmpty(item.email)) { continue; }
-
-                //        var uName = item.email.Split('@')[0];
-
-                //        var euser = ulist.FirstOrDefault(x => x.Name == item.name && x.EmailAddress == item.email);
-                //        //假设userid = admin ,则将用户名强制为email
-                //        if (item.userid.ToLower() == "admin" && euser == null)
-                //        {
-                //            euser = ulist.FirstOrDefault(x => x.UserName == uName);
-                //            euser.Name = item.name;
-                //            euser.EmailAddress = item.email;
-                //            //CheckErrors(await _userManager.UpdateAsync(euser));
-                //        }
-
-                //        if (euser == null)
-                //        {
-                //            //userid = await this.AuthCreate(new CreateAuthUserDto()
-                //            //{
-                //            //    EmailAddress = item.email,
-                //            //    Name = item.name,
-                //            //    PhoneNumber = item.mobile,
-                //            //    IsActive = true,
-                //            //    Position = item.position,
-                //            //    Sex = item.gender == "1" ? true : false,
-                //            //    Surname = item.alias,
-                //            //    UserName = uName,
-                //            //    Password = "000000"
-                //            //});
-                //            i++;
-                //        }
-                //        else
-                //        {
-                //            userid = euser.Id;
-                //        }
-
-
-                //        if (!userLoginList.Any(x => x.UserId == userid && x.ProviderKey == item.userid && x.TenantId == AbpSession.TenantId))
-                //        {
-                //            //await _userLoginRepository.InsertAsync(new UserLogin
-                //            //{
-                //            //    UserId = userid,
-                //            //    LoginProvider = "Wechat",
-                //            //    ProviderKey = item.userid,
-                //            //    TenantId = AbpSession.TenantId
-                //            //});
-                //            //CurrentUnitOfWork.SaveChanges();
-                //            j++;
-                //        }
-                //        userid = 0;
-
-                //    }
-                //    var noWeChatList = await Repository.GetAll().Where(u => !_userLoginRepository.GetAll().Any(l => l.UserId == u.Id)).ToListAsync();
-                //    if (noWeChatList.Any())
-                //    {
-                //        foreach (var item in noWeChatList)
-                //        {
-                //            //await Repository.DeleteAsync(item.Id);
-                //            //CurrentUnitOfWork.SaveChanges();
-                //            k++;
-                //        }
-                //    }
-
-                //}
-
-                #endregion
-                return result;
             }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            return result;
+
 
             //return new ListResultDto<UserListDto>(resultDto);
         }
@@ -490,6 +424,66 @@ namespace UserManage.SynchronizeCore
 
         #endregion
 
+        #region Synchronize Role
 
+        /// <summary>
+        /// 尝试获取企业微信标签与本地权限full join
+        /// </summary>
+        /// <param name="wechatTags"></param>
+        /// <param name="tenant_id"></param>
+        /// <returns></returns>
+        //private List<AbpWxTagRoleDto> GetAbpWechatTagRole(ICollection<AbpWeChatTag> wechatTags, int? tenant_id)
+        //{
+        //    var left_query = from r in _roleRepository.GetAll()
+        //                     join dm in wx_dept.AsQueryable() on o.WXDeptId equals dm.id into dori
+        //                     from d in dori.DefaultIfEmpty()
+        //                     where o.TenantId == AbpSession.TenantId
+        //                     select new AbpWxTagRoleDto
+        //                     {
+        //                         abp_id = o.Id,
+        //                         wx_id = (d == null ? 0 : d.id),
+        //                         wx_name = (d == null ? "" : d.name),
+        //                         wx_parentid = (d == null ? 0 : d.parentid),
+        //                     };
+
+        //    var right_query = from d in wx_dept.AsQueryable()
+        //                      where !_organizationUnitRepository.GetAll().Any(o => o.WXDeptId == d.id && o.TenantId == AbpSession.TenantId)
+        //                      select new AbpWxTagRoleDto
+        //                      {
+        //                          abp_id = 0,
+        //                          wx_id = d.id,
+        //                          wx_name = d.name,
+        //                          wx_parentid = d.parentid,
+        //                      };
+        //    //var tt = left_query.ToList();
+        //    //var rr = right_query.ToList();
+        //    if (left_query.Any())
+        //    {
+        //        var full_query = left_query.Union(right_query);
+        //        return full_query.ToList();
+        //    }
+        //    else if (right_query.Any())
+        //    {
+        //        return right_query.ToList();
+        //    }
+        //    return null;
+        //}
+
+        /// <summary>
+        /// 根据企业微信标签导入用户
+        /// </summary>
+        /// <returns></returns>
+        public async Task<MatchResultDto> MatchTag()
+        {
+            MatchResultDto result = new MatchResultDto { CreateCount = 0, DeleteCount = 0, MatchCount = 0 };
+            var wxTags = await _weChatManager.GetAllTag();
+            if (wxTags != null)
+            {
+
+            }
+            return result;
+        }
+
+        #endregion
     }
 }

@@ -7,7 +7,7 @@ using System.Text;
 namespace UserManage.AbpTagCore
 {
     /// <summary>
-    /// 标签 
+    /// 标签 [暂时废弃该方案]
     /// </summary>
     public class AbpTag : FullAuditedEntity<int>, IMayHaveTenant
     {
