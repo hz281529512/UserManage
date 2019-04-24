@@ -8,6 +8,8 @@ namespace UserManage.SynchronizeCore.Dtos
     {
         public long? AbpUserId { get; set; }
 
+        public long? AbpRelationId { get; set; }
+
         public string AbpUserName { get; set; }
 
         public string wx_userid { get; set; }
