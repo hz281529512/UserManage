@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.IdentityModel.Logging;
 using UserManage.Authentication.External;
 using UserManage.Authentication.External.Wechat;
+using UserManage.EntityFrameworkCore;
 
 namespace UserManage.Web.Host.Startup
 {
@@ -76,7 +77,7 @@ namespace UserManage.Web.Host.Startup
         public static void ExternalAuth(IApplicationBuilder app, IConfiguration configuration)
         {
             var externalAuthConfiguration = app.ApplicationServices.GetRequiredService<ExternalAuthConfiguration>();
-
+            app.ApplicationServices.GetRequiredService<UserManageDbContext>();
             if (bool.Parse(configuration["Authentication:Wechat:IsEnabled"]))
             {
                 externalAuthConfiguration.Providers.Add

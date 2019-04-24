@@ -63,12 +63,12 @@ namespace UserManage.Authorization.Users
 
             user.SetNormalizedNames();
             user.Password = _passwordHasher.HashPassword(user, plainPassword);
-            foreach (var defaultRole in await _roleManager.Roles.Where(r => r.IsDefault).ToListAsync())
-            {
-                user.Roles.Add(new UserRole(tenant.Id, user.Id, defaultRole.Id));
-            }
+                foreach (var defaultRole in await _roleManager.Roles.Where(r => r.IsDefault).ToListAsync())
+                {
+                    user.Roles.Add(new UserRole(tenant.Id, user.Id, defaultRole.Id));
+                }
 
-            await _userManager.InitializeOptionsAsync(tenant.Id);
+                await _userManager.InitializeOptionsAsync(tenant.Id);
 
             CheckErrors(await _userManager.CreateAsync(user, plainPassword));
             await CurrentUnitOfWork.SaveChangesAsync();
