@@ -55,22 +55,22 @@ namespace UserManage.Web.Host.Startup
                     };
                 });
             }
-            //else if (bool.Parse(configuration["Authentication:IdentityServer4:IsEnabled"]))
-            //{
-            //    IdentityModelEventSource.ShowPII = true;
-            //    services.AddAuthentication()
-            //        .AddIdentityServerAuthentication(JwtBearerDefaults.AuthenticationScheme, options =>
-            //        {
-            //            options.ApiName = configuration["Authentication:IdentityServer4:ApiName"];
-            //            options.Authority = configuration["Authentication:IdentityServer4:Authority"];
+            else if (bool.Parse(configuration["Authentication:IdentityServer4:IsEnabled"]))
+            {
+                IdentityModelEventSource.ShowPII = true;
+                services.AddAuthentication()
+                    .AddIdentityServerAuthentication(JwtBearerDefaults.AuthenticationScheme, options =>
+                    {
+                        options.ApiName = configuration["Authentication:IdentityServer4:ApiName"];
+                        options.Authority = configuration["Authentication:IdentityServer4:Authority"];
 
-            //            options.RequireHttpsMetadata = false;
-            //        });
+                        options.RequireHttpsMetadata = false;
+                    });
 
 
-            //}
-            
-           
+            }
+
+
 
         }
 

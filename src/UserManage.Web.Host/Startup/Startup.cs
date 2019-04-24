@@ -57,11 +57,7 @@ namespace UserManage.Web.Host.Startup
 
             AuthConfigurer.Configure(services, _appConfiguration);
 
-            services.AddAuthentication().AddIdentityServerAuthentication(JwtBearerDefaults.AuthenticationScheme, options =>
-            {
-                options.Authority = "http://localhost:21021/";
-                options.RequireHttpsMetadata = false;
-            });
+           
            
             services.AddSignalR();
 
