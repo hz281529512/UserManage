@@ -250,3 +250,6 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+/src/UserManage.Web.Host/App_Data/Logs/20190424.txt
+/src/UserManage.Web.Host/App_Data/Logs/20190423.txt
+/src/UserManage.Web.Host/App_Data/Logs/20190422.txt
