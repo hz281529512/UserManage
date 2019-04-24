@@ -47,7 +47,7 @@ namespace UserManage.Validator
                      );
 
                 context.Result = new GrantValidationResult(
-                    subject: context.UserName,
+                    subject: loginResult.Identity.Claims.First(c=>c.Type== JwtRegisteredClaimNames.Sub).Value,
                     authenticationMethod: "passwrod",
                     claims: CreateJwtClaims(loginResult.Identity)
                     );

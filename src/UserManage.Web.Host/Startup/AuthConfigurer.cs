@@ -55,20 +55,20 @@ namespace UserManage.Web.Host.Startup
                     };
                 });
             }
-            else if (bool.Parse(configuration["Authentication:IdentityServer4:IsEnabled"]))
-            {
-                IdentityModelEventSource.ShowPII = true;
-                services.AddAuthentication()
-                    .AddIdentityServerAuthentication(JwtBearerDefaults.AuthenticationScheme, options =>
-                    {
-                        options.ApiName = configuration["Authentication:IdentityServer4:ApiName"];
-                        options.Authority = configuration["Authentication:IdentityServer4:Authority"];
+            //else if (bool.Parse(configuration["Authentication:IdentityServer4:IsEnabled"]))
+            //{
+            //    IdentityModelEventSource.ShowPII = true;
+            //    services.AddAuthentication()
+            //        .AddIdentityServerAuthentication(JwtBearerDefaults.AuthenticationScheme, options =>
+            //        {
+            //            options.ApiName = configuration["Authentication:IdentityServer4:ApiName"];
+            //            options.Authority = configuration["Authentication:IdentityServer4:Authority"];
 
-                        options.RequireHttpsMetadata = false;
-                    });
+            //            options.RequireHttpsMetadata = false;
+            //        });
 
 
-            }
+            //}
             
            
 
@@ -77,7 +77,7 @@ namespace UserManage.Web.Host.Startup
         public static void ExternalAuth(IApplicationBuilder app, IConfiguration configuration)
         {
             var externalAuthConfiguration = app.ApplicationServices.GetRequiredService<ExternalAuthConfiguration>();
-            app.ApplicationServices.GetRequiredService<UserManageDbContext>();
+            
             if (bool.Parse(configuration["Authentication:Wechat:IsEnabled"]))
             {
                 externalAuthConfiguration.Providers.Add

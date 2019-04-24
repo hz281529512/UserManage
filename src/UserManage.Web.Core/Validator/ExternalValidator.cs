@@ -67,43 +67,45 @@ namespace UserManage.Validator
                     case AbpLoginResultType.UnknownExternalLogin:
                         {
 
-                            if (!string.IsNullOrEmpty(externalUser.EmailAddress) ||
-                                !string.IsNullOrEmpty(externalUser.Name))
-                            {
-                                var newUser = await RegisterExternalUserAsync(externalUser);
-                                if (!newUser.IsActive)
-                                {
-                                    context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "未激活");
-                                    break;
-                                }
+                            context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "未绑定");
+                            break;
+                            //if (!string.IsNullOrEmpty(externalUser.EmailAddress) ||
+                            //    !string.IsNullOrEmpty(externalUser.Name))
+                            //{
+                            //    var newUser = await RegisterExternalUserAsync(externalUser);
+                            //    if (!newUser.IsActive)
+                            //    {
+                            //        context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "未激活");
+                            //        break;
+                            //    }
 
-                                // Try to login again with newly registered user!
-                                loginResult = await _logInManager.LoginAsync(
-                                    new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider),
-                                    GetTenancyNameOrNull());
-                                if (loginResult.Result != AbpLoginResultType.Success)
-                                {
-                                    context.Result = new GrantValidationResult(
-                                        subject: loginResult.User.UserName,
-                                        authenticationMethod: "passwrod",
-                                        claims: CreateJwtClaims(loginResult.Identity)
-                                    );
-                                    break;
-                                }
+                            //    // Try to login again with newly registered user!
+                            //    loginResult = await _logInManager.LoginAsync(
+                            //        new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider),
+                            //        GetTenancyNameOrNull());
+                            //    if (loginResult.Result != AbpLoginResultType.Success)
+                            //    {
+                            //        context.Result = new GrantValidationResult(
+                            //            subject: loginResult.User.UserName,
+                            //            authenticationMethod: "passwrod",
+                            //            claims: CreateJwtClaims(loginResult.Identity)
+                            //        );
+                            //        break;
+                            //    }
 
-                                context.Result = new GrantValidationResult(
-                                    subject: loginResult.User.UserName,
-                                    authenticationMethod: "passwrod",
-                                    claims: CreateJwtClaims(loginResult.Identity)
-                                );
-                                break;
-                            }
+                            //    context.Result = new GrantValidationResult(
+                            //        subject: loginResult.User.UserName,
+                            //        authenticationMethod: "passwrod",
+                            //        claims: CreateJwtClaims(loginResult.Identity)
+                            //    );
+                            //    break;
+                            //}
 
-                            throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
-                                loginResult.Result,
-                                externalUser.ProviderKey,
-                                GetTenancyNameOrNull()
-                            );
+                            //    throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
+                            //        loginResult.Result,
+                            //        externalUser.ProviderKey,
+                            //        GetTenancyNameOrNull()
+                            //    );
 
                         }
                     default:
