@@ -9,9 +9,9 @@ namespace UserManage.Models.TokenAuth
         [StringLength(UserLogin.MaxLoginProviderLength)]
         public string AuthProvider { get; set; }
 
-        [Required]
-        [StringLength(UserLogin.MaxProviderKeyLength)]
-        public string ProviderKey { get; set; }
+        //[Required]
+        //[StringLength(UserLogin.MaxProviderKeyLength)]
+        //public string ProviderKey { get; set; }
 
         [Required]
         public string ProviderAccessCode { get; set; }

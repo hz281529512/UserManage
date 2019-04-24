@@ -9,6 +9,8 @@ using Microsoft.IdentityModel.Tokens;
 using Abp.Runtime.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.IdentityModel.Logging;
+using UserManage.Authentication.External;
+using UserManage.Authentication.External.Wechat;
 
 namespace UserManage.Web.Host.Startup
 {
@@ -66,8 +68,30 @@ namespace UserManage.Web.Host.Startup
 
 
             }
+            
+           
+
         }
 
+        public static void ExternalAuth(IApplicationBuilder app, IConfiguration configuration)
+        {
+            var externalAuthConfiguration = app.ApplicationServices.GetRequiredService<ExternalAuthConfiguration>();
+
+            if (bool.Parse(configuration["Authentication:Wechat:IsEnabled"]))
+            {
+                externalAuthConfiguration.Providers.Add
+                (
+                    new ExternalLoginProviderInfo(
+                        WechatAuthProviderApi.Name,
+                        configuration["Authentication:Wechat:AppId"],
+                        configuration["Authentication:Wechat:Secret"],
+                        typeof(WechatAuthProviderApi)
+                    )
+                );
+            }
+
+          
+        }
         /* This method is needed to authorize SignalR javascript client.
          * SignalR can not send authorization header. So, we are getting it from query string as an encrypted text. */
         private static Task QueryStringTokenResolver(MessageReceivedContext context)
@@ -90,5 +114,7 @@ namespace UserManage.Web.Host.Startup
             context.Token = SimpleStringCipher.Instance.Decrypt(qsAuthToken, AppConsts.DefaultPassPhrase);
             return Task.CompletedTask;
         }
+
+
     }
 }

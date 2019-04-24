@@ -105,6 +105,8 @@ namespace UserManage.Web.Host.Startup
                     f => f.UseAbpLog4Net().WithConfig("log4net.config")
                 )
             );
+
+            
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -119,6 +121,7 @@ namespace UserManage.Web.Host.Startup
             app.UseJwtTokenMiddleware("IdentityBearer");
             app.UseIdentityServer();
 
+            AuthConfigurer.ExternalAuth(app, _appConfiguration);
             app.UseAbpRequestLocalization();
 
 

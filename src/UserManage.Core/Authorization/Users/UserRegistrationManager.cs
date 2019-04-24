@@ -39,6 +39,11 @@ namespace UserManage.Authorization.Users
 
         public async Task<User> RegisterAsync(string name, string phone, string emailAddress, string userName, string plainPassword, bool isEmailConfirmed)
         {
+
+            try
+            {
+
+         
             CheckForTenant();
 
             var tenant = await GetActiveTenantAsync();
@@ -57,7 +62,7 @@ namespace UserManage.Authorization.Users
             };
 
             user.SetNormalizedNames();
-           
+            user.Password = _passwordHasher.HashPassword(user, plainPassword);
             foreach (var defaultRole in await _roleManager.Roles.Where(r => r.IsDefault).ToListAsync())
             {
                 user.Roles.Add(new UserRole(tenant.Id, user.Id, defaultRole.Id));
@@ -69,6 +74,12 @@ namespace UserManage.Authorization.Users
             await CurrentUnitOfWork.SaveChangesAsync();
 
             return user;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         private void CheckForTenant()

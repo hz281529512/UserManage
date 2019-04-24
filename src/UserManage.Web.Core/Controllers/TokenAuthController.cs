@@ -116,7 +116,7 @@ namespace UserManage.Controllers
         {
             var externalUser = await GetExternalUserInfo(model);
 
-            var loginResult = await _logInManager.LoginAsync(new UserLoginInfo(model.AuthProvider, model.ProviderKey, model.AuthProvider), GetTenancyNameOrNull());
+            var loginResult = await _logInManager.LoginAsync(new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider), GetTenancyNameOrNull());
 
             switch (loginResult.Result)
             {
@@ -142,12 +142,12 @@ namespace UserManage.Controllers
                         }
 
                         // Try to login again with newly registered user!
-                        loginResult = await _logInManager.LoginAsync(new UserLoginInfo(model.AuthProvider, model.ProviderKey, model.AuthProvider), GetTenancyNameOrNull());
+                        loginResult = await _logInManager.LoginAsync(new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider), GetTenancyNameOrNull());
                         if (loginResult.Result != AbpLoginResultType.Success)
                         {
                             throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
                                 loginResult.Result,
-                                model.ProviderKey,
+                                externalUser.ProviderKey,
                                 GetTenancyNameOrNull()
                             );
                         }
@@ -162,7 +162,7 @@ namespace UserManage.Controllers
                     {
                         throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
                             loginResult.Result,
-                            model.ProviderKey,
+                            externalUser.ProviderKey,
                             GetTenancyNameOrNull()
                         );
                     }
@@ -192,7 +192,7 @@ namespace UserManage.Controllers
                 }
             };
 
-            await CurrentUnitOfWork.SaveChangesAsync();
+            //await CurrentUnitOfWork.SaveChangesAsync();
 
             return user;
         }
@@ -200,10 +200,10 @@ namespace UserManage.Controllers
         private async Task<ExternalAuthUserInfo> GetExternalUserInfo(ExternalAuthenticateModel model)
         {
             var userInfo = await _externalAuthManager.GetUserInfo(model.AuthProvider, model.ProviderAccessCode);
-            if (userInfo.ProviderKey != model.ProviderKey)
-            {
-                throw new UserFriendlyException(L("CouldNotValidateExternalUser"));
-            }
+            //if (userInfo.ProviderKey != model.ProviderKey)
+            //{
+            //    throw new UserFriendlyException(L("CouldNotValidateExternalUser"));
+            //}
 
             return userInfo;
         }

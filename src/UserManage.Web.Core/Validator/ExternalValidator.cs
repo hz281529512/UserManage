@@ -39,10 +39,7 @@ namespace UserManage.Validator
 
         public async Task ValidateAsync(ExtensionGrantValidationContext context)
         {
-            try
-            {
-
-
+     
                 var code = context.Request.Raw.Get("code");
                 var auth = context.Request.Raw.Get("auth");
                 ExternalAuthenticateModel model = new ExternalAuthenticateModel()
@@ -118,12 +115,7 @@ namespace UserManage.Validator
                             );
                         }
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+
         }
 
         public string GrantType

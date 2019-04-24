@@ -22,6 +22,7 @@ namespace UserManage.Web.Host.Startup
         public override void Initialize()
         {
             IocManager.RegisterAssemblyByConvention(typeof(UserManageWebHostModule).GetAssembly());
+
         }
     }
 }
