@@ -432,42 +432,44 @@ namespace UserManage.SynchronizeCore
         /// <param name="wechatTags"></param>
         /// <param name="tenant_id"></param>
         /// <returns></returns>
-        //private List<AbpWxTagRoleDto> GetAbpWechatTagRole(ICollection<AbpWeChatTag> wechatTags, int? tenant_id)
-        //{
-        //    var left_query = from r in _roleRepository.GetAll()
-        //                     join dm in wx_dept.AsQueryable() on o.WXDeptId equals dm.id into dori
-        //                     from d in dori.DefaultIfEmpty()
-        //                     where o.TenantId == AbpSession.TenantId
-        //                     select new AbpWxTagRoleDto
-        //                     {
-        //                         abp_id = o.Id,
-        //                         wx_id = (d == null ? 0 : d.id),
-        //                         wx_name = (d == null ? "" : d.name),
-        //                         wx_parentid = (d == null ? 0 : d.parentid),
-        //                     };
+        private List<AbpWxTagRoleDto> GetAbpWechatTagRole(ICollection<AbpWeChatTag> wx_tags)
+        {
+            var left_query = from r in _roleRepository.GetAll()
+                             join tm in wx_tags.AsQueryable() on r.WxTagId equals tm.tagid into tori
+                             from t in tori.DefaultIfEmpty()
+                             where r.TenantId == AbpSession.TenantId
+                             select new AbpWxTagRoleDto
+                             {
+                                  //RoleId = r.id,
+                                   //TagName = (t == null ? "" : t.),
+                                 //abp_id = o.Id,
+                                 //wx_id = (d == null ? 0 : d.id),
+                                 //wx_name = (d == null ? "" : d.name),
+                                 //wx_parentid = (d == null ? 0 : d.parentid),
+                             };
 
-        //    var right_query = from d in wx_dept.AsQueryable()
-        //                      where !_organizationUnitRepository.GetAll().Any(o => o.WXDeptId == d.id && o.TenantId == AbpSession.TenantId)
-        //                      select new AbpWxTagRoleDto
-        //                      {
-        //                          abp_id = 0,
-        //                          wx_id = d.id,
-        //                          wx_name = d.name,
-        //                          wx_parentid = d.parentid,
-        //                      };
-        //    //var tt = left_query.ToList();
-        //    //var rr = right_query.ToList();
-        //    if (left_query.Any())
-        //    {
-        //        var full_query = left_query.Union(right_query);
-        //        return full_query.ToList();
-        //    }
-        //    else if (right_query.Any())
-        //    {
-        //        return right_query.ToList();
-        //    }
-        //    return null;
-        //}
+            var right_query = from t in wx_tags.AsQueryable()
+                              where !_roleRepository.GetAll().Any(r => r.WxTagId == t.tagid && r.TenantId == AbpSession.TenantId)
+                              select new AbpWxTagRoleDto
+                              {
+                                  //abp_id = 0,
+                                  //wx_id = d.id,
+                                  //wx_name = d.name,
+                                  //wx_parentid = d.parentid,
+                              };
+            //var tt = left_query.ToList();
+            //var rr = right_query.ToList();
+            if (left_query.Any())
+            {
+                var full_query = left_query.Union(right_query);
+                return full_query.ToList();
+            }
+            else if (right_query.Any())
+            {
+                return right_query.ToList();
+            }
+            return null;
+        }
 
         /// <summary>
         /// 根据企业微信标签导入用户
