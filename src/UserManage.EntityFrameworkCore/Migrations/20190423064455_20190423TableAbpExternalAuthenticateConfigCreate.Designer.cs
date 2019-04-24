@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UserManage.EntityFrameworkCore;
 
 namespace UserManage.Migrations
 {
     [DbContext(typeof(UserManageDbContext))]
-    partial class UserManageDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190423064455_20190423TableAbpExternalAuthenticateConfigCreate")]
+    partial class _20190423TableAbpExternalAuthenticateConfigCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -858,9 +860,6 @@ namespace UserManage.Migrations
 
                     b.Property<DateTime?>("DeletionTime");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired();
-
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasMaxLength(128);
@@ -882,8 +881,6 @@ namespace UserManage.Migrations
                     b.HasIndex("TenantId", "Code");
 
                     b.ToTable("AbpOrganizationUnits");
-
-                    b.HasDiscriminator<string>("Discriminator").HasValue("OrganizationUnit");
                 });
 
             modelBuilder.Entity("Abp.Organizations.OrganizationUnitRole", b =>
@@ -950,60 +947,6 @@ namespace UserManage.Migrations
                     b.ToTable("AbpExternalAuthenticateConfig");
                 });
 
-            modelBuilder.Entity("UserManage.AbpTagCore.AbpTag", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreationTime");
-
-                    b.Property<long?>("CreatorUserId");
-
-                    b.Property<long?>("DeleterUserId");
-
-                    b.Property<DateTime?>("DeletionTime");
-
-                    b.Property<int?>("ExternalTagId");
-
-                    b.Property<bool>("IsDeleted");
-
-                    b.Property<DateTime?>("LastModificationTime");
-
-                    b.Property<long?>("LastModifierUserId");
-
-                    b.Property<string>("TagName");
-
-                    b.Property<int?>("TenantId");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AbpTag");
-                });
-
-            modelBuilder.Entity("UserManage.AbpTagCore.AbpUserTag", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreationTime");
-
-                    b.Property<long?>("CreatorUserId");
-
-                    b.Property<string>("QYUserKey");
-
-                    b.Property<int?>("TagId");
-
-                    b.Property<int?>("TenantId");
-
-                    b.Property<long?>("UserId");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AbpUserTag");
-                });
-
             modelBuilder.Entity("UserManage.Authorization.Roles.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -1047,10 +990,6 @@ namespace UserManage.Migrations
                         .IsRequired()
                         .HasMaxLength(32);
 
-                    b.Property<int?>("RoleType");
-
-                    b.Property<int?>("TagId");
-
                     b.Property<int?>("TenantId");
 
                     b.HasKey("Id");
@@ -1076,8 +1015,6 @@ namespace UserManage.Migrations
 
                     b.Property<string>("AuthenticationSource")
                         .HasMaxLength(64);
-
-                    b.Property<string>("CompanyId");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -1138,14 +1075,8 @@ namespace UserManage.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(32);
 
-                    b.Property<string>("Position");
-
                     b.Property<string>("SecurityStamp")
                         .HasMaxLength(128);
-
-                    b.Property<string>("SelectDistrict");
-
-                    b.Property<bool>("Sex");
 
                     b.Property<string>("Surname")
                         .IsRequired()
@@ -1270,19 +1201,6 @@ namespace UserManage.Migrations
                     b.ToTable("AbpPermissions");
 
                     b.HasDiscriminator().HasValue("UserPermissionSetting");
-                });
-
-            modelBuilder.Entity("UserManage.AbpOrganizationUnitCore.AbpOrganizationUnitExtend", b =>
-                {
-                    b.HasBaseType("Abp.Organizations.OrganizationUnit");
-
-                    b.Property<int?>("WXDeptId");
-
-                    b.Property<int?>("WXParentDeptId");
-
-                    b.ToTable("AbpOrganizationUnits");
-
-                    b.HasDiscriminator().HasValue("AbpOrganizationUnitExtend");
                 });
 
             modelBuilder.Entity("Abp.Authorization.Roles.RoleClaim", b =>

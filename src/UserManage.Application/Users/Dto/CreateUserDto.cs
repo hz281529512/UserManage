@@ -36,6 +36,27 @@ namespace UserManage.Users.Dto
         [DisableAuditing]
         public string Password { get; set; }
 
+        /// <summary>
+        /// 手机号码
+        /// </summary>
+        [Required]
+        [Phone]
+        [StringLength(AbpUserBase.MaxPhoneNumberLength)]
+        public string PhoneNumber { get; set; }
+
+        /// <summary>
+        /// 职务
+        /// </summary>
+        public string Position { get; set; }
+        /// <summary>
+        /// 性别
+        /// </summary>
+        public bool Sex { get; set; }
+        /// <summary>
+        /// 查询地区
+        /// </summary>
+        public string SelectDistrict { get; set; }
+
         public void Normalize()
         {
             if (RoleNames == null)

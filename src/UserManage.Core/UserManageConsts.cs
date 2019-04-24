@@ -7,5 +7,12 @@
         public const string ConnectionStringName = "Default";
 
         public const bool MultiTenancyEnabled = true;
+
+        #region 缓存名常量
+
+        public const string Abp_Wechat_Access_Token_Cache = "Abp_Wechat_Access_Token_Cache";
+
+        #endregion  
+
     }
 }
