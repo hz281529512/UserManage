@@ -6,6 +6,7 @@ using Abp.IdentityFramework;
 using Abp.Runtime.Session;
 using UserManage.Authorization.Users;
 using UserManage.MultiTenancy;
+using UserManage.Authorization.Roles;
 
 namespace UserManage
 {
@@ -17,6 +18,8 @@ namespace UserManage
         public TenantManager TenantManager { get; set; }
 
         public UserManager UserManager { get; set; }
+
+        public RoleManager RoleManager { get; set; }
 
         protected UserManageAppServiceBase()
         {

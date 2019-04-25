@@ -70,9 +70,10 @@ namespace UserManage.SynchronizeCore
             ManyMatchResultDto results = new ManyMatchResultDto();
 
             results.results.Add("组织", await this.MatchDepartment());
+            results.results.Add("角色标签", await this.MatchTag());
             results.results.Add("用户", await this.MatchUser());
             results.results.Add("用户与组织关联", await this.MatchDepartmentUsers());
-
+            results.results.Add("用户与角色标签关联", await this.MatchTagUser());
             return results;
         }
 
@@ -428,6 +429,7 @@ namespace UserManage.SynchronizeCore
 
         #endregion
 
+
         #region Synchronize Role
 
         /// <summary>
@@ -439,9 +441,10 @@ namespace UserManage.SynchronizeCore
         private List<AbpWxTagRoleDto> GetAbpWechatTagRole(ICollection<AbpWeChatTag> wx_tags)
         {
             var left_query = from r in _roleRepository.GetAll()
-                             join tm in wx_tags.AsQueryable() on new { id = r.WxTagId, name = r.DisplayName } equals new { id= tm.tagid,name = "WX_" + tm.tagname } into tori
+                                 //join tm in wx_tags.AsQueryable() on new { id = r.TagId, name = r.DisplayName } equals new { id = tm.tagid, name = "WX_" + tm.tagname } into tori
+                             join tm in wx_tags.AsQueryable() on r.DisplayName equals "WX_" + tm.tagname into tori
                              from t in tori.DefaultIfEmpty()
-                             where r.TenantId == AbpSession.TenantId
+                             where r.TenantId == AbpSession.TenantId && r.WxTagId.HasValue && r.WxTagId != 0
                              select new AbpWxTagRoleDto
                              {
                                  RoleId = r.Id,
@@ -451,7 +454,8 @@ namespace UserManage.SynchronizeCore
                              };
 
             var right_query = from t in wx_tags.AsQueryable()
-                              where !_roleRepository.GetAll().Any(r => r.WxTagId == t.tagid && r.DisplayName == "WX_" + t.tagname && r.TenantId == AbpSession.TenantId)
+                                  //where !_roleRepository.GetAll().Any(r => r.TagId == t.tagid && r.DisplayName == "WX_" + t.tagname && r.TenantId == AbpSession.TenantId)
+                              where !_roleRepository.GetAll().Any(r => r.DisplayName == "WX_" + t.tagname && r.TenantId == AbpSession.TenantId)
                               select new AbpWxTagRoleDto
                               {
                                   RoleId = 0,
@@ -481,15 +485,156 @@ namespace UserManage.SynchronizeCore
         {
             MatchResultDto result = new MatchResultDto { CreateCount = 0, DeleteCount = 0, MatchCount = 0 };
             var wx_tags = await _weChatManager.GetAllTag();
-            var current_tenantid = this.AbpSession.TenantId;
             if (wx_tags != null)
             {
-
+                var current_tenantid = this.AbpSession.TenantId;
+                var local_tags = this.GetAbpWechatTagRole(wx_tags);
+                if (local_tags != null)
+                {
+                    foreach (var item in local_tags)
+                    {
+                        if (item.RoleId != 0)
+                        {                            
+                            var entity = await RoleManager.GetRoleByIdAsync(item.RoleId.Value);
+                            //判断是否拥有企业微信记录,否则删除本地记录
+                            if (item.WechatTagId != 0)
+                            {
+                                entity.NormalizedName = item.TagName;
+                                entity.DisplayName = item.RoleName;
+                                entity.Name = item.TagName;//item.RoleName;
+                                entity.WxTagId = item.WechatTagId;
+                                await RoleManager.UpdateAsync(entity);
+                                result.MatchCount++;
+                            }
+                            else
+                            {
+                                await RoleManager.DeleteAsync(entity);
+                                result.DeleteCount++;
+                            }
+                        }
+                        else
+                        {
+                            await RoleManager.CreateAsync(new Role
+                            {
+                                WxTagId = item.WechatTagId,
+                                IsDefault = false,
+                                NormalizedName = item.TagName,
+                                DisplayName = item.RoleName,
+                                Name = item.TagName,//item.RoleName,
+                                TenantId = current_tenantid
+                            });
+                            result.CreateCount++;
+                        }
+                    }
+                    //提交增删改记录
+                    CurrentUnitOfWork.SaveChanges();
+                }
             }
             return result;
         }
 
+        /// <summary>
+        /// 根据企业微信标签 建立 用户 关联
+        /// </summary>
+        /// <returns></returns>
+        public async Task<MatchResultDto> MatchTagUser()
+        {
+            MatchResultDto result = new MatchResultDto { CreateCount = 0, DeleteCount = 0, MatchCount = 0 };
+
+            var local_roles = _roleRepository.GetAll().Where(r => r.WxTagId.HasValue && r.WxTagId != 0);
+
+            if (local_roles.Any())
+            {
+                foreach (var item in local_roles)
+                {
+                    var tag_list = await _weChatManager.GetUserListByTag(item.WxTagId);
+                    if (tag_list != null)
+                    {
+                        var tag_user_list = this.GetWechatTagUser(tag_list, item.Id, AbpSession.TenantId);
+                        if (tag_user_list != null)
+                        {
+                            foreach (var tuItem in tag_user_list)
+                            {
+                                if (tuItem.UserRoleId != 0)
+                                {
+                                    if (tuItem.userid == "")
+                                    {
+                                        await _userRoleRepository.DeleteAsync(tuItem.UserRoleId.Value);
+                                        result.DeleteCount++;
+                                    }
+                                }
+                                else
+                                {
+                                    var ul = await _userLoginRepository.GetAll().FirstOrDefaultAsync(x => x.ProviderKey == tuItem.userid && x.LoginProvider == "Wechat");
+                                    if (ul != null)
+                                    {
+                                        await _userRoleRepository.InsertAsync(new UserRole
+                                        {
+                                            RoleId = item.Id,
+                                            TenantId = AbpSession.TenantId,
+                                            UserId = ul.UserId
+                                        });
+                                        result.CreateCount++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                CurrentUnitOfWork.SaveChanges();
+            }
+
+            return result;
+        }
+
+        private List<AbpWxTagUserDto> GetWechatTagUser(ICollection<AbpWeChatUser> qy_tag_user, int? role_id, int? tenant_id)
+        {
+
+            var left_query = from ur in _userRoleRepository.GetAll()
+                             join ul in _userLoginRepository.GetAll() on
+                                        new { uid = ur.UserId, type = "Wechat" } equals
+                                        new { uid = ul.UserId, type = ul.LoginProvider } into ulo
+                             from ul in ulo.DefaultIfEmpty()
+                             join tu in qy_tag_user.AsQueryable() on ul.ProviderKey equals tu.userid into tuo
+                             from tu in tuo.DefaultIfEmpty()
+                             where ur.TenantId == tenant_id && ur.RoleId == role_id
+                             select new AbpWxTagUserDto
+                             {
+                                 userid = (tu == null ? "" : tu.userid),
+                                 name = (tu == null ? "" : tu.name),
+                                 UserRoleId = ur.Id,
+                                 AbpUserId = ur.UserId,
+
+                             };
+
+            var right_query = from tu in qy_tag_user.AsQueryable()
+                                  //where !_roleRepository.GetAll().Any(r => r.TagId == t.tagid && r.DisplayName == "WX_" + t.tagname && r.TenantId == AbpSession.TenantId)
+                              where !_userRoleRepository.GetAll().Any(ur => ur.RoleId == role_id && _userLoginRepository.GetAll().Any(ul =>
+                                                                                                                                           ul.LoginProvider == "Wechat" &&
+                                                                                                                                           ul.UserId == ur.UserId &&
+                                                                                                                                           ul.ProviderKey == tu.userid
+                                                                                                                                        ))
+                              select new AbpWxTagUserDto
+                              {
+                                  name = tu.name,
+                                  userid = tu.userid,
+                                  UserRoleId = 0,
+                                  AbpUserId = 0,
+                              };
+            if (left_query.Any())
+            {
+                var full_query = left_query.Union(right_query);
+                return full_query.ToList();
+            }
+            else if (right_query.Any())
+            {
+                return right_query.ToList();
+            }
+            return null;
+        }
+
         #endregion
+
 
     }
 }
