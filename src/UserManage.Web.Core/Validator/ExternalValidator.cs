@@ -58,7 +58,7 @@ namespace UserManage.Validator
                     case AbpLoginResultType.Success:
                         {
                             context.Result = new GrantValidationResult(
-                                subject: loginResult.User.UserName,
+                                subject: loginResult.Identity.Claims.First(c => c.Type == JwtRegisteredClaimNames.Sub).Value,
                                 authenticationMethod: "passwrod",
                                 claims: CreateJwtClaims(loginResult.Identity)
                             );
