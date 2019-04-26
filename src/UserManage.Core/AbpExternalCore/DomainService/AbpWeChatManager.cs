@@ -46,7 +46,7 @@ namespace UserManage.AbpExternalCore.DomainService
             {
                 var url = string.Format(Config.ApiWorkHost + "/cgi-bin/department/list?access_token={0}",
                                accessToken);
-
+                
                 var rdata = await Get.GetJsonAsync<AbpDepartmentResult>(url);
                 if (rdata.department?.Count > 0)
                 {
