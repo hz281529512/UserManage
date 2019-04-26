@@ -350,6 +350,7 @@ namespace UserManage.SynchronizeCore
                                 {
                                     entity.EmailAddress = item.wx_email;
                                     entity.Surname = item.wx_alias;
+                                    entity.Avatar = item.wx_avatar;
                                     entity.Name = item.wx_name;
                                     await UserManager.UpdateAsync(entity);
 
@@ -373,6 +374,7 @@ namespace UserManage.SynchronizeCore
                                     EmailAddress = item.wx_email,
                                     Name = item.wx_name,
                                     PhoneNumber = item.wx_mobile,
+                                     Avatar = item.wx_avatar,
                                     IsActive = true,
                                     Position = item.wx_position,
                                     Sex = item.wx_gender == "1" ? true : false,

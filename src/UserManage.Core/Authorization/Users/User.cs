@@ -26,6 +26,11 @@ namespace UserManage.Authorization.Users
         /// </summary>
         public string SelectDistrict { get; set; }
 
+        /// <summary>
+        /// 企业微信头像Url
+        /// </summary>
+        public string Avatar { get; set; }
+
         public const string DefaultPassword = "123qwe";
 
         public static string CreateRandomPassword()

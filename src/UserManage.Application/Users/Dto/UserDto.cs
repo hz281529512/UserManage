@@ -27,6 +27,11 @@ namespace UserManage.Users.Dto
         [StringLength(AbpUserBase.MaxEmailAddressLength)]
         public string EmailAddress { get; set; }
 
+        /// <summary>
+        /// 企业微信头像Url
+        /// </summary>
+        public string Avatar { get; set; }
+
         public bool IsActive { get; set; }
 
         public string FullName { get; set; }
