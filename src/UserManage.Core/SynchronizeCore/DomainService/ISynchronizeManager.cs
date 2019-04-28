@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
+using UserManage.AbpExternalCore;
 
 namespace UserManage.SynchronizeCore.DomainService
 {
@@ -10,6 +12,11 @@ namespace UserManage.SynchronizeCore.DomainService
     /// </summary>
     public interface ISynchronizeManager : IDomainService
     {
-
+        /// <summary>
+        /// 同步单个组织
+        /// </summary>
+        /// <param name="wx_dept"></param>
+        /// <returns>更新的本地Id</returns>
+        Task<long?> MatchSingleDepartment(AbpWeChatDepartment wx_dept);
     }
 }
