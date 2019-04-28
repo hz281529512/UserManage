@@ -72,13 +72,13 @@ namespace UserManage.SynchronizeCore.DomainService
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
-        public void MatchSingleDepartment(AbpWeChatDepartment wx_dept)
+        public void MatchSingleDepartment(AbpWeChatDepartment wx_dept,int? tenant_id)
         {
             if (wx_dept != null)
             {
-                var entity = _organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.id);
+                var entity = _organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.id && o.TenantId == tenant_id);
                 var result_id = entity?.Id ?? null;
-                var parent_entity = wx_dept.parentid == 0 ? null : ( _organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.parentid));
+                var parent_entity = wx_dept.parentid == 0 ? null : ( _organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.parentid && o.TenantId == tenant_id));
                 var parent_id = parent_entity?.Id ?? null;
                 var parent_code = parent_entity?.Code ?? "";
                 try
@@ -94,7 +94,7 @@ namespace UserManage.SynchronizeCore.DomainService
                             {
                                 entity = new AbpOrganizationUnitExtend
                                 {
-                                    TenantId = AbpSession.TenantId,
+                                    TenantId = tenant_id,//AbpSession.TenantId,
                                     WXDeptId = wx_dept.id,
                                     DisplayName = wx_dept.name,
                                     WXParentDeptId = wx_dept.parentid,
@@ -111,6 +111,7 @@ namespace UserManage.SynchronizeCore.DomainService
                         case "update_party":
                             if (result_id.HasValue)
                             {
+                                entity.TenantId = tenant_id;
                                 entity.ParentId = parent_id;
                                 entity.WXDeptId = wx_dept.id;
                                 entity.WXParentDeptId = wx_dept.parentid;

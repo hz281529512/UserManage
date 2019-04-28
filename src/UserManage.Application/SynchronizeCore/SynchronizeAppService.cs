@@ -67,7 +67,7 @@ namespace UserManage.SynchronizeCore
 
         public void MatchTest()
         {
-            _testManager.MatchSingleDepartment(new AbpWeChatDepartment { changetype = "create_party" , id = 162 , name = "test", parentid = 10 });
+            _testManager.MatchSingleDepartment(new AbpWeChatDepartment { changetype = "create_party" , id = 162 , name = "test", parentid = 10 },1);
         }
 
         /// <summary>
