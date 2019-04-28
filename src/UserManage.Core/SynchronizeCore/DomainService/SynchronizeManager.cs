@@ -22,7 +22,7 @@ namespace UserManage.SynchronizeCore.DomainService
     ///</summary>
     public class SynchronizeManager : UserManageDomainServiceBase, ISynchronizeManager
     {
-        
+
         //组织
         private readonly IRepository<AbpOrganizationUnitExtend, long> _organizationUnitRepository;
         private readonly IRepository<UserOrganizationUnit, long> _userOrganizationUnitRepository;
@@ -127,7 +127,7 @@ namespace UserManage.SynchronizeCore.DomainService
                                     }
                                     entity.TenantId = tenant_id;
                                     entity.WXDeptId = wx_dept.id;
-                                    entity.DisplayName = wx_dept.name;
+                                    entity.DisplayName = string.IsNullOrEmpty(wx_dept.name) ? entity.DisplayName : wx_dept.name;
                                     _organizationUnitRepository.Update(entity);
                                 }
                                 break;
@@ -139,7 +139,7 @@ namespace UserManage.SynchronizeCore.DomainService
                     {
 
                         throw;
-                    } 
+                    }
                 }
 
             }
@@ -151,13 +151,13 @@ namespace UserManage.SynchronizeCore.DomainService
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
-        public void MatchSingleDepartment(AbpWeChatDepartment wx_dept,int? tenant_id)
+        public void MatchSingleDepartment(AbpWeChatDepartment wx_dept, int? tenant_id)
         {
             if (wx_dept != null)
             {
                 var entity = _organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.id && o.TenantId == tenant_id);
                 var result_id = entity?.Id ?? null;
-                var parent_entity = wx_dept.parentid == 0 ? null : ( _organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.parentid && o.TenantId == tenant_id));
+                var parent_entity = wx_dept.parentid == 0 ? null : (_organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.parentid && o.TenantId == tenant_id));
                 var parent_id = parent_entity?.Id ?? null;
                 var parent_code = parent_entity?.Code ?? "";
                 try
@@ -166,7 +166,7 @@ namespace UserManage.SynchronizeCore.DomainService
                     {
                         case "delete_party":
                             if (result_id.HasValue)
-                                _organizationUnitRepository.Delete(result_id.Value);                            
+                                _organizationUnitRepository.Delete(result_id.Value);
                             break;
                         case "create_party":
                             if (entity == null)
@@ -179,8 +179,8 @@ namespace UserManage.SynchronizeCore.DomainService
                                     WXParentDeptId = wx_dept.parentid,
                                     ParentId = parent_id,
                                     Code = ""
-                                };                                
-                                result_id =   _organizationUnitRepository.InsertAndGetId(entity);
+                                };
+                                result_id = _organizationUnitRepository.InsertAndGetId(entity);
                                 //CurrentUnitOfWork.SaveChanges();
                                 entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
                                 entity.Id = result_id.Value;
@@ -207,11 +207,11 @@ namespace UserManage.SynchronizeCore.DomainService
 
                     throw;
                 }
-                
+
             }
         }
 
-        
+
 
         public async Task<SyncResultDto> MatchDepartments(ICollection<AbpWeChatDepartment> wx_departments)
         {
