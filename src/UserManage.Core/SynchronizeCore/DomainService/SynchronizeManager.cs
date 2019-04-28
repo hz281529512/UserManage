@@ -68,7 +68,7 @@ namespace UserManage.SynchronizeCore.DomainService
         #region  Synchronize Department
 
         /// <summary>
-        /// 同步单个组织
+        /// 同步单个组织  
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
