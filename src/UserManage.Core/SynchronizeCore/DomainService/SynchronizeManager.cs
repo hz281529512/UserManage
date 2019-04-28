@@ -119,10 +119,14 @@ namespace UserManage.SynchronizeCore.DomainService
                             case "update_party":
                                 if (result_id.HasValue)
                                 {
+                                    if (wx_dept.parentid.HasValue)
+                                    {
+                                        entity.ParentId = parent_id;
+                                        entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
+                                        entity.WXParentDeptId = wx_dept.parentid;
+                                    }
                                     entity.TenantId = tenant_id;
-                                    entity.ParentId = parent_id;
                                     entity.WXDeptId = wx_dept.id;
-                                    entity.WXParentDeptId = wx_dept.parentid;
                                     entity.DisplayName = wx_dept.name;
                                     _organizationUnitRepository.Update(entity);
                                 }
