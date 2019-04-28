@@ -23,5 +23,12 @@ namespace UserManage.SynchronizeCore.Dto
         /// 删除数
         /// </summary>
         public int? DeleteCount { get; set; }
+
+        public SyncResultDto()
+        {
+            this.CreateCount = 0;
+            this.MatchCount = 0;
+            this.DeleteCount = 0;
+        }
     }
 }

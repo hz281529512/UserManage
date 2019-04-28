@@ -7,6 +7,11 @@ namespace UserManage.AbpExternalCore
     public class AbpWeChatDepartment
     {
         /// <summary>
+        /// 操作类型
+        /// </summary>
+        public string changetype { get; set; }
+
+        /// <summary>
         /// 部门id
         /// </summary>
         public int? id { get; set; }
