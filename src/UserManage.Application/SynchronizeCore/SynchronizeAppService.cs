@@ -25,6 +25,9 @@ namespace UserManage.SynchronizeCore
     {
         private readonly IAbpWeChatManager _weChatManager;
 
+        private readonly DomainService.ISynchronizeManager _testManager;
+        
+
         //组织
         private readonly IRepository<AbpOrganizationUnitExtend, long> _organizationUnitRepository;
         private readonly IRepository<UserOrganizationUnit, long> _userOrganizationUnitRepository;
@@ -41,6 +44,7 @@ namespace UserManage.SynchronizeCore
 
         public SynchronizeAppService(
             IAbpWeChatManager weChatManager,
+            DomainService.ISynchronizeManager testManager,
             IRepository<AbpOrganizationUnitExtend, long> organizationUnitRepository,
             IRepository<UserOrganizationUnit, long> userOrganizationUnitRepository,
             IRepository<User, long> userRepository,
@@ -50,6 +54,7 @@ namespace UserManage.SynchronizeCore
             IPasswordHasher<User> passwordHasher
         )
         {
+            _testManager = testManager;
             _weChatManager = weChatManager;
             _organizationUnitRepository = organizationUnitRepository;
             _userOrganizationUnitRepository = userOrganizationUnitRepository;
@@ -60,6 +65,10 @@ namespace UserManage.SynchronizeCore
             _passwordHasher = passwordHasher;
         }
 
+        public async Task MatchTest()
+        {
+            await _testManager.MatchSingleDepartment(new AbpWeChatDepartment { changetype = "create_party" , id = 162 , name = "test", parentid = 10 });
+        }
 
         /// <summary>
         /// 同步所有用户与组织关联信息

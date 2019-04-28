@@ -1,5 +1,6 @@
 ﻿using Abp.Authorization.Users;
 using Abp.Domain.Repositories;
+using Abp.Organizations;
 using Abp.Runtime.Session;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -24,6 +25,7 @@ namespace UserManage.SynchronizeCore.DomainService
         //组织
         private readonly IRepository<AbpOrganizationUnitExtend, long> _organizationUnitRepository;
         private readonly IRepository<UserOrganizationUnit, long> _userOrganizationUnitRepository;
+        private readonly OrganizationUnitManager _organizationUnitManager;
 
         //用户
         private readonly IRepository<User, long> _userRepository;
@@ -44,6 +46,7 @@ namespace UserManage.SynchronizeCore.DomainService
         public SynchronizeManager(
             IRepository<AbpOrganizationUnitExtend, long> organizationUnitRepository,
             IRepository<UserOrganizationUnit, long> userOrganizationUnitRepository,
+            OrganizationUnitManager organizationUnitManager,
             IRepository<User, long> userRepository,
             IRepository<UserLogin, long> userLoginRepository,
             IRepository<Role, int> roleRepository,
@@ -53,6 +56,7 @@ namespace UserManage.SynchronizeCore.DomainService
         {
             _organizationUnitRepository = organizationUnitRepository;
             _userOrganizationUnitRepository = userOrganizationUnitRepository;
+            _organizationUnitManager = organizationUnitManager;
             _userRepository = userRepository;
             _userLoginRepository = userLoginRepository;
             _roleRepository = roleRepository;
@@ -72,40 +76,58 @@ namespace UserManage.SynchronizeCore.DomainService
         {
             if (wx_dept != null)
             {
-                var entity = await _organizationUnitRepository.FirstOrDefaultAsync(o => o.WXDeptId == wx_dept.id);
+                var entity = _organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.id);
                 var result_id = entity?.Id ?? null;
-                long? parent_id = wx_dept.parentid == 0 ? 0 : (await _organizationUnitRepository.FirstOrDefaultAsync(o => o.WXDeptId == wx_dept.parentid))?.Id;
-                switch (wx_dept.changetype)
+                var parent_entity = wx_dept.parentid == 0 ? null : (await _organizationUnitRepository.FirstOrDefaultAsync(o => o.WXDeptId == wx_dept.parentid));
+                var parent_id = parent_entity?.Id ?? 0;
+                var parent_code = parent_entity?.Code ?? "";
+                try
                 {
-                    case "delete_party":
-                        if (result_id.HasValue)
-                            await _organizationUnitRepository.DeleteAsync(result_id.Value);
-                        break;
-                    case "create_party":
-                        if (!result_id.HasValue) { 
-                            result_id = await _organizationUnitRepository.InsertAndGetIdAsync(new AbpOrganizationUnitExtend
+                    switch (wx_dept.changetype)
+                    {
+                        case "delete_party":
+                            if (result_id.HasValue)
+                                await _organizationUnitRepository.DeleteAsync(result_id.Value);                            
+                            break;
+                        case "create_party":
+                            if (entity == null)
                             {
-                                TenantId = AbpSession.TenantId,
-                                WXDeptId = wx_dept.id,
-                                DisplayName = wx_dept.name,
-                                WXParentDeptId = wx_dept.parentid,
-                                ParentId = parent_id
-                            });
-                        }
-                        break;
-                    case "update_party":
-                        if (result_id.HasValue)
-                        {
-                            entity.ParentId = parent_id;
-                            entity.WXDeptId = wx_dept.id;
-                            entity.WXParentDeptId = wx_dept.parentid;
-                            entity.DisplayName = wx_dept.name;
-                            await _organizationUnitRepository.UpdateAsync(entity);
-                        }
-                        break;
-                    default:
-                        break;
+                                entity = new AbpOrganizationUnitExtend
+                                {
+                                    TenantId = AbpSession.TenantId,
+                                    WXDeptId = wx_dept.id,
+                                    DisplayName = wx_dept.name,
+                                    WXParentDeptId = wx_dept.parentid,
+                                    ParentId = parent_id,
+                                    Code = ""
+                                };                                
+                                result_id =  await _organizationUnitRepository.InsertAndGetIdAsync(entity);
+                                CurrentUnitOfWork.SaveChanges();
+                                entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
+                                entity.Id = result_id.Value;
+                                await _organizationUnitRepository.UpdateAsync(entity);
+                            }
+                            break;
+                        case "update_party":
+                            if (result_id.HasValue)
+                            {
+                                entity.ParentId = parent_id;
+                                entity.WXDeptId = wx_dept.id;
+                                entity.WXParentDeptId = wx_dept.parentid;
+                                entity.DisplayName = wx_dept.name;
+                                await _organizationUnitRepository.UpdateAsync(entity);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
                 }
+                catch (Exception ex)
+                {
+
+                    throw;
+                }
+                
                 return result_id;
             }
             return null;
