@@ -1,0 +1,127 @@
+ERROR 2019-04-28 11:46:30,065 [7    ] Mvc.ExceptionHandling.AbpExceptionFilter - Object reference not set to an instance of an object.
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at UserManage.QyCallBack.DomainService.QyMsg.Converter(String xml) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 71
+   at UserManage.QyCallBack.DomainService.QyMsg.DecryptContent(String msg_signature, String timestamp, String nonce, String content) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 55
+   at UserManage.Controllers.QyCallBackController.Qymsg(String msg_signature, String timestamp, String nonce) in H:\ABP项目\UserManage\src\UserManage.Web.Core\Controllers\QyCallBackController.cs:line 49
+   at lambda_method(Closure , Object )
+   at Microsoft.AspNetCore.Mvc.Internal.ActionMethodExecutor.AwaitableResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeActionMethodAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeNextActionFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Rethrow(ActionExecutedContext context)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ResourceInvoker.InvokeNextExceptionFilterAsync()
+ERROR 2019-04-28 11:46:30,065 [9    ] Mvc.ExceptionHandling.AbpExceptionFilter - Object reference not set to an instance of an object.
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at UserManage.QyCallBack.DomainService.QyMsg.Converter(String xml) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 71
+   at UserManage.QyCallBack.DomainService.QyMsg.DecryptContent(String msg_signature, String timestamp, String nonce, String content) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 55
+   at UserManage.Controllers.QyCallBackController.Qymsg(String msg_signature, String timestamp, String nonce) in H:\ABP项目\UserManage\src\UserManage.Web.Core\Controllers\QyCallBackController.cs:line 49
+   at lambda_method(Closure , Object )
+   at Microsoft.AspNetCore.Mvc.Internal.ActionMethodExecutor.AwaitableResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeActionMethodAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeNextActionFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Rethrow(ActionExecutedContext context)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ResourceInvoker.InvokeNextExceptionFilterAsync()
+ERROR 2019-04-28 11:46:30,065 [13   ] Mvc.ExceptionHandling.AbpExceptionFilter - Object reference not set to an instance of an object.
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at UserManage.QyCallBack.DomainService.QyMsg.Converter(String xml) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 71
+   at UserManage.QyCallBack.DomainService.QyMsg.DecryptContent(String msg_signature, String timestamp, String nonce, String content) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 55
+   at UserManage.Controllers.QyCallBackController.Qymsg(String msg_signature, String timestamp, String nonce) in H:\ABP项目\UserManage\src\UserManage.Web.Core\Controllers\QyCallBackController.cs:line 49
+   at lambda_method(Closure , Object )
+   at Microsoft.AspNetCore.Mvc.Internal.ActionMethodExecutor.AwaitableResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeActionMethodAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeNextActionFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Rethrow(ActionExecutedContext context)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ResourceInvoker.InvokeNextExceptionFilterAsync()
+ERROR 2019-04-28 11:46:38,940 [10   ] Mvc.ExceptionHandling.AbpExceptionFilter - Object reference not set to an instance of an object.
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at UserManage.QyCallBack.DomainService.QyMsg.Converter(String xml) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 71
+   at UserManage.QyCallBack.DomainService.QyMsg.DecryptContent(String msg_signature, String timestamp, String nonce, String content) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 55
+   at UserManage.Controllers.QyCallBackController.Qymsg(String msg_signature, String timestamp, String nonce) in H:\ABP项目\UserManage\src\UserManage.Web.Core\Controllers\QyCallBackController.cs:line 49
+   at lambda_method(Closure , Object )
+   at Microsoft.AspNetCore.Mvc.Internal.ActionMethodExecutor.AwaitableResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeActionMethodAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeNextActionFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Rethrow(ActionExecutedContext context)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ResourceInvoker.InvokeNextExceptionFilterAsync()
+ERROR 2019-04-28 11:46:38,976 [10   ] Mvc.ExceptionHandling.AbpExceptionFilter - Object reference not set to an instance of an object.
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at UserManage.QyCallBack.DomainService.QyMsg.Converter(String xml) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 71
+   at UserManage.QyCallBack.DomainService.QyMsg.DecryptContent(String msg_signature, String timestamp, String nonce, String content) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 55
+   at UserManage.Controllers.QyCallBackController.Qymsg(String msg_signature, String timestamp, String nonce) in H:\ABP项目\UserManage\src\UserManage.Web.Core\Controllers\QyCallBackController.cs:line 49
+   at lambda_method(Closure , Object )
+   at Microsoft.AspNetCore.Mvc.Internal.ActionMethodExecutor.AwaitableResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeActionMethodAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeNextActionFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Rethrow(ActionExecutedContext context)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ResourceInvoker.InvokeNextExceptionFilterAsync()
+ERROR 2019-04-28 11:47:12,945 [7    ] Mvc.ExceptionHandling.AbpExceptionFilter - Object reference not set to an instance of an object.
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at UserManage.QyCallBack.DomainService.QyMsg.Converter(String xml) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 71
+   at UserManage.QyCallBack.DomainService.QyMsg.DecryptContent(String msg_signature, String timestamp, String nonce, String content) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 55
+   at UserManage.Controllers.QyCallBackController.Qymsg(String msg_signature, String timestamp, String nonce) in H:\ABP项目\UserManage\src\UserManage.Web.Core\Controllers\QyCallBackController.cs:line 49
+   at lambda_method(Closure , Object )
+   at Microsoft.AspNetCore.Mvc.Internal.ActionMethodExecutor.AwaitableResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeActionMethodAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeNextActionFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Rethrow(ActionExecutedContext context)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ResourceInvoker.InvokeNextExceptionFilterAsync()
+ERROR 2019-04-28 11:47:12,961 [12   ] Mvc.ExceptionHandling.AbpExceptionFilter - Object reference not set to an instance of an object.
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at UserManage.QyCallBack.DomainService.QyMsg.Converter(String xml) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 71
+   at UserManage.QyCallBack.DomainService.QyMsg.DecryptContent(String msg_signature, String timestamp, String nonce, String content) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 55
+   at UserManage.Controllers.QyCallBackController.Qymsg(String msg_signature, String timestamp, String nonce) in H:\ABP项目\UserManage\src\UserManage.Web.Core\Controllers\QyCallBackController.cs:line 49
+   at lambda_method(Closure , Object )
+   at Microsoft.AspNetCore.Mvc.Internal.ActionMethodExecutor.AwaitableResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeActionMethodAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeNextActionFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Rethrow(ActionExecutedContext context)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ResourceInvoker.InvokeNextExceptionFilterAsync()
+ERROR 2019-04-28 12:18:31,891 [12   ] Mvc.ExceptionHandling.AbpExceptionFilter - There is an error in XML document (1, 2).
+System.InvalidOperationException: There is an error in XML document (1, 2). ---> System.InvalidOperationException: <xml xmlns=''> was not expected.
+   at Microsoft.Xml.Serialization.GeneratedAssembly.XmlSerializationReaderQyPartyBase.Read4_QyPartyBase()
+   --- End of inner exception stack trace ---
+   at System.Xml.Serialization.XmlSerializer.Deserialize(XmlReader xmlReader, String encodingStyle, XmlDeserializationEvents events)
+   at System.Xml.Serialization.XmlSerializer.Deserialize(TextReader textReader)
+   at UserManage.QyCallBack.DomainService.QyMsg.Deserialize[T](String xml) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 97
+   at UserManage.QyCallBack.DomainService.QyMsg.Converter(String xml) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 78
+   at UserManage.QyCallBack.DomainService.QyMsg.DecryptContent(String msg_signature, String timestamp, String nonce, String content) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 55
+   at UserManage.Controllers.QyCallBackController.Qymsg(String msg_signature, String timestamp, String nonce) in H:\ABP项目\UserManage\src\UserManage.Web.Core\Controllers\QyCallBackController.cs:line 49
+   at lambda_method(Closure , Object )
+   at Microsoft.AspNetCore.Mvc.Internal.ActionMethodExecutor.AwaitableResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeActionMethodAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeNextActionFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Rethrow(ActionExecutedContext context)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ResourceInvoker.InvokeNextExceptionFilterAsync()
+ERROR 2019-04-28 12:18:31,891 [9    ] Mvc.ExceptionHandling.AbpExceptionFilter - There is an error in XML document (1, 2).
+System.InvalidOperationException: There is an error in XML document (1, 2). ---> System.InvalidOperationException: <xml xmlns=''> was not expected.
+   at Microsoft.Xml.Serialization.GeneratedAssembly.XmlSerializationReaderQyPartyBase.Read4_QyPartyBase()
+   --- End of inner exception stack trace ---
+   at System.Xml.Serialization.XmlSerializer.Deserialize(XmlReader xmlReader, String encodingStyle, XmlDeserializationEvents events)
+   at System.Xml.Serialization.XmlSerializer.Deserialize(TextReader textReader)
+   at UserManage.QyCallBack.DomainService.QyMsg.Deserialize[T](String xml) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 97
+   at UserManage.QyCallBack.DomainService.QyMsg.Converter(String xml) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 78
+   at UserManage.QyCallBack.DomainService.QyMsg.DecryptContent(String msg_signature, String timestamp, String nonce, String content) in H:\ABP项目\UserManage\src\UserManage.Core\QyCallBack\DomainService\QyMsg.cs:line 55
+   at UserManage.Controllers.QyCallBackController.Qymsg(String msg_signature, String timestamp, String nonce) in H:\ABP项目\UserManage\src\UserManage.Web.Core\Controllers\QyCallBackController.cs:line 49
+   at lambda_method(Closure , Object )
+   at Microsoft.AspNetCore.Mvc.Internal.ActionMethodExecutor.AwaitableResultExecutor.Execute(IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeActionMethodAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeNextActionFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Rethrow(ActionExecutedContext context)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ResourceInvoker.InvokeNextExceptionFilterAsync()
