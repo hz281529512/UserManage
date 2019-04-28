@@ -57,6 +57,11 @@ namespace UserManage.Users.Dto
         /// </summary>
         public string SelectDistrict { get; set; }
 
+        /// <summary>
+        /// 企业微信头像Url
+        /// </summary>
+        public string Avatar { get; set; }
+
         public void Normalize()
         {
             if (RoleNames == null)
