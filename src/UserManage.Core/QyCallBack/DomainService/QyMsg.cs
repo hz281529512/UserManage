@@ -5,11 +5,14 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using Abp.AutoMapper;
+using AutoMapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Tencent;
+using UserManage.AbpExternalCore;
 using UserManage.Configuration;
 using UserManage.QyCallBack.Model;
 
@@ -73,9 +76,14 @@ namespace UserManage.QyCallBack.DomainService
             {
                 case "user":
                     var user=  Deserialize<QyUserBase>(xml);
+                    var userDto = Mapper.Map<AbpWeChatUser>(user);
+
                     return user;
                 case "party":
                     var party = Deserialize<QyPartyBase>(xml);
+                    var partydto = Mapper.Map<AbpWeChatDepartment>(party);
+                    
+
                     return party;
                 case "tag":
                     var tag = Deserialize<QyTagBase>(xml);

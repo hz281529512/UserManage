@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Abp.AutoMapper;
+using System;
 using System.Xml.Serialization;
+using UserManage.AbpExternalCore;
 
 namespace UserManage.QyCallBack.Model
 {
@@ -23,6 +25,7 @@ namespace UserManage.QyCallBack.Model
     /// 用户
     /// </summary>
     [XmlRoot("xml")]
+    [AutoMapFrom(typeof(AbpWeChatUser))]
     public class QyUserBase : QyMsgBase
     {
         //成员UserID
@@ -56,6 +59,7 @@ namespace UserManage.QyCallBack.Model
     /// 部门
     /// </summary>
     [XmlRoot("xml")]
+    [AutoMapFrom(typeof(AbpWeChatDepartment))]
     public class QyPartyBase : QyMsgBase
     {
         //部门Id
