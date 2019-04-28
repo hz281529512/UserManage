@@ -46,12 +46,12 @@ namespace UserManage.QyCallBack.DomainService
 
         }
 
-        public int DecryptContent(string msg_signature, string timestamp, string nonce, string content)
+        public int DecryptContent(int tid,string msg_signature, string timestamp, string nonce, string content)
         {
             try
             {
 
-
+              
                 string token = _appConfiguration["CallBack:Token"];
                 string aeskey = _appConfiguration["CallBack:EncodingAESKey"];
                 string corpid = _appConfiguration["CallBack:CorpID"];
@@ -59,7 +59,7 @@ namespace UserManage.QyCallBack.DomainService
                 string sMsg = ""; // 解析之后的明文
                 int ret = 0;
                 ret = wxcpt.DecryptMsg(msg_signature, timestamp, nonce, content, ref sMsg);
-                var data = Converter(sMsg);
+                var data = Converter(tid, sMsg);
                 return ret;
             }
             catch (Exception e)
@@ -70,7 +70,7 @@ namespace UserManage.QyCallBack.DomainService
         }
 
 
-        private QyMsgBase Converter(string xml) {
+        private QyMsgBase Converter(int tid, string xml) {
 
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(xml);
@@ -86,7 +86,7 @@ namespace UserManage.QyCallBack.DomainService
                 case "party":
                     var party = Deserialize<QyPartyBase>(xml);
                     var dept = Mapper.Map<AbpWeChatDepartment>(party);
-                     _synchronizeManager.MatchSingleDepartment(dept);
+                     _synchronizeManager.MatchSingleDepartmentWithoutTenant(dept,tid);
                     return party;
                 case "tag":
                     var tag = Deserialize<QyTagBase>(xml);

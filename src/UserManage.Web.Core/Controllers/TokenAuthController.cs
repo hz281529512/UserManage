@@ -62,7 +62,7 @@ namespace UserManage.Controllers
             //var loginResult = await GetLoginResultAsync(
             //    model.UserNameOrEmailAddress,
             //    model.Password,
-            //    GetTenancyNameOrNull()
+             // GetTenancyNameOrNull()
             //);
 
 

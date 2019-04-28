@@ -22,8 +22,8 @@ namespace UserManage.Controllers
             this._qyMsg = qyMsg;
         }
 
-        [HttpGet("{id}")]
-        public async Task Qymsg(int id,string msg_signature, string timestamp, string nonce, string echostr)
+        [HttpGet("{tid}")]
+        public async Task Qymsg(int tid, string msg_signature, string timestamp, string nonce, string echostr)
         {
             string msg= _qyMsg.VerifyUrl(msg_signature, timestamp, nonce, echostr);
              var accept = Request.GetTypedHeaders().Accept;
@@ -39,14 +39,14 @@ namespace UserManage.Controllers
             await Response.Body.WriteAsync(data, 0, data.Length);
         }
 
-        [HttpPost("{id}")]
-        public async Task Qymsg(string msg_signature, string timestamp, string nonce)
+        [HttpPost("{tid}")]
+        public void Qymsg(int tid,string msg_signature, string timestamp, string nonce)
         {
 
-          
+         
             StreamReader reader = new StreamReader(Request.Body);
             string content = reader.ReadToEnd();
-            _qyMsg.DecryptContent(msg_signature, timestamp, nonce, content);
+            _qyMsg.DecryptContent(tid,msg_signature, timestamp, nonce, content);
             //string content = root["Content"].InnerText;
         }
     }
