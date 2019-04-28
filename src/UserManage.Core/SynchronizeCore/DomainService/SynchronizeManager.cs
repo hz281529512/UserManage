@@ -72,14 +72,14 @@ namespace UserManage.SynchronizeCore.DomainService
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
-        public async Task<long?> MatchSingleDepartment(AbpWeChatDepartment wx_dept)
+        public void MatchSingleDepartment(AbpWeChatDepartment wx_dept)
         {
             if (wx_dept != null)
             {
                 var entity = _organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.id);
                 var result_id = entity?.Id ?? null;
-                var parent_entity = wx_dept.parentid == 0 ? null : (await _organizationUnitRepository.FirstOrDefaultAsync(o => o.WXDeptId == wx_dept.parentid));
-                var parent_id = parent_entity?.Id ?? 0;
+                var parent_entity = wx_dept.parentid == 0 ? null : ( _organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.parentid));
+                var parent_id = parent_entity?.Id ?? null;
                 var parent_code = parent_entity?.Code ?? "";
                 try
                 {
@@ -87,7 +87,7 @@ namespace UserManage.SynchronizeCore.DomainService
                     {
                         case "delete_party":
                             if (result_id.HasValue)
-                                await _organizationUnitRepository.DeleteAsync(result_id.Value);                            
+                                _organizationUnitRepository.Delete(result_id.Value);                            
                             break;
                         case "create_party":
                             if (entity == null)
@@ -101,11 +101,11 @@ namespace UserManage.SynchronizeCore.DomainService
                                     ParentId = parent_id,
                                     Code = ""
                                 };                                
-                                result_id =  await _organizationUnitRepository.InsertAndGetIdAsync(entity);
-                                CurrentUnitOfWork.SaveChanges();
-                                entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
-                                entity.Id = result_id.Value;
-                                await _organizationUnitRepository.UpdateAsync(entity);
+                                result_id =   _organizationUnitRepository.InsertAndGetId(entity);
+                                //CurrentUnitOfWork.SaveChanges();
+                                //entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
+                                //entity.Id = result_id.Value;
+                                //await _organizationUnitRepository.UpdateAsync(entity);
                             }
                             break;
                         case "update_party":
@@ -115,7 +115,7 @@ namespace UserManage.SynchronizeCore.DomainService
                                 entity.WXDeptId = wx_dept.id;
                                 entity.WXParentDeptId = wx_dept.parentid;
                                 entity.DisplayName = wx_dept.name;
-                                await _organizationUnitRepository.UpdateAsync(entity);
+                                _organizationUnitRepository.Update(entity);
                             }
                             break;
                         default:
@@ -128,9 +128,7 @@ namespace UserManage.SynchronizeCore.DomainService
                     throw;
                 }
                 
-                return result_id;
             }
-            return null;
         }
 
         

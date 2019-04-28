@@ -17,6 +17,6 @@ namespace UserManage.SynchronizeCore.DomainService
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
-        Task<long?> MatchSingleDepartment(AbpWeChatDepartment wx_dept);
+        void MatchSingleDepartment(AbpWeChatDepartment wx_dept);
     }
 }

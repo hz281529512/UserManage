@@ -65,9 +65,9 @@ namespace UserManage.SynchronizeCore
             _passwordHasher = passwordHasher;
         }
 
-        public async Task MatchTest()
+        public void MatchTest()
         {
-            await _testManager.MatchSingleDepartment(new AbpWeChatDepartment { changetype = "create_party" , id = 162 , name = "test", parentid = 10 });
+            _testManager.MatchSingleDepartment(new AbpWeChatDepartment { changetype = "create_party" , id = 162 , name = "test", parentid = 10 });
         }
 
         /// <summary>
