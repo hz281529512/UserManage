@@ -1,5 +1,6 @@
 ﻿using Abp.Authorization.Users;
 using Abp.Domain.Repositories;
+using Abp.Domain.Uow;
 using Abp.Organizations;
 using Abp.Runtime.Session;
 using Microsoft.AspNetCore.Identity;
@@ -40,6 +41,9 @@ namespace UserManage.SynchronizeCore.DomainService
         //Session
         public IAbpSession AbpSession { get; set; }
 
+        //UOW
+        private readonly IUnitOfWorkManager _unitOfWorkManager;
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -51,6 +55,7 @@ namespace UserManage.SynchronizeCore.DomainService
             IRepository<UserLogin, long> userLoginRepository,
             IRepository<Role, int> roleRepository,
             IRepository<UserRole, long> userRoleRepository,
+            IUnitOfWorkManager unitOfWorkManager,
             IPasswordHasher<User> passwordHasher
          )
         {
@@ -62,13 +67,83 @@ namespace UserManage.SynchronizeCore.DomainService
             _roleRepository = roleRepository;
             _userRoleRepository = userRoleRepository;
             _passwordHasher = passwordHasher;
+            _unitOfWorkManager = unitOfWorkManager;
             AbpSession = NullAbpSession.Instance;
         }
 
         #region  Synchronize Department
 
         /// <summary>
-        /// 同步单个组织  
+        /// 同步单个组织 (无租户验证版本)         
+        /// </summary>
+        /// <param name="wx_dept"></param>
+        /// <returns>更新的本地Id</returns>
+        public void MatchSingleDepartmentWithoutTenant(AbpWeChatDepartment wx_dept, int? tenant_id)
+        {
+            if (wx_dept != null)
+            {
+                using (_unitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
+                {
+                    var entity = _organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.id && o.TenantId == tenant_id);
+                    var result_id = entity?.Id ?? null;
+                    var parent_entity = wx_dept.parentid == 0 ? null : (_organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.parentid && o.TenantId == tenant_id));
+                    var parent_id = parent_entity?.Id ?? null;
+                    var parent_code = parent_entity?.Code ?? "";
+                    try
+                    {
+                        switch (wx_dept.changetype)
+                        {
+                            case "delete_party":
+                                if (result_id.HasValue)
+                                    _organizationUnitRepository.Delete(result_id.Value);
+                                break;
+                            case "create_party":
+                                if (entity == null)
+                                {
+                                    entity = new AbpOrganizationUnitExtend
+                                    {
+                                        TenantId = tenant_id,//AbpSession.TenantId,
+                                        WXDeptId = wx_dept.id,
+                                        DisplayName = wx_dept.name,
+                                        WXParentDeptId = wx_dept.parentid,
+                                        ParentId = parent_id,
+                                        Code = ""
+                                    };
+                                    result_id = _organizationUnitRepository.InsertAndGetId(entity);
+                                    //CurrentUnitOfWork.SaveChanges();
+                                    entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
+                                    entity.Id = result_id.Value;
+                                    _organizationUnitRepository.Update(entity);
+                                }
+                                break;
+                            case "update_party":
+                                if (result_id.HasValue)
+                                {
+                                    entity.TenantId = tenant_id;
+                                    entity.ParentId = parent_id;
+                                    entity.WXDeptId = wx_dept.id;
+                                    entity.WXParentDeptId = wx_dept.parentid;
+                                    entity.DisplayName = wx_dept.name;
+                                    _organizationUnitRepository.Update(entity);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+
+                        throw;
+                    } 
+                }
+
+            }
+        }
+
+
+        /// <summary>
+        /// 同步单个组织         
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
