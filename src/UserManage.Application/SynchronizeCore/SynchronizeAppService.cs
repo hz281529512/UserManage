@@ -80,6 +80,7 @@ namespace UserManage.SynchronizeCore
 
         #region  Synchronize Department
 
+
         /// <summary>
         /// 同步企业微信 部门 => 组织
         /// </summary>

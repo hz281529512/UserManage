@@ -63,6 +63,57 @@ namespace UserManage.SynchronizeCore.DomainService
 
         #region  Synchronize Department
 
+        /// <summary>
+        /// 同步单个组织
+        /// </summary>
+        /// <param name="wx_dept"></param>
+        /// <returns>更新的本地Id</returns>
+        public async Task<long?> MatchSingleDepartment(AbpWeChatDepartment wx_dept)
+        {
+            if (wx_dept != null)
+            {
+                var entity = await _organizationUnitRepository.FirstOrDefaultAsync(o => o.WXDeptId == wx_dept.id);
+                var result_id = entity?.Id ?? null;
+                long? parent_id = wx_dept.parentid == 0 ? 0 : (await _organizationUnitRepository.FirstOrDefaultAsync(o => o.WXDeptId == wx_dept.parentid))?.Id;
+                switch (wx_dept.changetype)
+                {
+                    case "delete_party":
+                        if (result_id.HasValue)
+                            await _organizationUnitRepository.DeleteAsync(result_id.Value);
+                        break;
+                    case "create_party":
+                        if (!result_id.HasValue) { 
+                            await _organizationUnitRepository.DeleteAsync(result_id.Value);
+                            result_id = await _organizationUnitRepository.InsertAndGetIdAsync(new AbpOrganizationUnitExtend
+                            {
+                                TenantId = AbpSession.TenantId,
+                                WXDeptId = wx_dept.id,
+                                DisplayName = wx_dept.name,
+                                WXParentDeptId = wx_dept.parentid,
+                                ParentId = parent_id
+                            });
+                        }
+                        break;
+                    case "update_party":
+                        if (result_id.HasValue)
+                        {
+                            entity.ParentId = parent_id;
+                            entity.WXDeptId = wx_dept.id;
+                            entity.WXParentDeptId = wx_dept.parentid;
+                            entity.DisplayName = wx_dept.name;
+                            await _organizationUnitRepository.UpdateAsync(entity);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                return result_id;
+            }
+            return null;
+        }
+
+        
+
         public async Task<SyncResultDto> MatchDepartments(ICollection<AbpWeChatDepartment> wx_departments)
         {
             // 尝试获取企业微信部门与本地组织full join
