@@ -22,8 +22,8 @@ namespace UserManage.Controllers
             this._qyMsg = qyMsg;
         }
 
-        [HttpGet]
-        public async Task Qymsg(string msg_signature, string timestamp, string nonce, string echostr)
+        [HttpGet("{id}")]
+        public async Task Qymsg(int id,string msg_signature, string timestamp, string nonce, string echostr)
         {
             string msg= _qyMsg.VerifyUrl(msg_signature, timestamp, nonce, echostr);
              var accept = Request.GetTypedHeaders().Accept;
@@ -39,7 +39,7 @@ namespace UserManage.Controllers
             await Response.Body.WriteAsync(data, 0, data.Length);
         }
 
-        [HttpPost]
+        [HttpPost("{id}")]
         public async Task Qymsg(string msg_signature, string timestamp, string nonce)
         {
 

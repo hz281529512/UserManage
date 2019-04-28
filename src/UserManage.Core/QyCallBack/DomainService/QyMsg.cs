@@ -15,6 +15,7 @@ using Tencent;
 using UserManage.AbpExternalCore;
 using UserManage.Configuration;
 using UserManage.QyCallBack.Model;
+using UserManage.SynchronizeCore.DomainService;
 
 namespace UserManage.QyCallBack.DomainService
 {
@@ -22,9 +23,12 @@ namespace UserManage.QyCallBack.DomainService
     {
 
         private readonly IConfigurationRoot _appConfiguration;
+        private readonly ISynchronizeManager _synchronizeManager;
 
-        public QyMsg(IHostingEnvironment env)
+        public QyMsg(IHostingEnvironment env, ISynchronizeManager synchronizeManager)
         {
+            this._synchronizeManager = synchronizeManager;
+
             _appConfiguration = AppConfigurations.Get(env.ContentRootPath, env.EnvironmentName, env.IsDevelopment());
         }
 
@@ -71,8 +75,8 @@ namespace UserManage.QyCallBack.DomainService
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(xml);
             XmlNode root = doc.FirstChild;
-            string ChangeType = root["ChangeType"].InnerText;
-            switch (ChangeType.Split("_")[1])
+            string changeType = root["ChangeType"].InnerText;
+            switch (changeType.Split("_")[1])
             {
                 case "user":
                     var user=  Deserialize<QyUserBase>(xml);
@@ -81,9 +85,8 @@ namespace UserManage.QyCallBack.DomainService
                     return user;
                 case "party":
                     var party = Deserialize<QyPartyBase>(xml);
-                    var partydto = Mapper.Map<AbpWeChatDepartment>(party);
-                    
-
+                    var dept = Mapper.Map<AbpWeChatDepartment>(party);
+                     _synchronizeManager.MatchSingleDepartment(dept);
                     return party;
                 case "tag":
                     var tag = Deserialize<QyTagBase>(xml);
