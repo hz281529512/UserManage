@@ -160,52 +160,52 @@ namespace UserManage.SynchronizeCore.DomainService
                 var parent_entity = wx_dept.parentid == 0 ? null : (_organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.parentid && o.TenantId == tenant_id));
                 var parent_id = parent_entity?.Id ?? null;
                 var parent_code = parent_entity?.Code ?? "";
-                try
-                {
-                    switch (wx_dept.changetype)
-                    {
-                        case "delete_party":
-                            if (result_id.HasValue)
-                                _organizationUnitRepository.Delete(result_id.Value);
-                            break;
-                        case "create_party":
-                            if (entity == null)
-                            {
-                                entity = new AbpOrganizationUnitExtend
-                                {
-                                    TenantId = tenant_id,//AbpSession.TenantId,
-                                    WXDeptId = wx_dept.id,
-                                    DisplayName = wx_dept.name,
-                                    WXParentDeptId = wx_dept.parentid,
-                                    ParentId = parent_id,
-                                    Code = ""
-                                };
-                                result_id = _organizationUnitRepository.InsertAndGetId(entity);
-                                //CurrentUnitOfWork.SaveChanges();
-                                entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
-                                entity.Id = result_id.Value;
-                                _organizationUnitRepository.Update(entity);
-                            }
-                            break;
-                        case "update_party":
-                            if (result_id.HasValue)
-                            {
-                                entity.TenantId = tenant_id;
-                                entity.ParentId = parent_id;
-                                entity.WXDeptId = wx_dept.id;
-                                entity.WXParentDeptId = wx_dept.parentid;
-                                entity.DisplayName = wx_dept.name;
-                                _organizationUnitRepository.Update(entity);
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                catch (Exception ex)
-                {
 
-                    throw;
+                switch (wx_dept.changetype)
+                {
+                    case "delete_party":
+                        if (result_id.HasValue)
+                            _organizationUnitRepository.Delete(result_id.Value);
+                        break;
+                    case "create_party":
+                        if (entity == null)
+                        {
+                            entity = new AbpOrganizationUnitExtend
+                            {
+                                TenantId = tenant_id,//AbpSession.TenantId,
+                                WXDeptId = wx_dept.id,
+                                DisplayName = wx_dept.name,
+                                WXParentDeptId = wx_dept.parentid,
+                                ParentId = parent_id,
+                                Code = ""
+                            };
+                            result_id = _organizationUnitRepository.InsertAndGetId(entity);
+                            //CurrentUnitOfWork.SaveChanges();
+                            entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
+                            entity.Id = result_id.Value;
+                            _organizationUnitRepository.Update(entity);
+                        }
+                        break;
+                    case "update_party":
+                        if (result_id.HasValue)
+                        {
+                            /**
+                             * 2019-04-28 miansheng.luo 企业微信回调有更新忽略。修改时请注意修改下列字段判断方式
+                             */
+                            if (wx_dept.parentid.HasValue)
+                            {
+                                entity.ParentId = parent_id;
+                                entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
+                                entity.WXParentDeptId = wx_dept.parentid;
+                            }
+                            entity.TenantId = tenant_id;
+                            entity.WXDeptId = wx_dept.id;
+                            entity.DisplayName = string.IsNullOrEmpty(wx_dept.name) ? entity.DisplayName : wx_dept.name;
+                            _organizationUnitRepository.Update(entity);
+                        }
+                        break;
+                    default:
+                        break;
                 }
 
             }
