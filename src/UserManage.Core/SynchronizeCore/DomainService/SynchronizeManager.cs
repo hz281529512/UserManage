@@ -83,7 +83,6 @@ namespace UserManage.SynchronizeCore.DomainService
                         break;
                     case "create_party":
                         if (!result_id.HasValue) { 
-                            await _organizationUnitRepository.DeleteAsync(result_id.Value);
                             result_id = await _organizationUnitRepository.InsertAndGetIdAsync(new AbpOrganizationUnitExtend
                             {
                                 TenantId = AbpSession.TenantId,

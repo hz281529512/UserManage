@@ -22,5 +22,7 @@ namespace UserManage.AbpExternalCore
         public string position { get; set; }
 
         public string qr_code { get; set; }
+
+        public List<int> department { get; set; }
     }
 }
