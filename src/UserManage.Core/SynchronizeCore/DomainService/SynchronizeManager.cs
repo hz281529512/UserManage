@@ -103,9 +103,9 @@ namespace UserManage.SynchronizeCore.DomainService
                                 };                                
                                 result_id =   _organizationUnitRepository.InsertAndGetId(entity);
                                 //CurrentUnitOfWork.SaveChanges();
-                                //entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
-                                //entity.Id = result_id.Value;
-                                //await _organizationUnitRepository.UpdateAsync(entity);
+                                entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
+                                entity.Id = result_id.Value;
+                                _organizationUnitRepository.Update(entity);
                             }
                             break;
                         case "update_party":
