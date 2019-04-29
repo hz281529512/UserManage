@@ -400,6 +400,7 @@ namespace UserManage.SynchronizeCore.DomainService
                                 entity.PhoneNumber = wx_user.mobile ?? entity.PhoneNumber;
                                 entity.Avatar = wx_user.avatar ?? entity.Avatar;
                                 entity.Position = wx_user.position ?? entity.Position;
+                                entity.Surname = wx_user.alias ?? entity.Surname;
 
                                 entity.Sex = wx_user.gender == null ? entity.Sex : (wx_user.gender == "1" ? true : false);
                                 entity.IsActive = wx_user.status.HasValue ? wx_user.status == 1 : entity.IsActive;
