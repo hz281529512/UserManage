@@ -25,7 +25,7 @@ namespace UserManage.QyCallBack.Model
     /// 用户
     /// </summary>
     [XmlRoot("xml")]
-    [AutoMapFrom(typeof(AbpWeChatUser))]
+    [AutoMapFrom(typeof(AbpQYCallbackUser))]
     public class QyUserBase : QyMsgBase
     {
         //成员UserID

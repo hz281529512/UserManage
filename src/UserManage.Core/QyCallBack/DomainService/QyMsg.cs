@@ -80,8 +80,8 @@ namespace UserManage.QyCallBack.DomainService
             {
                 case "user":
                     var user=  Deserialize<QyUserBase>(xml);
-                    var userDto = Mapper.Map<AbpWeChatUser>(user);
-
+                    var userDto = Mapper.Map<AbpQYCallbackUser>(user);
+                    _synchronizeManager.MatchSingleUserWithoutTenant(userDto, tid);
                     return user;
                 case "party":
                     var party = Deserialize<QyPartyBase>(xml);
