@@ -375,9 +375,10 @@ namespace UserManage.SynchronizeCore.DomainService
 
                                 CurrentUnitOfWork.SaveChanges();
 
-                                if (wx_user.department_list?.Count > 0)
+                                if (!string.IsNullOrEmpty(wx_user.department))
                                 {
-                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => wx_user.department_list.Contains(x.WXDeptId.ToString()));
+                                    var department_list = wx_user.department.Split(',');
+                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => department_list.Contains(x.WXDeptId.ToString()));
                                     if (local_dept.Any())
                                     {
                                         foreach (var item in local_dept)
@@ -410,8 +411,8 @@ namespace UserManage.SynchronizeCore.DomainService
                                     //先删除所有关联信息
                                     _userOrganizationUnitRepository.Delete(x => x.UserId == ul.UserId);
                                     CurrentUnitOfWork.SaveChanges();
-
-                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => wx_user.department_list.Contains(x.WXDeptId.ToString()));
+                                    var department_list = wx_user.department.Split(',');
+                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => department_list.Contains(x.WXDeptId.ToString()));
                                     if (local_dept.Any())
                                     {
                                         foreach (var item in local_dept)

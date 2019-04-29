@@ -24,26 +24,26 @@ namespace UserManage.AbpExternalCore
 
         public string position { get; set; }
 
-        public string qr_code { get; set; }
+        //public string qr_code { get; set; }
 
         public string department { get; set; }
 
         public int? status { get; set; }
 
-        public List<string> department_list
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(department))
-                {
-                    return department.Split(",").ToList();
-                }
-                else
-                {
-                    return null;
-                }
+        //public List<string> department_list
+        //{
+        //    get
+        //    {
+        //        if (!string.IsNullOrEmpty(department))
+        //        {
+        //            return department.Split(",").ToList();
+        //        }
+        //        else
+        //        {
+        //            return null;
+        //        }
 
-            }
-        }
+        //    }
+        //}
     }
 }
