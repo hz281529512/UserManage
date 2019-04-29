@@ -409,19 +409,27 @@ namespace UserManage.SynchronizeCore.DomainService
 
                                 if (!string.IsNullOrEmpty( wx_user.department ))
                                 {
+
                                     //先删除所有关联信息
                                     _userOrganizationUnitRepository.Delete(x => x.UserId == ul.UserId);
                                     CurrentUnitOfWork.SaveChanges();
+
                                     var department_list = wx_user.department.Split(',');
-                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => department_list.Contains(x.WXDeptId.ToString()));
+
+                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => x.TenantId == tenant_id && department_list.Contains(x.WXDeptId.ToString()));
+                                    
                                     if (local_dept.Any())
                                     {
                                         foreach (var item in local_dept)
                                         {
-                                            _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = ul.UserId, OrganizationUnitId = item.Id });
+                                            if (!_userOrganizationUnitRepository.GetAll().Any(x => x.TenantId == tenant_id && x.UserId == ul.UserId && x.OrganizationUnitId == item.Id ))
+                                            {
+                                                _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = ul.UserId, OrganizationUnitId = item.Id });
+                                            }
+                                            CurrentUnitOfWork.SaveChanges();
                                         }
-                                        CurrentUnitOfWork.SaveChanges();
                                     }
+
                                 }
                             }
                             break;
