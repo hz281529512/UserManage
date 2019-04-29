@@ -3,6 +3,7 @@ using Abp.Domain.Repositories;
 using Abp.Domain.Uow;
 using Abp.Organizations;
 using Abp.Runtime.Session;
+using Castle.Core.Logging;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,7 @@ namespace UserManage.SynchronizeCore.DomainService
         private readonly IRepository<User, long> _userRepository;
         private readonly IRepository<UserLogin, long> _userLoginRepository;
         private readonly IPasswordHasher<User> _passwordHasher;
+        //private readonly UserManager _userManager;
 
 
         ////角色
@@ -43,6 +45,9 @@ namespace UserManage.SynchronizeCore.DomainService
 
         //UOW
         private readonly IUnitOfWorkManager _unitOfWorkManager;
+
+        //log
+        public ILogger _logger;
 
         /// <summary>
         /// 构造函数
@@ -56,6 +61,7 @@ namespace UserManage.SynchronizeCore.DomainService
             IRepository<Role, int> roleRepository,
             IRepository<UserRole, long> userRoleRepository,
             IUnitOfWorkManager unitOfWorkManager,
+            //UserManager userManager,
             IPasswordHasher<User> passwordHasher
          )
         {
@@ -69,6 +75,8 @@ namespace UserManage.SynchronizeCore.DomainService
             _passwordHasher = passwordHasher;
             _unitOfWorkManager = unitOfWorkManager;
             AbpSession = NullAbpSession.Instance;
+            _logger = NullLogger.Instance;
+            //_userManager = userManager;
         }
 
         #region  Synchronize Department
@@ -89,57 +97,54 @@ namespace UserManage.SynchronizeCore.DomainService
                     var parent_entity = wx_dept.parentid == 0 ? null : (_organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.parentid && o.TenantId == tenant_id));
                     var parent_id = parent_entity?.Id ?? null;
                     var parent_code = parent_entity?.Code ?? "";
-                    try
-                    {
-                        switch (wx_dept.changetype)
-                        {
-                            case "delete_party":
-                                if (result_id.HasValue)
-                                    _organizationUnitRepository.Delete(result_id.Value);
-                                break;
-                            case "create_party":
-                                if (entity == null)
-                                {
-                                    entity = new AbpOrganizationUnitExtend
-                                    {
-                                        TenantId = tenant_id,//AbpSession.TenantId,
-                                        WXDeptId = wx_dept.id,
-                                        DisplayName = wx_dept.name,
-                                        WXParentDeptId = wx_dept.parentid,
-                                        ParentId = parent_id,
-                                        Code = ""
-                                    };
-                                    result_id = _organizationUnitRepository.InsertAndGetId(entity);
-                                    //CurrentUnitOfWork.SaveChanges();
-                                    entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
-                                    entity.Id = result_id.Value;
-                                    _organizationUnitRepository.Update(entity);
-                                }
-                                break;
-                            case "update_party":
-                                if (result_id.HasValue)
-                                {
-                                    if (wx_dept.parentid.HasValue)
-                                    {
-                                        entity.ParentId = parent_id;
-                                        entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
-                                        entity.WXParentDeptId = wx_dept.parentid;
-                                    }
-                                    entity.TenantId = tenant_id;
-                                    entity.WXDeptId = wx_dept.id;
-                                    entity.DisplayName = string.IsNullOrEmpty(wx_dept.name) ? entity.DisplayName : wx_dept.name;
-                                    _organizationUnitRepository.Update(entity);
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
 
-                        throw;
+                    switch (wx_dept.changetype)
+                    {
+                        case "delete_party":
+                            if (result_id.HasValue)
+                                _organizationUnitRepository.Delete(result_id.Value);
+                            break;
+                        case "create_party":
+                            if (entity == null)
+                            {
+                                entity = new AbpOrganizationUnitExtend
+                                {
+                                    TenantId = tenant_id,//AbpSession.TenantId,
+                                    WXDeptId = wx_dept.id,
+                                    DisplayName = wx_dept.name,
+                                    WXParentDeptId = wx_dept.parentid,
+                                    ParentId = parent_id,
+                                    Code = ""
+                                };
+                                result_id = _organizationUnitRepository.InsertAndGetId(entity);
+                                //CurrentUnitOfWork.SaveChanges();
+                                entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
+                                entity.Id = result_id.Value;
+                                _organizationUnitRepository.Update(entity);
+                            }
+                            break;
+                        case "update_party":
+                            if (result_id.HasValue)
+                            {
+                                /**
+                                 * 2019-04-28 miansheng.luo 企业微信回调有更新忽略。修改时请注意修改下列字段判断方式
+                                 */
+                                if (wx_dept.parentid.HasValue)
+                                {
+                                    entity.ParentId = parent_id;
+                                    entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
+                                    entity.WXParentDeptId = wx_dept.parentid;
+                                }
+                                entity.TenantId = tenant_id;
+                                entity.WXDeptId = wx_dept.id;
+                                entity.DisplayName = string.IsNullOrEmpty(wx_dept.name) ? entity.DisplayName : wx_dept.name;
+                                _organizationUnitRepository.Update(entity);
+                            }
+                            break;
+                        default:
+                            break;
                     }
+
                 }
 
             }
@@ -212,7 +217,11 @@ namespace UserManage.SynchronizeCore.DomainService
         }
 
 
-
+        /// <summary>
+        /// 批量同步
+        /// </summary>
+        /// <param name="wx_departments"></param>
+        /// <returns></returns>
         public async Task<SyncResultDto> MatchDepartments(ICollection<AbpWeChatDepartment> wx_departments)
         {
             // 尝试获取企业微信部门与本地组织full join
@@ -304,5 +313,124 @@ namespace UserManage.SynchronizeCore.DomainService
         #endregion
 
         #endregion
+
+
+        #region  Synchronize User
+
+        /// <summary>
+        /// 同步单个用户(无租户验证版本)
+        /// </summary>
+        /// <param name="wx_user"></param>
+        /// <param name="tenant_id"></param>
+        /// <returns>更新的本地Id</returns>
+        public void MatchSingleUserWithoutTenant(AbpQYCallbackUser wx_user, int? tenant_id)
+        {
+            if (wx_user != null)
+            {
+                using (_unitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
+                {
+
+                    var ul = _userLoginRepository.FirstOrDefault(x => x.ProviderKey == wx_user.userid && x.LoginProvider == "Wechat" && x.TenantId == tenant_id);
+                    //delete_user
+                    switch (wx_user.changetype)
+                    {
+                        case "delete_user":
+                            if (ul != null)
+                            {
+                                _userOrganizationUnitRepository.Delete(x => x.UserId == ul.UserId);
+                                _userRoleRepository.Delete(x => x.UserId == ul.UserId);
+                                _userRepository.Delete(ul.UserId);
+                                _userLoginRepository.Delete(ul);
+                            }
+                            break;
+                        case "create_user":
+                            if (ul == null)
+                            {
+                                var user_name = string.IsNullOrEmpty(wx_user.email) ? "" : wx_user.email.Split('@')[0];
+                                //先检查用户是否有重复
+                                if (_userRepository.GetAll().Any(x => x.UserName == wx_user.email || x.UserName == user_name || x.EmailAddress == wx_user.email))
+                                {
+                                    _logger.Info(Abp.Timing.Clock.Now.ToString("yyyy-MM-dd HH:mm:ss") + wx_user.email + " : 用户已存在,无法通过企业微信回调接口Insert");
+                                    return;
+                                }
+                                var user = new User
+                                {
+                                    TenantId = tenant_id,
+                                    Name = wx_user.name,
+                                    PhoneNumber = wx_user.mobile,
+                                    EmailAddress = wx_user.email,
+                                    IsActive = true,
+                                    UserName = user_name,
+                                    IsEmailConfirmed = true,
+                                    Avatar = wx_user.avatar,
+                                    Position = wx_user.position,
+                                    Sex = wx_user.gender == "1" ? true : false,
+                                    Surname = wx_user.alias,
+                                };
+
+                                user.Password = _passwordHasher.HashPassword(user, "000000");
+                                var new_id =  _userRepository.InsertAndGetId(user);
+
+                                _userLoginRepository.Insert(new UserLogin { LoginProvider = "Wechat" , ProviderKey = wx_user.userid , TenantId = tenant_id , UserId = new_id });
+
+                                CurrentUnitOfWork.SaveChanges();
+
+                                if (wx_user.department_list?.Count > 0)
+                                {
+                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => wx_user.department_list.Contains(x.WXDeptId.ToString()));
+                                    if (local_dept.Any())
+                                    {
+                                        foreach (var item in local_dept)
+                                        {
+                                            _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = new_id , OrganizationUnitId = item.Id });
+                                        }
+                                        CurrentUnitOfWork.SaveChanges();
+                                    }
+                                }
+                            }
+                            break;
+                        case "update_user":
+                            if (ul != null)
+                            {
+                                var entity = _userRepository.Get(ul.UserId);
+                                entity.TenantId = tenant_id;
+                                entity.Name = wx_user.name ?? entity.Name;
+                                entity.EmailAddress = wx_user.email ?? entity.EmailAddress;
+                                entity.PhoneNumber = wx_user.mobile ?? entity.PhoneNumber;
+                                entity.Avatar = wx_user.avatar ?? entity.Avatar;
+                                entity.Position = wx_user.position ?? entity.Position;
+
+                                entity.Sex = wx_user.gender == null ? entity.Sex : (wx_user.gender == "1" ? true : false);
+                                entity.IsActive = wx_user.status.HasValue ? wx_user.status == 1 : entity.IsActive;
+
+                                CurrentUnitOfWork.SaveChanges();
+
+                                if (!string.IsNullOrEmpty( wx_user.department ))
+                                {
+                                    //先删除所有关联信息
+                                    _userOrganizationUnitRepository.Delete(x => x.UserId == ul.UserId);
+                                    CurrentUnitOfWork.SaveChanges();
+
+                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => wx_user.department_list.Contains(x.WXDeptId.ToString()));
+                                    if (local_dept.Any())
+                                    {
+                                        foreach (var item in local_dept)
+                                        {
+                                            _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = ul.UserId, OrganizationUnitId = item.Id });
+                                        }
+                                        CurrentUnitOfWork.SaveChanges();
+                                    }
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
+        #endregion  
+
     }
 }

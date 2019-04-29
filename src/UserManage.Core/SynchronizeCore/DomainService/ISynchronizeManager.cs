@@ -26,5 +26,13 @@ namespace UserManage.SynchronizeCore.DomainService
         /// <param name="wx_dept"></param>
         /// <param name="tenant_id"></param>
         void MatchSingleDepartmentWithoutTenant(AbpWeChatDepartment wx_dept, int? tenant_id);
+
+        /// <summary>
+        /// 同步单个用户(无租户验证版本)
+        /// </summary>
+        /// <param name="wx_user"></param>
+        /// <param name="tenant_id"></param>
+        /// <returns>更新的本地Id</returns>
+        void MatchSingleUserWithoutTenant(AbpQYCallbackUser wx_user, int? tenant_id);
     }
 }
