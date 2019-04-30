@@ -471,7 +471,7 @@ namespace UserManage.SynchronizeCore
                               select new AbpWxTagRoleDto
                               {
                                   RoleId = 0,
-                                  RoleName = "WX_" + t.tagname,
+                                  RoleName = "WX" + t.tagname,
                                   TagName = t.tagname,
                                   WechatTagId = t.tagid
                               };

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UserManage.AbpExternalCore;
+using UserManage.AbpExternalCore.DomainService;
 using UserManage.AbpOrganizationUnitCore;
 using UserManage.Authorization.Roles;
 using UserManage.Authorization.Users;
@@ -49,6 +50,9 @@ namespace UserManage.SynchronizeCore.DomainService
         //log
         public ILogger _logger;
 
+        //wechat
+        private readonly IAbpWeChatManager _weChatManager;
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -61,7 +65,7 @@ namespace UserManage.SynchronizeCore.DomainService
             IRepository<Role, int> roleRepository,
             IRepository<UserRole, long> userRoleRepository,
             IUnitOfWorkManager unitOfWorkManager,
-            //UserManager userManager,
+            IAbpWeChatManager weChatManager,
             IPasswordHasher<User> passwordHasher
          )
         {
@@ -76,7 +80,7 @@ namespace UserManage.SynchronizeCore.DomainService
             _unitOfWorkManager = unitOfWorkManager;
             AbpSession = NullAbpSession.Instance;
             _logger = NullLogger.Instance;
-            //_userManager = userManager;
+            _weChatManager = weChatManager;
         }
 
         #region  Synchronize Department
@@ -369,9 +373,9 @@ namespace UserManage.SynchronizeCore.DomainService
                                 };
 
                                 user.Password = _passwordHasher.HashPassword(user, "000000");
-                                var new_id =  _userRepository.InsertAndGetId(user);
+                                var new_id = _userRepository.InsertAndGetId(user);
 
-                                _userLoginRepository.Insert(new UserLogin { LoginProvider = "Wechat" , ProviderKey = wx_user.userid , TenantId = tenant_id , UserId = new_id });
+                                _userLoginRepository.Insert(new UserLogin { LoginProvider = "Wechat", ProviderKey = wx_user.userid, TenantId = tenant_id, UserId = new_id });
 
                                 CurrentUnitOfWork.SaveChanges();
 
@@ -383,7 +387,7 @@ namespace UserManage.SynchronizeCore.DomainService
                                     {
                                         foreach (var item in local_dept)
                                         {
-                                            _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = new_id , OrganizationUnitId = item.Id });
+                                            _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = new_id, OrganizationUnitId = item.Id });
                                         }
                                         CurrentUnitOfWork.SaveChanges();
                                     }
@@ -407,7 +411,7 @@ namespace UserManage.SynchronizeCore.DomainService
 
                                 CurrentUnitOfWork.SaveChanges();
 
-                                if (!string.IsNullOrEmpty( wx_user.department ))
+                                if (!string.IsNullOrEmpty(wx_user.department))
                                 {
 
                                     //先删除所有关联信息
@@ -431,7 +435,7 @@ namespace UserManage.SynchronizeCore.DomainService
                                         {
                                             _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = ul.UserId, OrganizationUnitId = item.Id });
                                         }
-                                    }                                    
+                                    }
                                 }
                             }
                             break;
@@ -452,16 +456,70 @@ namespace UserManage.SynchronizeCore.DomainService
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
-        public void MatchQYTagWithoutTenant(SyncTag wx_dept, int? tenant_id)
+        public void MatchQYTagWithoutTenant(SyncTag wx_tag, int? tenant_id)
         {
-            if (wx_dept != null)
+            if (wx_tag != null)
             {
                 using (_unitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
                 {
+                    if (wx_tag.ChangeType == "update_tag")
+                    {
+                        var local_role = _roleRepository.FirstOrDefault(r => r.WxTagId == wx_tag.TagId && r.TenantId == tenant_id);
+                        int role_id = 0;
+                        if (local_role == null)
+                        {
+                            var tag_name = _weChatManager.GetTagNameById(wx_tag.TagId.Value, tenant_id.Value);
+                            local_role = new Role
+                            {
+                                WxTagId = wx_tag.TagId,
+                                IsDefault = false,
+                                NormalizedName = tag_name,
+                                DisplayName = "WX" + tag_name,
+                                Name = tag_name,
+                                TenantId = tenant_id
+                            };
+                            role_id = _roleRepository.InsertAndGetId(local_role);
+                            CurrentUnitOfWork.SaveChanges();
+                        }
+                        else
+                        {
+                            role_id = local_role.Id;
+                        }
+
+                        if (!string.IsNullOrEmpty(wx_tag.DelUserItems))
+                        {
+                            var del_users = wx_tag.DelUserItems.Split(',');
+                            var del_list = _userLoginRepository.GetAll().Where(x => del_users.Contains(x.ProviderKey) && x.LoginProvider == "Wechat" && x.TenantId == tenant_id).ToList();
+                            if (del_list?.Count > 0)
+                            {
+                                _userRoleRepository.Delete(x => x.RoleId == role_id && del_list.Any(d => d.UserId == x.UserId));
+                                CurrentUnitOfWork.SaveChanges();
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(wx_tag.AddUserItems))
+                        {
+                            var add_users = wx_tag.AddUserItems.Split(',');
+                            var add_list = _userLoginRepository.GetAll().Where(x => add_users.Contains(x.ProviderKey) && x.LoginProvider == "Wechat" && x.TenantId == tenant_id).ToList();
+                            if (add_list?.Count > 0)
+                            {
+                                foreach (var item in add_list)
+                                {
+                                    _userRoleRepository.Insert(new UserRole {
+                                        RoleId = role_id,
+                                        TenantId = AbpSession.TenantId,
+                                        UserId = item.UserId
+                                    });
+                                }
+                                CurrentUnitOfWork.SaveChanges();
+                            }
+                        }
+                    }
 
                 }
             }
         }
+
 
         #endregion
 

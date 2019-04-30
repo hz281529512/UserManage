@@ -38,7 +38,7 @@ namespace UserManage.AbpExternalCore.DomainService
         // TODO:编写领域业务代码
 
         #region Private
-            
+
         private async Task<ICollection<AbpWeChatDepartment>> GetAllDepartments(string accessToken)
         {
             ICollection<AbpWeChatDepartment> result = null;
@@ -46,7 +46,7 @@ namespace UserManage.AbpExternalCore.DomainService
             {
                 var url = string.Format(Config.ApiWorkHost + "/cgi-bin/department/list?access_token={0}",
                                accessToken);
-                
+
                 var rdata = await Get.GetJsonAsync<AbpDepartmentResult>(url);
                 if (rdata.department?.Count > 0)
                 {
@@ -245,6 +245,47 @@ namespace UserManage.AbpExternalCore.DomainService
         }
 
         /// <summary>
+        /// 获取标签名
+        /// </summary>
+        /// <param name="accessToken"></param>
+        /// <param name="tag_id"></param>
+        /// <returns></returns>
+        private string GetTagName(string accessToken, int tag_id)
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(accessToken))
+                {
+                    //参数	必须	说明
+                    //access_token 是   调用接口凭证
+                    //tagid   是 标签ID
+                    var url = string.Format(Config.ApiWorkHost + "/cgi-bin/tag/get?access_token={0}&tagid={1}",
+                      accessToken, tag_id);
+                    var redata = Get.GetJson<AbpTagUserResult>(url);
+                    if (redata.errcode == "0")
+                    {
+                        if (!string.IsNullOrEmpty(redata.tagname))
+                        {
+                            return redata.tagname;
+                        }
+
+                    }
+                    else
+                    {
+                        Console.WriteLine(redata.errmsg);
+                    }
+                }
+                return "";
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// 获取当前秘钥的token
         /// </summary>
         /// <param name="appId"></param>
@@ -275,12 +316,40 @@ namespace UserManage.AbpExternalCore.DomainService
         }
 
         /// <summary>
+        /// 获取当前秘钥的token
+        /// </summary>
+        /// <param name="appId"></param>
+        /// <param name="secret"></param>
+        /// <returns></returns>
+        private string GetTokenSync(string appId, string secret)
+        {
+            string token_result = "";
+            var token = _cacheManager.GetCache(UserManageConsts.Abp_Wechat_Access_Token_Cache)
+                .Get(appId, () =>
+                        Senparc.Weixin.Work.Containers.AccessTokenContainer.TryGetToken(appId, secret));
+            token_result = token ?? "";
+
+            return token_result;
+        }
+
+        /// <summary>
         /// 获取当前appid与密钥
         /// </summary>
         /// <returns></returns>
         private async Task<AbpExternalAuthenticateConfig> GetCurrentAuth()
         {
             AbpExternalAuthenticateConfig auth_config = await _authenticateConfigManager.GetCurrentAuth(DefaultProviderName);
+            if (auth_config == null) throw new UserFriendlyException("外部链接配置缺失");
+            return auth_config;
+        }
+
+        /// <summary>
+        /// 获取当前appid与密钥
+        /// </summary>
+        /// <returns></returns>
+        private AbpExternalAuthenticateConfig GetCurrentAuthWithoutTenant(int tenant_id)
+        {
+            AbpExternalAuthenticateConfig auth_config = _authenticateConfigManager.GetCurrentAuth(DefaultProviderName, tenant_id);
             if (auth_config == null) throw new UserFriendlyException("外部链接配置缺失");
             return auth_config;
         }
@@ -350,7 +419,7 @@ namespace UserManage.AbpExternalCore.DomainService
         }
 
         /// <summary>
-        /// 根据Dept ID 获取所有Users
+        /// 根据tag ID 获取所有Users
         /// </summary>
         /// <param name="wechat_tag_id"></param>
         /// <returns></returns>
@@ -359,6 +428,18 @@ namespace UserManage.AbpExternalCore.DomainService
             AbpExternalAuthenticateConfig auth_config = await this.GetCurrentAuth();
             string acc_token = await this.GetToken(auth_config.AppId, auth_config.Secret);
             return await GetTagUserList(acc_token, wechat_tag_id);
+        }
+
+        /// <summary>
+        /// 根据Tag ID 获取所有标签名
+        /// </summary>
+        /// <param name="wechat_tag_id"></param>
+        /// <returns></returns>
+        public string GetTagNameById(int wechat_tag_id, int tenant_id)
+        {
+            AbpExternalAuthenticateConfig auth_config = this.GetCurrentAuthWithoutTenant(tenant_id);
+            string acc_token = this.GetTokenSync(auth_config.AppId, auth_config.Secret);
+            return GetTagName(acc_token, wechat_tag_id);
         }
 
         /// <summary>

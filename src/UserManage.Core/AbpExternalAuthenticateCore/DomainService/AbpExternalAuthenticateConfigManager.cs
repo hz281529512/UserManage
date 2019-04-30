@@ -20,6 +20,7 @@ using UserManage;
 using UserManage.AbpExternalAuthenticateCore;
 using Abp.Runtime.Caching;
 using Abp.Runtime.Session;
+using Abp.Domain.Uow;
 
 namespace UserManage.AbpExternalAuthenticateCore.DomainService
 {
@@ -35,17 +36,21 @@ namespace UserManage.AbpExternalAuthenticateCore.DomainService
         private readonly ICacheManager _cacheManager;
 
         public IAbpSession AbpSession { get; set; }
+        //UOW
+        private readonly IUnitOfWorkManager _unitOfWorkManager;
 
         /// <summary>
         /// AbpExternalAuthenticateConfig的构造方法
         ///</summary>
         public AbpExternalAuthenticateConfigManager(
 			IRepository<AbpExternalAuthenticateConfig, int> repository,
-            ICacheManager cacheManager
+            ICacheManager cacheManager,
+            IUnitOfWorkManager unitOfWorkManager
         )
 		{
 			_repository =  repository;
             _cacheManager = cacheManager;
+            _unitOfWorkManager = unitOfWorkManager;
             AbpSession = NullAbpSession.Instance;
         }
 
@@ -78,7 +83,26 @@ namespace UserManage.AbpExternalAuthenticateCore.DomainService
             }
         }
 
+        public AbpExternalAuthenticateConfig GetCurrentAuth(string providerKey, int tenant_id)
+        {
+            string str_tenant = tenant_id.ToString();
 
-
+            using (_unitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
+            {
+                //读取缓存
+                var resultConfig = _cacheManager.GetCache(providerKey).GetOrDefault(str_tenant) as AbpExternalAuthenticateConfig;
+                if (resultConfig == null)
+                {
+                    var auth = _repository.FirstOrDefault(x => x.LoginProvider == providerKey);
+                    if (auth == null) return null;
+                    _cacheManager.GetCache(providerKey).Set(str_tenant, auth, TimeSpan.FromHours(8));
+                    return auth;
+                }
+                else
+                {
+                    return resultConfig;
+                } 
+            }
+        }
     }
 }

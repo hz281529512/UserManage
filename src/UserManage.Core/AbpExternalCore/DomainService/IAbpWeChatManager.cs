@@ -46,6 +46,13 @@ namespace UserManage.AbpExternalCore.DomainService
         /// </summary>
         Task<ICollection<AbpWeChatTag>> GetAllTag();
 
-
+        
+        /// <summary>
+        /// 根据Tag ID 获取所有标签名
+        /// </summary>
+        /// <param name="wechat_tag_id"></param>
+        /// <param name="tenant_id"></param>
+        /// <returns></returns>
+        string GetTagNameById(int wechat_tag_id, int tenant_id);
     }
 }
