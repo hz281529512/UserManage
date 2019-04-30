@@ -143,7 +143,8 @@ namespace UserManage.Web.Host.Startup
             // Enable middleware to serve swagger-ui assets (HTML, JS, CSS etc.)
             app.UseSwaggerUI(options =>
             {
-                options.SwaggerEndpoint(_appConfiguration["App:ServerRootAddress"].EnsureEndsWith('/') + "/swagger/v1/swagger.json", "UserManage API V1");
+                //_appConfiguration["App:ServerRootAddress"].EnsureEndsWith('/') +
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "UserManage API V1");
                 options.IndexStream = () => Assembly.GetExecutingAssembly()
                     .GetManifestResourceStream("UserManage.Web.Host.wwwroot.swagger.ui.index.html");
             }); // URL: /swagger
