@@ -40,6 +40,6 @@ namespace UserManage.SynchronizeCore.DomainService
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
-        void MatchQYTagWithoutTenant(SyncTag wx_dept, int? tenant_id);
+        void MatchQYTagWithoutTenant(SyncTag wx_tag, int? tenant_id);
     }
 }
