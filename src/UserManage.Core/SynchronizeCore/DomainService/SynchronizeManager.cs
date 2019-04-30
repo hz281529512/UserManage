@@ -505,11 +505,15 @@ namespace UserManage.SynchronizeCore.DomainService
                             {
                                 foreach (var item in add_list)
                                 {
-                                    _userRoleRepository.Insert(new UserRole {
-                                        RoleId = role_id,
-                                        TenantId = AbpSession.TenantId,
-                                        UserId = item.UserId
-                                    });
+                                    if (!_userRoleRepository.GetAll().Any(x => x.RoleId == role_id && x.TenantId == tenant_id && x.UserId == item.UserId))
+                                    {
+                                        _userRoleRepository.Insert(new UserRole
+                                        {
+                                            RoleId = role_id,
+                                            TenantId = AbpSession.TenantId,
+                                            UserId = item.UserId
+                                        }); 
+                                    }
                                 }
                                 CurrentUnitOfWork.SaveChanges();
                             }
