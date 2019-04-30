@@ -81,7 +81,7 @@ namespace UserManage.QyCallBack.DomainService
             {
                 case "user":
                     var user=  Deserialize<QyUserBase>(xml);
-                    var userDto = Mapper.Map<AbpQYCallbackUser>(user);
+                    var userDto = Mapper.Map<SyncUser>(user);
                     _synchronizeManager.MatchSingleUserWithoutTenant(userDto, tid);
                     return user;
                 case "party":
@@ -91,6 +91,8 @@ namespace UserManage.QyCallBack.DomainService
                     return party;
                 case "tag":
                     var tag = Deserialize<QyTagBase>(xml);
+                    var tagdto = Mapper.Map<SyncTag>(tag);
+                    _synchronizeManager.MatchQYTagWithoutTenant(tagdto, tid);
                     return tag;
                 default:
                     return null;
