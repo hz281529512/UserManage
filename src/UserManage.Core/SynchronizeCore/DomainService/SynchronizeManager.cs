@@ -86,7 +86,7 @@ namespace UserManage.SynchronizeCore.DomainService
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
-        public void MatchSingleDepartmentWithoutTenant(AbpWeChatDepartment wx_dept, int? tenant_id)
+        public void MatchSingleDepartmentWithoutTenant(SyncDepartment wx_dept, int? tenant_id)
         {
             if (wx_dept != null)
             {
@@ -156,7 +156,7 @@ namespace UserManage.SynchronizeCore.DomainService
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
-        public void MatchSingleDepartment(AbpWeChatDepartment wx_dept, int? tenant_id)
+        public void MatchSingleDepartment(SyncDepartment wx_dept, int? tenant_id)
         {
             if (wx_dept != null)
             {
@@ -323,7 +323,7 @@ namespace UserManage.SynchronizeCore.DomainService
         /// <param name="wx_user"></param>
         /// <param name="tenant_id"></param>
         /// <returns>更新的本地Id</returns>
-        public void MatchSingleUserWithoutTenant(AbpQYCallbackUser wx_user, int? tenant_id)
+        public void MatchSingleUserWithoutTenant(SyncUser wx_user, int? tenant_id)
         {
             if (wx_user != null)
             {
@@ -409,19 +409,27 @@ namespace UserManage.SynchronizeCore.DomainService
 
                                 if (!string.IsNullOrEmpty( wx_user.department ))
                                 {
+
                                     //先删除所有关联信息
                                     _userOrganizationUnitRepository.Delete(x => x.UserId == ul.UserId);
                                     CurrentUnitOfWork.SaveChanges();
+
                                     var department_list = wx_user.department.Split(',');
-                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => department_list.Contains(x.WXDeptId.ToString()));
+
+                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => x.TenantId == tenant_id && department_list.Contains(x.WXDeptId.ToString()));
+                                    
                                     if (local_dept.Any())
                                     {
                                         foreach (var item in local_dept)
                                         {
-                                            _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = ul.UserId, OrganizationUnitId = item.Id });
+                                            if (!_userOrganizationUnitRepository.GetAll().Any(x => x.TenantId == tenant_id && x.UserId == ul.UserId && x.OrganizationUnitId == item.Id ))
+                                            {
+                                                _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = ul.UserId, OrganizationUnitId = item.Id });
+                                            }
+                                            CurrentUnitOfWork.SaveChanges();
                                         }
-                                        CurrentUnitOfWork.SaveChanges();
                                     }
+
                                 }
                             }
                             break;
@@ -432,7 +440,22 @@ namespace UserManage.SynchronizeCore.DomainService
             }
         }
 
-        #endregion  
+        #endregion
+
+
+        #region Synchronize Tag
+
+        /// <summary>
+        /// 同步标签 (无租户验证版本)         
+        /// </summary>
+        /// <param name="wx_dept"></param>
+        /// <returns>更新的本地Id</returns>
+        public void MatchQYTagWithoutTenant(SyncTag wx_dept, int? tenant_id)
+        {
+
+        }
+
+        #endregion
 
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Xml.Serialization;
 using UserManage.AbpExternalCore;
+using UserManage.SynchronizeCore;
 
 namespace UserManage.QyCallBack.Model
 {
@@ -59,7 +60,7 @@ namespace UserManage.QyCallBack.Model
     /// 部门
     /// </summary>
     [XmlRoot("xml")]
-    [AutoMapFrom(typeof(AbpWeChatDepartment))]
+    [AutoMapFrom(typeof(SyncDepartment))]
     public class QyPartyBase : QyMsgBase
     {
         //部门Id

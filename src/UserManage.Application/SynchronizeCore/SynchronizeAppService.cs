@@ -67,7 +67,7 @@ namespace UserManage.SynchronizeCore
 
         public void MatchTest()
         {
-            _testManager.MatchSingleDepartmentWithoutTenant(new AbpWeChatDepartment { changetype = "update_party", id = 166, name = "test", parentid = 10 },1);
+            _testManager.MatchSingleDepartmentWithoutTenant(new SyncDepartment { changetype = "update_party", id = 166, name = "test", parentid = 10 },1);
         }
 
         /// <summary>
