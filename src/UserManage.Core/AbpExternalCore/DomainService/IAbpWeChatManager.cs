@@ -45,5 +45,7 @@ namespace UserManage.AbpExternalCore.DomainService
         /// 获取企业微信所有标签
         /// </summary>
         Task<ICollection<AbpWeChatTag>> GetAllTag();
+
+
     }
 }

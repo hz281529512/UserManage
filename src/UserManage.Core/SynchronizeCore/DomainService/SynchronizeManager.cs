@@ -411,25 +411,27 @@ namespace UserManage.SynchronizeCore.DomainService
                                 {
 
                                     //先删除所有关联信息
-                                    _userOrganizationUnitRepository.Delete(x => x.UserId == ul.UserId);
+                                    //_userOrganizationUnitRepository.Delete(x => x.UserId == ul.UserId);
+                                    //CurrentUnitOfWork.SaveChanges();
+
+                                    //var department_list = wx_user.department.Split(',');
+
+                                    var wx_dept = wx_user.department.Split(',').ToList();
+                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => x.TenantId == tenant_id && wx_dept.Contains(x.WXDeptId.ToString())).ToList();
+                                    var local_user_dept = _userOrganizationUnitRepository.GetAll().Where(x => x.TenantId == tenant_id && x.UserId == ul.UserId);
+
+                                    //先删除 微信没有的
+                                    _userOrganizationUnitRepository.Delete(x => !local_dept.Any(d => x.OrganizationUnitId == d.Id));
                                     CurrentUnitOfWork.SaveChanges();
 
-                                    var department_list = wx_user.department.Split(',');
-
-                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => x.TenantId == tenant_id && department_list.Contains(x.WXDeptId.ToString()));
-                                    
-                                    if (local_dept.Any())
+                                    //再添加 本地没有的
+                                    foreach (var item in local_dept)
                                     {
-                                        foreach (var item in local_dept)
+                                        if (!local_user_dept.Any(x => x.OrganizationUnitId == item.Id))
                                         {
-                                            if (!_userOrganizationUnitRepository.GetAll().Any(x => x.TenantId == tenant_id && x.UserId == ul.UserId && x.OrganizationUnitId == item.Id ))
-                                            {
-                                                _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = ul.UserId, OrganizationUnitId = item.Id });
-                                            }
-                                            CurrentUnitOfWork.SaveChanges();
+                                            _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = ul.UserId, OrganizationUnitId = item.Id });
                                         }
-                                    }
-
+                                    }                                    
                                 }
                             }
                             break;
@@ -452,7 +454,13 @@ namespace UserManage.SynchronizeCore.DomainService
         /// <returns>更新的本地Id</returns>
         public void MatchQYTagWithoutTenant(SyncTag wx_dept, int? tenant_id)
         {
+            if (wx_dept != null)
+            {
+                using (_unitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
+                {
 
+                }
+            }
         }
 
         #endregion
