@@ -86,7 +86,7 @@ namespace UserManage.SynchronizeCore.DomainService
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
-        public void MatchSingleDepartmentWithoutTenant(AbpWeChatDepartment wx_dept, int? tenant_id)
+        public void MatchSingleDepartmentWithoutTenant(SyncDepartment wx_dept, int? tenant_id)
         {
             if (wx_dept != null)
             {
@@ -156,7 +156,7 @@ namespace UserManage.SynchronizeCore.DomainService
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
-        public void MatchSingleDepartment(AbpWeChatDepartment wx_dept, int? tenant_id)
+        public void MatchSingleDepartment(SyncDepartment wx_dept, int? tenant_id)
         {
             if (wx_dept != null)
             {
@@ -323,7 +323,7 @@ namespace UserManage.SynchronizeCore.DomainService
         /// <param name="wx_user"></param>
         /// <param name="tenant_id"></param>
         /// <returns>更新的本地Id</returns>
-        public void MatchSingleUserWithoutTenant(AbpQYCallbackUser wx_user, int? tenant_id)
+        public void MatchSingleUserWithoutTenant(SyncUser wx_user, int? tenant_id)
         {
             if (wx_user != null)
             {
@@ -440,7 +440,22 @@ namespace UserManage.SynchronizeCore.DomainService
             }
         }
 
-        #endregion  
+        #endregion
+
+
+        #region Synchronize Tag
+
+        /// <summary>
+        /// 同步标签 (无租户验证版本)         
+        /// </summary>
+        /// <param name="wx_dept"></param>
+        /// <returns>更新的本地Id</returns>
+        public void MatchQYTagWithoutTenant(SyncTag wx_dept, int? tenant_id)
+        {
+
+        }
+
+        #endregion
 
     }
 }

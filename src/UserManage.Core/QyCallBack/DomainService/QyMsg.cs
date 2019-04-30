@@ -15,6 +15,7 @@ using Tencent;
 using UserManage.AbpExternalCore;
 using UserManage.Configuration;
 using UserManage.QyCallBack.Model;
+using UserManage.SynchronizeCore;
 using UserManage.SynchronizeCore.DomainService;
 
 namespace UserManage.QyCallBack.DomainService
@@ -85,7 +86,7 @@ namespace UserManage.QyCallBack.DomainService
                     return user;
                 case "party":
                     var party = Deserialize<QyPartyBase>(xml);
-                    var dept = Mapper.Map<AbpWeChatDepartment>(party);
+                    var dept = Mapper.Map<SyncDepartment>(party);
                      _synchronizeManager.MatchSingleDepartmentWithoutTenant(dept,tid);
                     return party;
                 case "tag":

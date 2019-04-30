@@ -17,7 +17,7 @@ namespace UserManage.SynchronizeCore.DomainService
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <returns>更新的本地Id</returns>
-        void MatchSingleDepartment(AbpWeChatDepartment wx_dept, int? tenant_id);
+        void MatchSingleDepartment(SyncDepartment wx_dept, int? tenant_id);
 
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace UserManage.SynchronizeCore.DomainService
         /// </summary>
         /// <param name="wx_dept"></param>
         /// <param name="tenant_id"></param>
-        void MatchSingleDepartmentWithoutTenant(AbpWeChatDepartment wx_dept, int? tenant_id);
+        void MatchSingleDepartmentWithoutTenant(SyncDepartment wx_dept, int? tenant_id);
 
         /// <summary>
         /// 同步单个用户(无租户验证版本)
@@ -33,6 +33,13 @@ namespace UserManage.SynchronizeCore.DomainService
         /// <param name="wx_user"></param>
         /// <param name="tenant_id"></param>
         /// <returns>更新的本地Id</returns>
-        void MatchSingleUserWithoutTenant(AbpQYCallbackUser wx_user, int? tenant_id);
+        void MatchSingleUserWithoutTenant(SyncUser wx_user, int? tenant_id);
+
+        /// <summary>
+        /// 同步标签 (无租户验证版本)         
+        /// </summary>
+        /// <param name="wx_dept"></param>
+        /// <returns>更新的本地Id</returns>
+        void MatchQYTagWithoutTenant(SyncTag wx_dept, int? tenant_id);
     }
 }
