@@ -9,8 +9,10 @@ using Abp.Domain.Services;
 using Abp.IdentityFramework;
 using Abp.Runtime.Session;
 using Abp.UI;
+using UserManage.AbpCompanyCore;
 using UserManage.Authorization.Roles;
 using UserManage.MultiTenancy;
+using UserManage.AbpCompanyCore.DomainService;
 
 namespace UserManage.Authorization.Users
 {
@@ -22,31 +24,33 @@ namespace UserManage.Authorization.Users
         private readonly UserManager _userManager;
         private readonly RoleManager _roleManager;
         private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly IAbpCompanyManager _companyManager;
 
         public UserRegistrationManager(
             TenantManager tenantManager,
             UserManager userManager,
             RoleManager roleManager,
-            IPasswordHasher<User> passwordHasher)
+            IPasswordHasher<User> passwordHasher, IAbpCompanyManager companyManager)
         {
             _tenantManager = tenantManager;
             _userManager = userManager;
             _roleManager = roleManager;
             _passwordHasher = passwordHasher;
+            _companyManager = companyManager;
 
             AbpSession = NullAbpSession.Instance;
         }
 
-        public async Task<User> RegisterAsync(string name, string phone, string emailAddress, string userName, string plainPassword, bool isEmailConfirmed)
+        public async Task<User> RegisterAsync(string name, string phone, string emailAddress, string userName, string plainPassword, bool isEmailConfirmed, AbpCompany companyinput = null)
         {
 
             try
             {
 
-         
+            
             CheckForTenant();
-
-            var tenant = await GetActiveTenantAsync();
+                var company = await _companyManager.CreateAsync(companyinput);
+                var tenant = await GetActiveTenantAsync();
 
             var user = new User
             {
@@ -58,6 +62,7 @@ namespace UserManage.Authorization.Users
                 IsActive = true,
                 UserName = userName,
                 IsEmailConfirmed = isEmailConfirmed,
+                CompanyId = company?.Id.ToString(),
                 Roles = new List<UserRole>()
             };
 

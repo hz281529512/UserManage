@@ -8,6 +8,7 @@ using IdentityServer4.Stores;
 using UserManage.AbpExternalAuthenticateCore;
 using UserManage.AbpOrganizationUnitCore;
 using UserManage.AbpTagCore;
+using UserManage.AbpCompanyCore;
 
 namespace UserManage.EntityFrameworkCore
 {
@@ -43,7 +44,15 @@ namespace UserManage.EntityFrameworkCore
         /// </summary>
         public DbSet<AbpUserTag> AbpUserTag { get; set; }
 
-        #endregion  
+        #endregion
+
+        #region 公司表
+        /// <summary>
+        /// 公司表
+        /// </summary>
+        public DbSet<AbpCompany> AbpCompany { get; set; }
+
+        #endregion
 
         public UserManageDbContext(DbContextOptions<UserManageDbContext> options)
             : base(options)
