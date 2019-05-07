@@ -473,9 +473,9 @@ namespace UserManage.SynchronizeCore.DomainService
                             {
                                 WxTagId = wx_tag.TagId,
                                 IsDefault = false,
-                                NormalizedName = tag_name,
-                                DisplayName = "WX" + tag_name,
-                                Name = tag_name,
+                                NormalizedName = "WX_" + tag_name,
+                                DisplayName = "WX_" + tag_name,
+                                Name = "WX_" + tag_name,
                                 TenantId = tenant_id
                             };
                             role_id = _roleRepository.InsertAndGetId(local_role);

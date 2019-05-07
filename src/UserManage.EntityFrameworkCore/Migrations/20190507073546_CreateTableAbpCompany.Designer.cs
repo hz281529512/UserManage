@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UserManage.EntityFrameworkCore;
 
 namespace UserManage.Migrations
 {
     [DbContext(typeof(UserManageDbContext))]
-    partial class UserManageDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190507073546_CreateTableAbpCompany")]
+    partial class CreateTableAbpCompany
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -953,45 +955,6 @@ namespace UserManage.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AbpCompany");
-                });
-
-            modelBuilder.Entity("UserManage.AbpDataDictCore.AbpDataDict", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreationTime");
-
-                    b.Property<long?>("CreatorUserId");
-
-                    b.Property<long?>("DeleterUserId");
-
-                    b.Property<DateTime?>("DeletionTime");
-
-                    b.Property<string>("Describe");
-
-                    b.Property<bool>("IsDeleted");
-
-                    b.Property<string>("ItemCode");
-
-                    b.Property<string>("ItemName");
-
-                    b.Property<int?>("ItemParent");
-
-                    b.Property<int?>("ItemSort");
-
-                    b.Property<string>("ItemType");
-
-                    b.Property<DateTime?>("LastModificationTime");
-
-                    b.Property<long?>("LastModifierUserId");
-
-                    b.Property<int?>("TenantId");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AbpDataDict");
                 });
 
             modelBuilder.Entity("UserManage.AbpExternalAuthenticateCore.AbpExternalAuthenticateConfig", b =>

@@ -26,7 +26,7 @@ namespace UserManage.SynchronizeCore
         private readonly IAbpWeChatManager _weChatManager;
 
         private readonly DomainService.ISynchronizeManager _testManager;
-        
+
 
         //组织
         private readonly IRepository<AbpOrganizationUnitExtend, long> _organizationUnitRepository;
@@ -67,7 +67,7 @@ namespace UserManage.SynchronizeCore
 
         public void MatchTest()
         {
-            _testManager.MatchSingleDepartmentWithoutTenant(new SyncDepartment { changetype = "update_party", id = 166, name = "test", parentid = 10 },1);
+            _testManager.MatchSingleDepartmentWithoutTenant(new SyncDepartment { changetype = "update_party", id = 166, name = "test", parentid = 10 }, 1);
         }
 
         /// <summary>
@@ -169,12 +169,13 @@ namespace UserManage.SynchronizeCore
         public async Task<MatchResultDto> MatchDepartmentUsers()
         {
             MatchResultDto result = new MatchResultDto { CreateCount = 0, DeleteCount = 0, MatchCount = 0 };
+            string str_login_provider = "Wechat";
             var relations = await _weChatManager.GetAllUsersDeptRelation();
             if (relations != null)
             {
                 var current_tenantid = this.AbpSession.TenantId;
                 var query_list = (from ul in _userLoginRepository.GetAll()
-                                  join r in relations.AsQueryable() on new { key = ul.ProviderKey, type = ul.LoginProvider } equals new { key = r.Item1, type = "Wechat" }
+                                  join r in relations.AsQueryable() on new { key = ul.ProviderKey, type = ul.LoginProvider } equals new { key = r.Item1, type = str_login_provider }
                                   join d in _organizationUnitRepository.GetAll() on r.Item2 equals d.WXDeptId
                                   select new UserOrganizationUnit
                                   {
@@ -384,7 +385,7 @@ namespace UserManage.SynchronizeCore
                                     EmailAddress = item.wx_email,
                                     Name = item.wx_name,
                                     PhoneNumber = item.wx_mobile,
-                                     Avatar = item.wx_avatar,
+                                    Avatar = item.wx_avatar,
                                     IsActive = true,
                                     Position = item.wx_position,
                                     Sex = item.wx_gender == "1" ? true : false,
@@ -471,7 +472,7 @@ namespace UserManage.SynchronizeCore
                               select new AbpWxTagRoleDto
                               {
                                   RoleId = 0,
-                                  RoleName = "WX" + t.tagname,
+                                  RoleName = "WX_" + t.tagname,
                                   TagName = t.tagname,
                                   WechatTagId = t.tagid
                               };
@@ -506,14 +507,14 @@ namespace UserManage.SynchronizeCore
                     foreach (var item in local_tags)
                     {
                         if (item.RoleId != 0)
-                        {                            
+                        {
                             var entity = await RoleManager.GetRoleByIdAsync(item.RoleId.Value);
                             //判断是否拥有企业微信记录,否则删除本地记录
                             if (item.WechatTagId != 0)
                             {
                                 entity.NormalizedName = item.TagName;
                                 entity.DisplayName = item.RoleName;
-                                entity.Name = item.TagName;//item.RoleName;
+                                entity.Name = item.RoleName;
                                 entity.WxTagId = item.WechatTagId;
                                 await RoleManager.UpdateAsync(entity);
                                 result.MatchCount++;
@@ -532,7 +533,7 @@ namespace UserManage.SynchronizeCore
                                 IsDefault = false,
                                 NormalizedName = item.TagName,
                                 DisplayName = item.RoleName,
-                                Name = item.TagName,//item.RoleName,
+                                Name = item.RoleName,
                                 TenantId = current_tenantid
                             });
                             result.CreateCount++;
@@ -601,10 +602,10 @@ namespace UserManage.SynchronizeCore
 
         private List<AbpWxTagUserDto> GetWechatTagUser(ICollection<AbpWeChatUser> qy_tag_user, int? role_id, int? tenant_id)
         {
-
+            string str_login_provider = "Wechat";
             var left_query = from ur in _userRoleRepository.GetAll()
                              join ul in _userLoginRepository.GetAll() on
-                                        new { uid = ur.UserId, type = "Wechat" } equals
+                                        new { uid = ur.UserId, type = str_login_provider } equals
                                         new { uid = ul.UserId, type = ul.LoginProvider } into ulo
                              from ul in ulo.DefaultIfEmpty()
                              join tu in qy_tag_user.AsQueryable() on ul.ProviderKey equals tu.userid into tuo
@@ -622,7 +623,7 @@ namespace UserManage.SynchronizeCore
             var right_query = from tu in qy_tag_user.AsQueryable()
                                   //where !_roleRepository.GetAll().Any(r => r.TagId == t.tagid && r.DisplayName == "WX_" + t.tagname && r.TenantId == AbpSession.TenantId)
                               where !_userRoleRepository.GetAll().Any(ur => ur.RoleId == role_id && _userLoginRepository.GetAll().Any(ul =>
-                                                                                                                                           ul.LoginProvider == "Wechat" &&
+                                                                                                                                           ul.LoginProvider == str_login_provider &&
                                                                                                                                            ul.UserId == ur.UserId &&
                                                                                                                                            ul.ProviderKey == tu.userid
                                                                                                                                         ))

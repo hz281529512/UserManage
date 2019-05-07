@@ -29,17 +29,17 @@ namespace UserManage.AbpCompanyCore
     public interface IAbpCompanyAppService : IApplicationService
     {
         /// <summary>
-		/// 获取AbpCompany的分页列表信息
-		///</summary>
+        /// 获取AbpCompany的分页列表信息
+        ///</summary>
         /// <param name="input"></param>
         /// <returns></returns>
         Task<PagedResultDto<AbpCompanyListDto>> GetPaged(GetAbpCompanysInput input);
 
 
-		/// <summary>
-		/// 通过指定id获取AbpCompanyListDto信息
-		/// </summary>
-		Task<AbpCompanyListDto> GetById(EntityDto<Guid> input);
+        /// <summary>
+        /// 通过指定id获取AbpCompanyListDto信息
+        /// </summary>
+        Task<AbpCompanyListDto> GetById(EntityDto<Guid> input);
 
 
         /// <summary>
@@ -49,13 +49,13 @@ namespace UserManage.AbpCompanyCore
         /// <returns></returns>
         Task<GetAbpCompanyForEditOutput> GetForEdit(NullableIdDto<Guid> input);
 
-
+        Task<AbpCompanyListDto> GetCompanyUser();
         /// <summary>
         /// 添加或者修改AbpCompany的公共方法
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        Task CreateOrUpdate(CreateOrUpdateAbpCompanyInput input);
+        Task<AbpCompanyEditDto> CreateOrUpdate(CreateOrUpdateAbpCompanyInput input);
 
 
         /// <summary>
@@ -70,13 +70,6 @@ namespace UserManage.AbpCompanyCore
         /// 批量删除AbpCompany
         /// </summary>
         Task BatchDelete(List<Guid> input);
-
-
-		/// <summary>
-        /// 导出AbpCompany为excel表
-        /// </summary>
-        /// <returns></returns>
-		//Task<FileDto> GetToExcel();
 
     }
 }

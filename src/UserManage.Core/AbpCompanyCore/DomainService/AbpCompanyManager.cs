@@ -40,6 +40,7 @@ namespace UserManage.AbpCompanyCore.DomainService
 			_repository =  repository;
 		}
 
+        // TODO:编写领域业务代码
 
         public async Task<AbpCompany> FindByIdAsync(string id)
         {
@@ -68,7 +69,6 @@ namespace UserManage.AbpCompanyCore.DomainService
                 return data;
             }
         }
-
 
 
 

@@ -33,17 +33,14 @@ namespace UserManage.AbpCompanyCore
         public string CompanyMail { get; set; }
         /// <summary>
         /// 法人
-        /// </summary>abpcompany
+        /// </summary>
         public string LegalPerson { get; set; }
         /// <summary>
         /// 法人电话
         /// </summary>
         public string LegalPersonTel { get; set; }
 
-        public string Code { get; set; } = Guid.NewGuid().ToString().Replace("-", "").ToUpper().Substring(0, 12);
-
-
-
+        public string Code { get; set; }
 
     }
 }

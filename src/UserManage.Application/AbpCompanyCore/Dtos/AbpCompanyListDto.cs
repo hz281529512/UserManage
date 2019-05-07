@@ -8,72 +8,42 @@ using UserManage.AbpCompanyCore;
 
 namespace UserManage.AbpCompanyCore.Dtos
 {
-    public class AbpCompanyListDto : FullAuditedEntityDto<Guid> 
+    public class AbpCompanyListDto : EntityDto<Guid> 
     {
 
-        
-		/// <summary>
-		/// CompanyNo
-		/// </summary>
-		public string CompanyNo { get; set; }
 
-
-
-		/// <summary>
-		/// CompanyName
-		/// </summary>
-		public string CompanyName { get; set; }
-
-
-
-		/// <summary>
-		/// CompanyType
-		/// </summary>
-		public string CompanyType { get; set; }
-
-
-
-		/// <summary>
-		/// CompanyTel
-		/// </summary>
-		public string CompanyTel { get; set; }
-
-
-
-		/// <summary>
-		/// CompanyAddress
-		/// </summary>
-		public string CompanyAddress { get; set; }
-
-
-
-		/// <summary>
-		/// CompanyMail
-		/// </summary>
-		public string CompanyMail { get; set; }
-
-
-
-		/// <summary>
-		/// LegalPerson
-		/// </summary>
-		public string LegalPerson { get; set; }
-
-
-
-		/// <summary>
-		/// LegalPersonTel
-		/// </summary>
-		public string LegalPersonTel { get; set; }
-
-
-
-		/// <summary>
-		/// Code
-		/// </summary>
-		public string Code { get; set; }
-
-
+        /// <summary>
+        /// 信用机构代码
+        /// </summary>
+        public string CompanyNo { get; set; }
+        /// <summary>
+        /// 公司名称
+        /// </summary>
+        public string CompanyName { get; set; }
+        /// <summary>
+        /// 公司类型
+        /// </summary>
+        public string CompanyType { get; set; }
+        /// <summary>
+        /// 联系电话
+        /// </summary>
+        public string CompanyTel { get; set; }
+        /// <summary>
+        /// 地址
+        /// </summary>
+        public string CompanyAddress { get; set; }
+        /// <summary>
+        /// 邮箱
+        /// </summary>
+        public string CompanyMail { get; set; }
+        /// <summary>
+        /// 法人
+        /// </summary>
+        public string LegalPerson { get; set; }
+        /// <summary>
+        /// 法人电话
+        /// </summary>
+        public string LegalPersonTel { get; set; }
 
 
     }
