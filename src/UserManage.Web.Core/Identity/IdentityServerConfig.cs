@@ -48,6 +48,7 @@ namespace UserManage.Identity
                     },
                     AllowedGrantTypes ={ "custom" },
                     AccessTokenType = AccessTokenType.Jwt,
+                    AccessTokenLifetime=3600*24*7,
                     AlwaysSendClientClaims = true
                 },
                 new Client
@@ -65,6 +66,7 @@ namespace UserManage.Identity
                     },
                     AllowedGrantTypes =GrantTypes.ResourceOwnerPassword,
                     AccessTokenType = AccessTokenType.Jwt,
+                    AccessTokenLifetime=3600*24*7,
                     AlwaysSendClientClaims = true
                 },
 
