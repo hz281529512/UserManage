@@ -12,6 +12,8 @@
 
         public const string Abp_Wechat_Access_Token_Cache = "Abp_Wechat_Access_Token_Cache";
 
+        public const string Abp_Data_Dict_Cache = "Abp_Data_Dict_Cache";
+
         #endregion  
 
     }

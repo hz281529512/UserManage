@@ -21,7 +21,7 @@ namespace UserManage.Tests.Users
         public async Task GetUsers_Test()
         {
             // Act
-            var output = await _userAppService.GetAll(new PagedUserResultRequestDto{MaxResultCount=20, SkipCount=0} );
+            var output = await _userAppService.GetAll(new GetUsersInput { MaxResultCount=20, SkipCount=0} );
 
             // Assert
             output.Items.Count.ShouldBeGreaterThan(0);

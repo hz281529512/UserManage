@@ -21,11 +21,14 @@ using UserManage.Roles.Dto;
 using UserManage.Users.Dto;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using UserManage.AbpCompanyCore;
+using System;
+using System.Linq.Dynamic.Core;
 
 namespace UserManage.Users
 {
     [AbpAuthorize(PermissionNames.Pages_Users)]
-    public class UserAppService : AsyncCrudAppService<User, UserDto, long, PagedUserResultRequestDto, CreateUserDto, UserDto>, IUserAppService
+    public class UserAppService : AsyncCrudAppService<User, UserDto, long, GetUsersInput, CreateUserDto, UserDto>, IUserAppService
     {
         private readonly UserManager _userManager;
         private readonly RoleManager _roleManager;
@@ -33,6 +36,7 @@ namespace UserManage.Users
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IAbpSession _abpSession;
         private readonly LogInManager _logInManager;
+        private readonly IRepository<AbpCompany, Guid> _companyRepository;
 
         public UserAppService(
             IRepository<User, long> repository,
@@ -41,7 +45,8 @@ namespace UserManage.Users
             IRepository<Role> roleRepository,
             IPasswordHasher<User> passwordHasher,
             IAbpSession abpSession,
-            LogInManager logInManager)
+            LogInManager logInManager,
+            IRepository<AbpCompany, Guid> companyRepository)
             : base(repository)
         {
             _userManager = userManager;
@@ -50,6 +55,38 @@ namespace UserManage.Users
             _passwordHasher = passwordHasher;
             _abpSession = abpSession;
             _logInManager = logInManager;
+            _companyRepository = companyRepository;
+        }
+
+        public async Task<PagedResultDto<UserListDto>> GetPaged(GetUserInput input)
+        {
+
+            var query = from u in Repository.GetAllIncluding(x => x.Roles)
+                        join c in _companyRepository.GetAll() on u.CompanyId equals c.Id.ToString()
+                        select new { u, c };
+
+            // TODO:根据传入的参数添加过滤条件
+
+            if (!string.IsNullOrEmpty(input.Filter))
+            {
+                query = query.Where(input.Filter);
+            }
+            var count = await query.CountAsync();
+
+            var entityList = await query
+                .OrderBy(input.Sorting).AsNoTracking()
+                .PageBy(input)
+                .ToListAsync();
+
+            return new PagedResultDto<UserListDto>(count, entityList.Select(item =>
+            {
+                var roles = _roleManager.Roles.Where(r => item.u.Roles.Any(ur => ur.RoleId == r.Id)).Select(r => r.NormalizedName);
+                var dto = ObjectMapper.Map<UserListDto>(item.u);
+                dto.RoleNames = roles.ToArray();
+                dto.AbpCompany = item.c;
+                return dto;
+            }).ToList());
+
         }
 
         public override async Task<UserDto> Create(CreateUserDto input)
@@ -135,11 +172,14 @@ namespace UserManage.Users
             return userDto;
         }
 
-        protected override IQueryable<User> CreateFilteredQuery(PagedUserResultRequestDto input)
+        protected override IQueryable<User> CreateFilteredQuery(GetUsersInput input)
         {
-            return Repository.GetAllIncluding(x => x.Roles)
-                .WhereIf(!input.Keyword.IsNullOrWhiteSpace(), x => x.UserName.Contains(input.Keyword) || x.Name.Contains(input.Keyword) || x.EmailAddress.Contains(input.Keyword))
-                .WhereIf(input.IsActive.HasValue, x => x.IsActive == input.IsActive);
+            var query = Repository.GetAllIncluding(x => x.Roles);
+            if (!string.IsNullOrEmpty(input.Where))
+            {
+                return query.Where(input.Where);
+            }
+            return query;
         }
 
         protected override async Task<User> GetEntityByIdAsync(long id)
@@ -154,7 +194,7 @@ namespace UserManage.Users
             return user;
         }
 
-        protected override IQueryable<User> ApplySorting(IQueryable<User> query, PagedUserResultRequestDto input)
+        protected override IQueryable<User> ApplySorting(IQueryable<User> query, GetUsersInput input)
         {
             return query.OrderBy(r => r.UserName);
         }
@@ -219,6 +259,94 @@ namespace UserManage.Users
             return true;
         }
 
+
+        /// <summary>
+        /// 根据用户名 ||用户ID && 公司名称  绑定公司ID
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public async Task SetCompanyName(UserCompanyInputDto input)
+        {
+            User entity = null;
+            long userid = input.UserId ?? 0;
+            if (userid != 0)
+            {
+
+                entity = await _userManager.GetUserByIdAsync(input.UserId.Value);
+            }
+            else if (!string.IsNullOrEmpty(input.UserName)) { entity = await _userManager.FindByNameAsync(input.UserName); }
+
+            if (entity == null) throw new EntityNotFoundException(typeof(User), input.UserId);
+            if (!string.IsNullOrEmpty(entity.CompanyId)) throw new Abp.UI.UserFriendlyException("该用户已绑定公司!");
+
+            var company_entity = await _companyRepository.GetAll().FirstOrDefaultAsync(x => x.CompanyName == input.CompanyName);
+            if (company_entity == null)
+            {
+                throw new Abp.UI.UserFriendlyException("公司名无效!");
+            }
+            entity.CompanyId = company_entity.Id.ToString();
+            CheckErrors(await _userManager.UpdateAsync(entity));
+        }
+
+        /// <summary>
+        /// 分页查询用户（不含公司内容）
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public async Task<PagedResultDto<UserListDto>> GetPagedWithoutCompany(GetUserInput input)
+        {
+            var query = from u in Repository.GetAllIncluding(x => x.Roles) select new { u };
+            if (!string.IsNullOrEmpty(input.Filter))
+            {
+                query = query.Where(input.Filter);
+            }
+            var count = await query.CountAsync();
+
+            var entityList = await query
+                .OrderBy(input.Sorting).AsNoTracking()
+                .PageBy(input)
+                .ToListAsync();
+
+            return new PagedResultDto<UserListDto>(count, entityList.Select(item =>
+            {
+                var roles = _roleManager.Roles.Where(r => item.u.Roles.Any(ur => ur.RoleId == r.Id)).Select(r => r.NormalizedName);
+                var dto = ObjectMapper.Map<UserListDto>(item.u);
+                dto.RoleNames = roles.ToArray();
+                return dto;
+            }).ToList());
+        }
+
+        /// <summary>
+        /// 根据角色id查询用户列表
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public async Task<ListResultDto<UserListDto>> GetUserListByRole(GetUserRoleInput input)
+        {
+            var query = from u in Repository.GetAllIncluding(x => x.Roles) select new { u };
+
+            if (input.RoleId.HasValue)
+            {
+                query = query.Where(x => x.u.Roles.Any(r => r.RoleId == input.RoleId));
+            }
+
+            if (!string.IsNullOrEmpty(input.Filter))
+            {
+                query = query.Where(input.Filter);
+            }
+
+            var entityList = await query
+                .OrderBy(input.Sorting).AsNoTracking()
+                .ToListAsync();
+
+            return new ListResultDto<UserListDto>(entityList.Select(item =>
+            {
+                var roles = _roleManager.Roles.Where(r => item.u.Roles.Any(ur => ur.RoleId == r.Id)).Select(r => r.NormalizedName);
+                var dto = ObjectMapper.Map<UserListDto>(item.u);
+                dto.RoleNames = roles.ToArray();
+                return dto;
+            }).ToList());
+        }
     }
 }
 

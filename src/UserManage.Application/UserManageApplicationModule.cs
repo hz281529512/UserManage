@@ -2,6 +2,8 @@
 using Abp.Modules;
 using Abp.Reflection.Extensions;
 using UserManage.Authorization;
+using UserManage.AbpCompanyCore.Mapper;
+using UserManage.AbpDataDictCore.Mapper;
 
 namespace UserManage
 {
@@ -13,6 +15,11 @@ namespace UserManage
         public override void PreInitialize()
         {
             Configuration.Authorization.Providers.Add<UserManageAuthorizationProvider>();
+
+            //AutoMapper
+            Configuration.Modules.AbpAutoMapper().Configurators.Add(AbpCompanyMapper.CreateMappings);
+            Configuration.Modules.AbpAutoMapper().Configurators.Add(AbpDataDictMapper.CreateMappings);
+            
         }
 
         public override void Initialize()
