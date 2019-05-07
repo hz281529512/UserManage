@@ -513,7 +513,7 @@ namespace UserManage.SynchronizeCore
                             {
                                 entity.NormalizedName = item.TagName;
                                 entity.DisplayName = item.RoleName;
-                                entity.Name = item.TagName;//item.RoleName;
+                                entity.Name = item.RoleName;
                                 entity.WxTagId = item.WechatTagId;
                                 await RoleManager.UpdateAsync(entity);
                                 result.MatchCount++;
@@ -532,7 +532,7 @@ namespace UserManage.SynchronizeCore
                                 IsDefault = false,
                                 NormalizedName = item.TagName,
                                 DisplayName = item.RoleName,
-                                Name = item.TagName,//item.RoleName,
+                                Name = item.RoleName,
                                 TenantId = current_tenantid
                             });
                             result.CreateCount++;
