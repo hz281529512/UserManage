@@ -26,7 +26,7 @@ namespace UserManage.QyCallBack.Model
     /// 用户
     /// </summary>
     [XmlRoot("xml")]
-    [AutoMapFrom(typeof(AbpQYCallbackUser))]
+    [AutoMapFrom(typeof(SyncUser))]
     public class QyUserBase : QyMsgBase
     {
         //成员UserID
@@ -74,6 +74,7 @@ namespace UserManage.QyCallBack.Model
     }
 
     [XmlRoot("xml")]
+    [AutoMapFrom(typeof(SyncTag))]
     public class QyTagBase : QyMsgBase
     {
         //标签Id

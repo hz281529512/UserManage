@@ -91,6 +91,8 @@ namespace UserManage.QyCallBack.DomainService
                     return party;
                 case "tag":
                     var tag = Deserialize<QyTagBase>(xml);
+                    var tagdto = Mapper.Map<SyncTag>(tag);
+                    _synchronizeManager.MatchQYTagWithoutTenant(tagdto, tid);
                     return tag;
                 default:
                     return null;
