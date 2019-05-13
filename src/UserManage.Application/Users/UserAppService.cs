@@ -62,7 +62,8 @@ namespace UserManage.Users
         {
 
             var query = from u in Repository.GetAllIncluding(x => x.Roles)
-                        join c in _companyRepository.GetAll() on u.CompanyId equals c.Id.ToString()
+                        join c in _companyRepository.GetAll() on u.CompanyId equals c.Id.ToString() into co
+                        from c in co.DefaultIfEmpty()
                         select new { u, c };
 
             // TODO:根据传入的参数添加过滤条件
