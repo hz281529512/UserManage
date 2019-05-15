@@ -9,17 +9,23 @@ using Abp.Authorization;
 using Abp.Authorization.Users;
 using Abp.MultiTenancy;
 using Abp.Runtime.Session;
+using AutoMapper;
 using IdentityServer4.Models;
 using IdentityServer4.Validation;
+using Newtonsoft.Json;
+using UserManage.AbpCompanyCore.DomainService;
 using UserManage.Authorization;
 using UserManage.Authorization.Users;
 using UserManage.MultiTenancy;
+using UserManage.Sessions.Dto;
 
 namespace UserManage.Validator
 {
     public class ResourceOwnerPasswordValidator : IResourceOwnerPasswordValidator
     {
         public IAbpSession AbpSession { get; set; }
+        public UserManager UserManager { get; set; }
+        public AbpCompanyManager CompanyManager { get; set; }
         private readonly LogInManager _logInManager;
         private readonly ITenantCache _tenantCache;
         private readonly AbpLoginResultTypeHelper _abpLoginResultTypeHelper;
@@ -49,7 +55,7 @@ namespace UserManage.Validator
                 context.Result = new GrantValidationResult(
                     subject: loginResult.Identity.Claims.First(c=>c.Type== JwtRegisteredClaimNames.Sub).Value,
                     authenticationMethod: "passwrod",
-                    claims: CreateJwtClaims(loginResult.Identity)
+                    claims: await CreateJwtClaims(loginResult)
                     );
             }
             catch (Exception e)
@@ -61,7 +67,7 @@ namespace UserManage.Validator
         private async Task<AbpLoginResult<Tenant, User>> GetLoginResultAsync(string usernameOrEmailAddress, string password, string tenancyName)
         {
             var loginResult = await _logInManager.LoginAsync(usernameOrEmailAddress, password, tenancyName);
-
+            
             switch (loginResult.Result)
             {
                 case AbpLoginResultType.Success:
@@ -82,16 +88,27 @@ namespace UserManage.Validator
         }
 
 
-        private static List<Claim> CreateJwtClaims(ClaimsIdentity identity)
+        private async Task<List<Claim>> CreateJwtClaims(AbpLoginResult<Tenant, User> loginResult)
         {
-            var claims = identity.Claims.ToList();
-            var nameIdClaim = claims.First(c => c.Type == JwtRegisteredClaimNames.Sub);
 
-            // Specifically add the jti (random nonce), iat (issued timestamp), and sub (subject/user) claims.
-            claims.AddRange(new[]
+           
+            var claims = loginResult.Identity.Claims.ToList();
+            var nameIdClaim = claims.First(c => c.Type == JwtRegisteredClaimNames.Sub);
+             string userModel= JsonConvert.SerializeObject(Mapper.Map<UserLoginInfoDto>(loginResult.User));
+            var org= await UserManager.GetOrganizationUnitsAsync(loginResult.User);
+            string orgModel= JsonConvert.SerializeObject(Mapper.Map<List<OrgLoginInfo>>(org));
+            var company=await CompanyManager.FindByIdAsync(loginResult.User.CompanyId);
+            string companyModel = JsonConvert.SerializeObject(Mapper.Map<CompanyLoginInfo>(company));
+           // Specifically add the jti (random nonce), iat (issued timestamp), and sub (subject/user) claims.
+           claims.AddRange(new[]
             {
+                new Claim("UserModel",userModel),
+                new Claim("OrgModel",orgModel),
+                new Claim("CompanyModel",companyModel),
+            
                 new Claim(ClaimTypes.NameIdentifier, nameIdClaim.Value),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+
                 //new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.Now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
             });
 

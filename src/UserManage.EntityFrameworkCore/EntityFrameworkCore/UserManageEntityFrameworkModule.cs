@@ -24,7 +24,7 @@ namespace UserManage.EntityFrameworkCore
             if (!SkipDbContextRegistration)
             {
                 Configuration.Modules.AbpEfCore().AddDbContext<UserManageDbContext>(options =>
-                {
+               {
                     if (options.ExistingConnection != null)
                     {
                         UserManageDbContextConfigurer.Configure(options.DbContextOptions, options.ExistingConnection);

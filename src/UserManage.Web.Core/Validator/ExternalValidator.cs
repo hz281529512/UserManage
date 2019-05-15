@@ -9,19 +9,27 @@ using Abp.Authorization;
 using Abp.Authorization.Users;
 using Abp.MultiTenancy;
 using Abp.Runtime.Session;
+using AutoMapper;
 using IdentityServer4.Models;
 using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
+using UserManage.AbpCompanyCore.DomainService;
 using UserManage.Authentication.External;
 using UserManage.Authorization;
 using UserManage.Authorization.Users;
 using UserManage.Models.TokenAuth;
+using UserManage.MultiTenancy;
+using UserManage.Sessions.Dto;
 
 namespace UserManage.Validator
 {
     public class ExternalValidator : IExtensionGrantValidator
     {
         public IAbpSession AbpSession { get; set; }
+        public UserManager UserManager { get; set; }
+
+        public AbpCompanyManager CompanyManager{ get; set; }
         private readonly IExternalAuthManager _externalAuthManager;
         private readonly LogInManager _logInManager;
         private readonly ITenantCache _tenantCache;
@@ -60,7 +68,7 @@ namespace UserManage.Validator
                             context.Result = new GrantValidationResult(
                                 subject: loginResult.Identity.Claims.First(c => c.Type == JwtRegisteredClaimNames.Sub).Value,
                                 authenticationMethod: "passwrod",
-                                claims: CreateJwtClaims(loginResult.Identity)
+                                claims:await CreateJwtClaims(loginResult)
                             );
                             break;
                         }
@@ -69,43 +77,7 @@ namespace UserManage.Validator
 
                             context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "未绑定");
                             break;
-                            //if (!string.IsNullOrEmpty(externalUser.EmailAddress) ||
-                            //    !string.IsNullOrEmpty(externalUser.Name))
-                            //{
-                            //    var newUser = await RegisterExternalUserAsync(externalUser);
-                            //    if (!newUser.IsActive)
-                            //    {
-                            //        context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "未激活");
-                            //        break;
-                            //    }
-
-                            //    // Try to login again with newly registered user!
-                            //    loginResult = await _logInManager.LoginAsync(
-                            //        new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider),
-                            //        GetTenancyNameOrNull());
-                            //    if (loginResult.Result != AbpLoginResultType.Success)
-                            //    {
-                            //        context.Result = new GrantValidationResult(
-                            //            subject: loginResult.User.UserName,
-                            //            authenticationMethod: "passwrod",
-                            //            claims: CreateJwtClaims(loginResult.Identity)
-                            //        );
-                            //        break;
-                            //    }
-
-                            //    context.Result = new GrantValidationResult(
-                            //        subject: loginResult.User.UserName,
-                            //        authenticationMethod: "passwrod",
-                            //        claims: CreateJwtClaims(loginResult.Identity)
-                            //    );
-                            //    break;
-                            //}
-
-                            //    throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
-                            //        loginResult.Result,
-                            //        externalUser.ProviderKey,
-                            //        GetTenancyNameOrNull()
-                            //    );
+                         
 
                         }
                     default:
@@ -128,22 +100,26 @@ namespace UserManage.Validator
         {
 
             var userInfo = await _externalAuthManager.GetUserInfo(model.AuthProvider, model.ProviderAccessCode);
-            //if (userInfo.ProviderKey != model.ProviderKey)
-            //{
-            //    throw new UserFriendlyException(L("CouldNotValidateExternalUser"));
-            //}
+      
             return userInfo;
 
         }
 
-        private static List<Claim> CreateJwtClaims(ClaimsIdentity identity)
+        private async Task<List<Claim>> CreateJwtClaims(AbpLoginResult<Tenant, User> loginResult)
         {
-            var claims = identity.Claims.ToList();
+            var claims = loginResult.Identity.Claims.ToList();
             var nameIdClaim = claims.First(c => c.Type == JwtRegisteredClaimNames.Sub);
-
+            string userModel = JsonConvert.SerializeObject(Mapper.Map<UserLoginInfoDto>(loginResult.User));
+            var org = await UserManager.GetOrganizationUnitsAsync(loginResult.User);
+            string orgModel = JsonConvert.SerializeObject(Mapper.Map<List<OrgLoginInfo>>(org));
+            var company = await CompanyManager.FindByIdAsync(loginResult.User.CompanyId);
+            string companyModel = JsonConvert.SerializeObject(Mapper.Map<CompanyLoginInfo>(company));
             // Specifically add the jti (random nonce), iat (issued timestamp), and sub (subject/user) claims.
             claims.AddRange(new[]
             {
+                new Claim("UserModel",userModel),
+                new Claim("OrgModel",orgModel),
+                new Claim("CompanyModel",companyModel),
                 new Claim(ClaimTypes.NameIdentifier, nameIdClaim.Value),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 //new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.Now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
