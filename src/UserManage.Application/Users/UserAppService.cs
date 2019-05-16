@@ -278,12 +278,12 @@ namespace UserManage.Users
             else if (!string.IsNullOrEmpty(input.UserName)) { entity = await _userManager.FindByNameAsync(input.UserName); }
 
             if (entity == null) throw new EntityNotFoundException(typeof(User), input.UserId);
-            if (!string.IsNullOrEmpty(entity.CompanyId)) throw new Abp.UI.UserFriendlyException("该用户已绑定公司!");
+            if (!string.IsNullOrEmpty(entity.CompanyId)) throw new UserFriendlyException("该用户已绑定公司!");
 
             var company_entity = await _companyRepository.GetAll().FirstOrDefaultAsync(x => x.CompanyName == input.CompanyName);
             if (company_entity == null)
             {
-                throw new Abp.UI.UserFriendlyException("公司名无效!");
+                throw new UserFriendlyException("公司名无效!");
             }
             entity.CompanyId = company_entity.Id.ToString();
             CheckErrors(await _userManager.UpdateAsync(entity));
