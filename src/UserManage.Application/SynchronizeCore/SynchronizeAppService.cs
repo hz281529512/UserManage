@@ -249,12 +249,14 @@ namespace UserManage.SynchronizeCore
                                   wx_name = d.name,
                                   wx_parentid = d.parentid,
                               };
-            //var tt = left_query.ToList();
-            //var rr = right_query.ToList();
-            if (left_query.Any())
+            if (left_query.Any() && right_query.Any())
             {
                 var full_query = left_query.Union(right_query);
                 return full_query.ToList();
+            }
+            else if (left_query.Any())
+            {
+                return left_query.ToList();
             }
             else if (right_query.Any())
             {
@@ -287,7 +289,7 @@ namespace UserManage.SynchronizeCore
                                  AbpUserName = u.UserName,
                                  wx_alias = (wu == null ? "" : wu.alias),
                                  wx_avatar = (wu == null ? "" : wu.avatar),
-                                 wx_email = (wu == null ? "" : wu.email),
+                                 wx_email = (wu == null ? u.EmailAddress : wu.email),
                                  wx_gender = (wu == null ? "" : wu.gender),
                                  wx_mobile = (wu == null ? "" : wu.mobile),
                                  wx_name = (wu == null ? "" : wu.name),
@@ -314,10 +316,14 @@ namespace UserManage.SynchronizeCore
                                   wx_userid = wu.userid
                               };
 
-            if (left_query.Any())
+            if (left_query.Any() && right_query.Any())
             {
                 var full_query = left_query.Union(right_query);
                 return full_query.ToList();
+            }
+            else if (left_query.Any())
+            {
+                return left_query.ToList();
             }
             else if (right_query.Any())
             {
@@ -342,11 +348,14 @@ namespace UserManage.SynchronizeCore
                 var elist = await _weChatManager.GetAllUsersByDepartment(1);
                 if (elist != null)
                 {
+                    //var test = elist.Where(x => x.userid == "116").FirstOrDefault();
                     var full_list = this.GetWxAbpUsers(elist);
                     if (full_list != null)
                     {
+                        //var test2 = full_list.Where(x => x.AbpUserName == "lidi").FirstOrDefault();
                         foreach (var item in full_list)
                         {
+
                             if (item.AbpUserName.ToLower().Equals("admin"))
                                 continue;
                             if (item.AbpUserId != 0)
@@ -478,10 +487,14 @@ namespace UserManage.SynchronizeCore
                               };
             //var tt = left_query.ToList();
             //var rr = right_query.ToList();
-            if (left_query.Any())
+            if (left_query.Any() && right_query.Any())
             {
                 var full_query = left_query.Union(right_query);
                 return full_query.ToList();
+            }
+            else if (left_query.Any())
+            {
+                return left_query.ToList();
             }
             else if (right_query.Any())
             {
@@ -538,9 +551,9 @@ namespace UserManage.SynchronizeCore
                             });
                             result.CreateCount++;
                         }
+                        //提交增删改记录
+                        CurrentUnitOfWork.SaveChanges();
                     }
-                    //提交增删改记录
-                    CurrentUnitOfWork.SaveChanges();
                 }
             }
             return result;
@@ -573,6 +586,7 @@ namespace UserManage.SynchronizeCore
                                     if (tuItem.userid == "")
                                     {
                                         await _userRoleRepository.DeleteAsync(tuItem.UserRoleId.Value);
+                                        CurrentUnitOfWork.SaveChanges();
                                         result.DeleteCount++;
                                     }
                                 }
@@ -587,6 +601,7 @@ namespace UserManage.SynchronizeCore
                                             TenantId = AbpSession.TenantId,
                                             UserId = ul.UserId
                                         });
+                                        CurrentUnitOfWork.SaveChanges();
                                         result.CreateCount++;
                                     }
                                 }
@@ -594,7 +609,6 @@ namespace UserManage.SynchronizeCore
                         }
                     }
                 }
-                CurrentUnitOfWork.SaveChanges();
             }
 
             return result;
@@ -602,10 +616,10 @@ namespace UserManage.SynchronizeCore
 
         private List<AbpWxTagUserDto> GetWechatTagUser(ICollection<AbpWeChatUser> qy_tag_user, int? role_id, int? tenant_id)
         {
-            string str_login_provider = "Wechat";
+
             var left_query = from ur in _userRoleRepository.GetAll()
                              join ul in _userLoginRepository.GetAll() on
-                                        new { uid = ur.UserId, type = str_login_provider } equals
+                                        new { uid = ur.UserId, type = "Wechat" } equals
                                         new { uid = ul.UserId, type = ul.LoginProvider } into ulo
                              from ul in ulo.DefaultIfEmpty()
                              join tu in qy_tag_user.AsQueryable() on ul.ProviderKey equals tu.userid into tuo
@@ -623,7 +637,7 @@ namespace UserManage.SynchronizeCore
             var right_query = from tu in qy_tag_user.AsQueryable()
                                   //where !_roleRepository.GetAll().Any(r => r.TagId == t.tagid && r.DisplayName == "WX_" + t.tagname && r.TenantId == AbpSession.TenantId)
                               where !_userRoleRepository.GetAll().Any(ur => ur.RoleId == role_id && _userLoginRepository.GetAll().Any(ul =>
-                                                                                                                                           ul.LoginProvider == str_login_provider &&
+                                                                                                                                           ul.LoginProvider == "Wechat" &&
                                                                                                                                            ul.UserId == ur.UserId &&
                                                                                                                                            ul.ProviderKey == tu.userid
                                                                                                                                         ))
@@ -634,10 +648,14 @@ namespace UserManage.SynchronizeCore
                                   UserRoleId = 0,
                                   AbpUserId = 0,
                               };
-            if (left_query.Any())
+            if (left_query.Any() && right_query.Any())
             {
                 var full_query = left_query.Union(right_query);
                 return full_query.ToList();
+            }
+            else if (left_query.Any())
+            {
+                return left_query.ToList();
             }
             else if (right_query.Any())
             {
