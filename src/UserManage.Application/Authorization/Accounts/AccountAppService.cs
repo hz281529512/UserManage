@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Abp.Configuration;
 using Abp.Zero.Configuration;
+using UserManage.AbpCompanyCore;
 using UserManage.Authorization.Accounts.Dto;
 using UserManage.Authorization.Users;
 
@@ -37,13 +38,18 @@ namespace UserManage.Authorization.Accounts
 
         public async Task<RegisterOutput> Register(RegisterInput input)
         {
+            var company = ObjectMapper.Map<AbpCompany>(input.CompanyInput);
             var user = await _userRegistrationManager.RegisterAsync(
                 input.Name,
-                input.Surname,
+                input.PhoneNumber,
+                // input.Surname,
                 input.EmailAddress,
                 input.UserName,
                 input.Password,
-                true // Assumed email address is always confirmed. Change this if you want to implement email confirmation.
+                true,
+                company
+                
+                // Assumed email address is always confirmed. Change this if you want to implement email confirmation.
             );
 
             var isEmailConfirmationRequiredForLogin = await SettingManager.GetSettingValueAsync<bool>(AbpZeroSettingNames.UserManagement.IsEmailConfirmationRequiredForLogin);

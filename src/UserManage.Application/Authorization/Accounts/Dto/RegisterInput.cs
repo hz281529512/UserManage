@@ -14,8 +14,9 @@ namespace UserManage.Authorization.Accounts.Dto
         public string Name { get; set; }
 
         [Required]
-        [StringLength(AbpUserBase.MaxSurnameLength)]
-        public string Surname { get; set; }
+        [Phone]
+        [StringLength(AbpUserBase.MaxPhoneNumberLength)]
+        public string PhoneNumber { get; set; }
 
         [Required]
         [StringLength(AbpUserBase.MaxUserNameLength)]
@@ -34,6 +35,7 @@ namespace UserManage.Authorization.Accounts.Dto
         [DisableAuditing]
         public string CaptchaResponse { get; set; }
 
+        public CompanyInput CompanyInput { get; set; }
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (!UserName.IsNullOrEmpty())

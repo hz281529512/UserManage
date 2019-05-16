@@ -105,7 +105,6 @@ namespace UserManage.Validator
                 new Claim("UserModel",userModel),
                 new Claim("OrgModel",orgModel),
                 new Claim("CompanyModel",companyModel),
-            
                 new Claim(ClaimTypes.NameIdentifier, nameIdClaim.Value),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 
