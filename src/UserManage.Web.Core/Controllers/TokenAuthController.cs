@@ -79,7 +79,7 @@ namespace UserManage.Controllers
               var httpHandler = new HttpClientHandler();
             httpHandler.CookieContainer.Add(
                 new Uri(_configuration.Authority),
-                new Cookie(MultiTenancyConsts.TenantIdResolveKey, AbpSession.TenantId?.ToString())
+                new Cookie("Abp.TenantId", AbpSession.TenantId?.ToString())
             ); //Set TenantId
             var tokenClient = new TokenClient(
                 $"{_configuration.Authority}/connect/token",

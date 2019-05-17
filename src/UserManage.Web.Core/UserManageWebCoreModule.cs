@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -47,9 +48,10 @@ namespace UserManage
                  .CreateControllersForAppServices(
                      typeof(UserManageApplicationModule).GetAssembly()
                  );
-
+            
             ConfigureTokenAuth();
-            //Configuration.Caching.UseRedis();
+            Configuration.Caching.UseRedis();
+            
         }
 
         private void ConfigureTokenAuth()
