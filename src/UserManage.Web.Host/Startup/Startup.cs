@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using UserManage.Authentication.JwtBearer;
 using UserManage.Authorization.Users;
 using UserManage.Validator;
+using System.Configuration;
 
 namespace UserManage.Web.Host.Startup
 {
@@ -37,6 +38,8 @@ namespace UserManage.Web.Host.Startup
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+
+            var data = ConfigurationManager.AppSettings["Abp.Redis.Cache"];
             // MVC
             services.AddMvc(
                 options => options.Filters.Add(new CorsAuthorizationFilterFactory(_defaultCorsPolicyName))
@@ -97,6 +100,7 @@ namespace UserManage.Web.Host.Startup
 
             // Configure Abp and Dependency Injection
             return services.AddAbp<UserManageWebHostModule>(
+               
                 // Configure Log4Net logging
                 options => options.IocManager.IocContainer.AddFacility<LoggingFacility>(
                     f => f.UseAbpLog4Net().WithConfig("log4net.config")

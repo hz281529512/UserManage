@@ -70,7 +70,9 @@ namespace UserManage.Web.Host.Startup
 
             }
 
-
+            //services.AddMvc(
+            //    options=> options.Filters.Add(new AutoValidateAntiforgeryTokenAuthorization)
+            //    )
 
         }
 
