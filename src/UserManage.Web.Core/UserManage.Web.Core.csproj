@@ -20,6 +20,7 @@
     <ProjectReference Include="..\UserManage.EntityFrameworkCore\UserManage.EntityFrameworkCore.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Abp.RedisCache" Version="4.3.0" />
     <PackageReference Include="IdentityServer4" Version="2.4.0" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.6.0" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.11" />

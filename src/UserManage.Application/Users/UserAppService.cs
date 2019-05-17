@@ -27,7 +27,7 @@ using System.Linq.Dynamic.Core;
 
 namespace UserManage.Users
 {
-    [AbpAuthorize(PermissionNames.Pages_Users)]
+    [AbpAuthorize]
     public class UserAppService : AsyncCrudAppService<User, UserDto, long, GetUsersInput, CreateUserDto, UserDto>, IUserAppService
     {
         private readonly UserManager _userManager;

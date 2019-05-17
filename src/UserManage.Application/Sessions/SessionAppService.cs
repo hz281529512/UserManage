@@ -27,7 +27,13 @@ namespace UserManage.Sessions
 
             if (AbpSession.UserId.HasValue)
             {
-                output.User = ObjectMapper.Map<UserLoginInfoDto>(await GetCurrentUserAsync());
+               var user=  await GetCurrentUserAsync();
+                output.User = ObjectMapper.Map<UserLoginInfoDto>(user);
+                output.Company = ObjectMapper.Map<CompanyLoginInfo>(await GetCurrentConpanyAsync());
+                var org = await GetCurrentOrgAsync(user);
+                output.ListOrg = ObjectMapper.Map<List<OrgLoginInfo>>(org);
+                output.RoleNames = await GetRoleNames(user);
+                //output.RoleId=await 
             }
 
             return output;

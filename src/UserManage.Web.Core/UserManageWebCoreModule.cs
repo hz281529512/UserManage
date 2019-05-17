@@ -8,6 +8,7 @@ using Abp.AspNetCore.Configuration;
 using Abp.AspNetCore.SignalR;
 using Abp.Modules;
 using Abp.Reflection.Extensions;
+using Abp.Runtime.Caching.Redis;
 using Abp.Zero.Configuration;
 using UserManage.Authentication.JwtBearer;
 using UserManage.Configuration;
@@ -18,8 +19,9 @@ namespace UserManage
     [DependsOn(
          typeof(UserManageApplicationModule),
          typeof(UserManageEntityFrameworkModule),
-         typeof(AbpAspNetCoreModule)
-        ,typeof(AbpAspNetCoreSignalRModule)
+         typeof(AbpAspNetCoreModule),
+        typeof(AbpAspNetCoreSignalRModule),
+        typeof(AbpRedisCacheModule)
      )]
     public class UserManageWebCoreModule : AbpModule
     {
@@ -47,6 +49,7 @@ namespace UserManage
                  );
 
             ConfigureTokenAuth();
+            //Configuration.Caching.UseRedis();
         }
 
         private void ConfigureTokenAuth()
