@@ -15,6 +15,6 @@ namespace UserManage.Sessions.Dto
 
         public string[] RoleNames { get; set; }
 
-        public int[] RoleId { get; set; }
+        public int[] RoleIds { get; set; }
     }
 }

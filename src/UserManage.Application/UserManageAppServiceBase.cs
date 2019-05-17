@@ -11,6 +11,7 @@ using UserManage.AbpCompanyCore.DomainService;
 using UserManage.Authorization.Users;
 using UserManage.MultiTenancy;
 using UserManage.Authorization.Roles;
+using UserManage.AbpUserRoleCore.DomainService;
 
 namespace UserManage
 {
@@ -26,6 +27,8 @@ namespace UserManage
         public RoleManager RoleManager { get; set; }
 
         public AbpCompanyManager CompanyManager { get; set; }
+
+        public UserRoleManager UserRoleManager { get; set; }
 
         protected UserManageAppServiceBase()
         {
@@ -73,9 +76,21 @@ namespace UserManage
         protected virtual async Task<string[]> GetRoleNames(User user)
         {
 
-             var roles = await UserManager.GetRolesAsync(user);
+            var roles = await UserManager.GetRolesAsync(user);
             var rolename = (roles as List<string>).ToArray();
             return rolename;
+        }
+
+        protected virtual async Task<int[]> GetRoleIds(User user)
+        {
+
+            var roles = await UserRoleManager.FindRolesByUserIdAsync(user.Id);
+            if (roles == null)
+            {
+                return null;
+            }
+            var roleids = roles.ToArray();
+            return roleids;
         }
     }
 }
