@@ -17,7 +17,7 @@ using UserManage.Organizations.Dto;
 
 namespace UserManage.Organizations
 {
-    [AbpAuthorize(PermissionNames.Pages_Manage_OrganizationUnits)]
+    [AbpAuthorize]
     public class OrganizationUnitAppService : UserManageAppServiceBase, IOrganizationUnitAppService
     {
 
