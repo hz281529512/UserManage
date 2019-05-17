@@ -464,6 +464,7 @@ namespace UserManage.SynchronizeCore.DomainService
                 {
                     if (wx_tag.ChangeType == "update_tag")
                     {
+                        _logger.Info("update : " + wx_tag.AddUserItems + " del : " + wx_tag.DelUserItems );
                         var local_role = _roleRepository.FirstOrDefault(r => r.WxTagId == wx_tag.TagId && r.TenantId == tenant_id);
                         int role_id = 0;
                         if (local_role == null)
