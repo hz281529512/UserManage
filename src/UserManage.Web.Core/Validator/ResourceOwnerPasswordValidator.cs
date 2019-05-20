@@ -28,7 +28,7 @@ namespace UserManage.Validator
         public UserManager UserManager { get; set; }
         public AbpCompanyManager CompanyManager { get; set; }
 
-        public UserRoleManager UserRoleManager { get; set; }
+        public UserRoleManager UserRoleManager;
 
         private readonly LogInManager _logInManager;
         private readonly ITenantCache _tenantCache;
@@ -38,11 +38,13 @@ namespace UserManage.Validator
 
         public ResourceOwnerPasswordValidator(LogInManager logInManager,
             ITenantCache tenantCache,
-            AbpLoginResultTypeHelper abpLoginResultTypeHelper)
+            AbpLoginResultTypeHelper abpLoginResultTypeHelper,
+            UserRoleManager userRoleManager)
         {
             _logInManager = logInManager;
             _tenantCache = tenantCache;
             _abpLoginResultTypeHelper = abpLoginResultTypeHelper;
+            UserRoleManager = userRoleManager;
             //_configuration = configuration;
         }
 
@@ -103,7 +105,7 @@ namespace UserManage.Validator
             string orgModel= JsonConvert.SerializeObject(Mapper.Map<List<OrgLoginInfo>>(org));
             var company=await CompanyManager.FindByIdAsync(loginResult.User.CompanyId);
             string companyModel = JsonConvert.SerializeObject(Mapper.Map<CompanyLoginInfo>(company));
-            var max_role_type = await UserRoleManager.MaxRoleTypeByUserIdAsync(loginResult.User.Id) ?? 0;
+            var max_role_type = await UserRoleManager.MaxRoleTypeByUserIdAsync(loginResult.User.Id);
            // Specifically add the jti (random nonce), iat (issued timestamp), and sub (subject/user) claims.
            claims.AddRange(new[]
             {
