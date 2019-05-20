@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using UserManage.Authorization.Users;
 
 namespace UserManage.AbpUserRoleCore.DomainService
 {
@@ -20,6 +21,6 @@ namespace UserManage.AbpUserRoleCore.DomainService
         /// </summary>
         /// <param name="uid"></param>
         /// <returns></returns>
-        Task<int?> MaxRoleTypeByUserIdAsync(long? uid);
+        Task<int?> MaxRoleType(IList<string> roles);
     }
 }
