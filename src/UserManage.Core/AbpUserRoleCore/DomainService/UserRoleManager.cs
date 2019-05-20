@@ -47,10 +47,10 @@ namespace UserManage.AbpUserRoleCore.DomainService
         {
             if (uid.HasValue)
             {
-                var query = from q in _roleRepository.GetAll().AsNoTracking()
+                var query = await (from q in _roleRepository.GetAll().AsNoTracking()
                             where _repository.GetAll().Any(x => x.UserId == uid && x.RoleId == q.Id)
-                            select new { type = (q == null) ? 0 : (q.RoleType.HasValue ? q.RoleType.Value : 0) };
-                return query.Max(x => x.type);
+                            select q).ToListAsync();
+                return query.Max(x => (x.RoleType ?? 0));
             }
             return null;
         }
