@@ -348,6 +348,41 @@ namespace UserManage.Users
                 return dto;
             }).ToList());
         }
+
+        /// <summary>
+        /// 批量修改角色
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public async Task BatchUpdateRoles(List<BatchUserDto> input)
+        {
+            CheckUpdatePermission();
+            foreach (var item in input)
+            {
+                var user = await _userManager.GetUserByIdAsync(item.UserId);
+                if (item.RoleNames != null)
+                {
+                    CheckErrors(await _userManager.SetRoles(user, item.RoleNames));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 批量修改用户地区
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public async Task BatchUpdateDistrict(List<BatchUserDistrictInputDto> input)
+        {
+            CheckUpdatePermission();
+            foreach (var item in input)
+            {
+                var user = await _userManager.GetUserByIdAsync(item.UserId);
+                //拼接用户地区
+                user.SelectDistrict = item.Districts == null ? "" : string.Join(',', item.Districts);
+                CheckErrors(await _userManager.UpdateAsync(user));
+            }
+        }
     }
 }
 

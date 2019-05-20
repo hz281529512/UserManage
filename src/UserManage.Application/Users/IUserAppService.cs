@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.Application.Services.Dto;
@@ -32,5 +33,19 @@ namespace UserManage.Users
         /// <param name="input"></param>
         /// <returns></returns>
         Task<ListResultDto<UserListDto>> GetUserListByRole(GetUserRoleInput input);
+
+        /// <summary>
+        /// 批量修改角色
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        Task BatchUpdateRoles(List<BatchUserDto> input);
+
+        /// <summary>
+        /// 批量修改用户地区
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        Task BatchUpdateDistrict(List<BatchUserDistrictInputDto> input);
     }
 }

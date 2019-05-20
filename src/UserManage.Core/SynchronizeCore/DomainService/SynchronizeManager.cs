@@ -511,7 +511,7 @@ namespace UserManage.SynchronizeCore.DomainService
                                         _userRoleRepository.Insert(new UserRole
                                         {
                                             RoleId = role_id,
-                                            TenantId = AbpSession.TenantId,
+                                            TenantId = tenant_id,
                                             UserId = item.UserId
                                         }); 
                                     }
