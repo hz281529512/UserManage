@@ -5,7 +5,7 @@ using UserManage.Roles.Dto;
 
 namespace UserManage.Roles
 {
-    public interface IRoleAppService : IAsyncCrudAppService<RoleDto, int, PagedRoleResultRequestDto, CreateRoleDto, RoleDto>
+    public interface IRoleAppService : IAsyncCrudAppService<RoleDto, int, GetRolesFilter, CreateRoleDto, RoleDto>
     {
         Task<ListResultDto<PermissionDto>> GetAllPermissions();
 

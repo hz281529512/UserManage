@@ -14,11 +14,12 @@ using UserManage.Authorization.Users;
 using UserManage.Roles.Dto;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Dynamic.Core;
 
 namespace UserManage.Roles
 {
     [AbpAuthorize]
-    public class RoleAppService : AsyncCrudAppService<Role, RoleDto, int, PagedRoleResultRequestDto, CreateRoleDto, RoleDto>, IRoleAppService
+    public class RoleAppService : AsyncCrudAppService<Role, RoleDto, int, GetRolesFilter, CreateRoleDto, RoleDto>, IRoleAppService
     {
         private readonly RoleManager _roleManager;
         private readonly UserManager _userManager;
@@ -106,12 +107,15 @@ namespace UserManage.Roles
             ));
         }
 
-        protected override IQueryable<Role> CreateFilteredQuery(PagedRoleResultRequestDto input)
+        protected override IQueryable<Role> CreateFilteredQuery(GetRolesFilter input)
         {
-            return Repository.GetAllIncluding(x => x.Permissions)
-                .WhereIf(!input.Keyword.IsNullOrWhiteSpace(), x => x.Name.Contains(input.Keyword)
-                || x.DisplayName.Contains(input.Keyword)
-                || x.Description.Contains(input.Keyword));
+            var query = Repository.GetAllIncluding(x => x.Permissions);
+
+            if (input.Where != null)
+            {
+                return query.Where(input.Where);
+            }
+            return query;
         }
 
         protected override async Task<Role> GetEntityByIdAsync(int id)
@@ -119,7 +123,7 @@ namespace UserManage.Roles
             return await Repository.GetAllIncluding(x => x.Permissions).FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        protected override IQueryable<Role> ApplySorting(IQueryable<Role> query, PagedRoleResultRequestDto input)
+        protected override IQueryable<Role> ApplySorting(IQueryable<Role> query, GetRolesFilter input)
         {
             return query.OrderBy(r => r.DisplayName);
         }
