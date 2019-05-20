@@ -24,5 +24,10 @@ namespace UserManage.Roles.Dto
         public string Description { get; set; }
 
         public List<string> Permissions { get; set; }
+
+        /// <summary>
+        /// ½ÇÉ«×é±ð
+        /// </summary>
+        public int? RoleType { get; set; }
     }
 }

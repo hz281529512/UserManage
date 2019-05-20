@@ -15,5 +15,10 @@ namespace UserManage.Roles.Dto
         public bool IsDefault { get; set; }
 
         public DateTime CreationTime { get; set; }
+
+        /// <summary>
+        /// 角色组别
+        /// </summary>
+        public int? RoleType { get; set; }
     }
 }

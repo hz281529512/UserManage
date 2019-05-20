@@ -35,5 +35,7 @@ namespace UserManage.Authorization.Roles
         /// </summary>
         public int? RoleType { get; set; }
 
+
+
     }
 }
