@@ -14,5 +14,12 @@ namespace UserManage.AbpUserRoleCore.DomainService
         /// <param name="uid"></param>
         /// <returns></returns>
         Task<List<int>> FindRolesByUserIdAsync(long? uid);
+
+        /// <summary>
+        /// 根据用户ID 获取 最大角色类别
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <returns></returns>
+        Task<int?> MaxRoleTypeByUserIdAsync(long? uid);
     }
 }
