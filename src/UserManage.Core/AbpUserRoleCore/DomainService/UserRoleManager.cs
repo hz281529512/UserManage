@@ -8,6 +8,7 @@ using Abp.Authorization.Users;
 using Abp.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using UserManage.Authorization.Roles;
+using UserManage.Authorization.Users;
 
 namespace UserManage.AbpUserRoleCore.DomainService
 {
@@ -15,15 +16,15 @@ namespace UserManage.AbpUserRoleCore.DomainService
     {
         private readonly IRepository<UserRole, long> _repository;
 
-        private readonly IRepository<Role, int> _roleRepository;
+        public RoleManager RoleManager { get; set; }
 
         public UserRoleManager(
-            IRepository<UserRole, long> repository,
-            IRepository<Role, int> roleRepository
+            IRepository<UserRole, long> repository
+            
          )
         {
             _repository = repository;
-            _roleRepository = roleRepository;
+            
         }
 
         /// <summary>
@@ -43,16 +44,18 @@ namespace UserManage.AbpUserRoleCore.DomainService
             return null;
         }
 
-        public async Task<int?> MaxRoleTypeByUserIdAsync(long? uid)
+        public async Task<int?> MaxRoleType(IList<string> roles)
         {
-            if (uid.HasValue)
+            if (roles?.Count > 0)
             {
-                var query = from q in _roleRepository.GetAll().AsNoTracking()
-                            where _repository.GetAll().Any(x => x.UserId == uid && x.RoleId == q.Id)
-                            select q;
-                return await query.MaxAsync(x => x.RoleType ?? 0);
+                List<Role> result = new List<Role>();
+                foreach (var item in roles)
+                {
+                    result.Add(await RoleManager.GetRoleByNameAsync(item));
+                }
+                return result.Max(x => x.RoleType ?? 0);
             }
-            return null;
+            return 0;
         }
     }
 }

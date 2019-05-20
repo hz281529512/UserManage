@@ -103,7 +103,8 @@ namespace UserManage.Validator
             string orgModel= JsonConvert.SerializeObject(Mapper.Map<List<OrgLoginInfo>>(org));
             var company=await CompanyManager.FindByIdAsync(loginResult.User.CompanyId);
             string companyModel = JsonConvert.SerializeObject(Mapper.Map<CompanyLoginInfo>(company));
-            var max_role_type = await UserRoleManager.MaxRoleTypeByUserIdAsync(loginResult.User.Id);
+            var roles = await UserManager.GetRolesAsync(loginResult.User);
+            var max_role_type = await UserRoleManager.MaxRoleType(roles);
            // Specifically add the jti (random nonce), iat (issued timestamp), and sub (subject/user) claims.
            claims.AddRange(new[]
             {
