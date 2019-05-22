@@ -16,7 +16,7 @@ namespace UserManage.QYEmail.DomainService
 
         private readonly ICacheManager _cacheManager;
 
-        public const string DefaultProviderName = "Wechat";
+        public const string DefaultProviderName = "QYEmail";
 
         public QYEmailManager(
             IAbpExternalAuthenticateConfigManager authenticateConfigManager,

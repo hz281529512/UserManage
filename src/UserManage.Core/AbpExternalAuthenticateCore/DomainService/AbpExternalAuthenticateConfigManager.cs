@@ -21,16 +21,17 @@ using UserManage.AbpExternalAuthenticateCore;
 using Abp.Runtime.Caching;
 using Abp.Runtime.Session;
 using Abp.Domain.Uow;
+using Newtonsoft.Json;
 
 namespace UserManage.AbpExternalAuthenticateCore.DomainService
 {
     /// <summary>
     /// AbpExternalAuthenticateConfig领域层的业务管理
     ///</summary>
-    public class AbpExternalAuthenticateConfigManager :UserManageDomainServiceBase, IAbpExternalAuthenticateConfigManager
+    public class AbpExternalAuthenticateConfigManager : UserManageDomainServiceBase, IAbpExternalAuthenticateConfigManager
     {
-		
-		private readonly IRepository<AbpExternalAuthenticateConfig,int> _repository;
+
+        private readonly IRepository<AbpExternalAuthenticateConfig, int> _repository;
 
         //缓存
         private readonly ICacheManager _cacheManager;
@@ -43,12 +44,12 @@ namespace UserManage.AbpExternalAuthenticateCore.DomainService
         /// AbpExternalAuthenticateConfig的构造方法
         ///</summary>
         public AbpExternalAuthenticateConfigManager(
-			IRepository<AbpExternalAuthenticateConfig, int> repository,
+            IRepository<AbpExternalAuthenticateConfig, int> repository,
             ICacheManager cacheManager,
             IUnitOfWorkManager unitOfWorkManager
         )
-		{
-			_repository =  repository;
+        {
+            _repository = repository;
             _cacheManager = cacheManager;
             _unitOfWorkManager = unitOfWorkManager;
             AbpSession = NullAbpSession.Instance;
@@ -69,25 +70,18 @@ namespace UserManage.AbpExternalAuthenticateCore.DomainService
             string str_tenant = AbpSession.TenantId.ToString();
 
             //读取缓存
-            try
+            var resultConfig = await _cacheManager.GetCache(providerKey).GetOrDefaultAsync(str_tenant);
+            if (resultConfig == null)
             {
-                var resultConfig = await _cacheManager.GetCache(providerKey).GetOrDefaultAsync(str_tenant);
-                if (resultConfig == null)
-                {
-                    var auth = await _repository.FirstOrDefaultAsync(x => x.LoginProvider == providerKey);
-                    if (auth == null) return null;
-                    await _cacheManager.GetCache(providerKey).SetAsync(str_tenant, auth, TimeSpan.FromHours(8));
-                    return auth;
-                }
-                else
-                {
-                    return resultConfig as AbpExternalAuthenticateConfig;
-                }
+                var auth = await _repository.FirstOrDefaultAsync(x => x.LoginProvider == providerKey);
+                if (auth == null) return null;
+                var str_auth = JsonConvert.SerializeObject(auth);
+                await _cacheManager.GetCache(providerKey).SetAsync(str_tenant, str_auth, TimeSpan.FromHours(8));
+                return auth;
             }
-            catch (Exception ex)
+            else
             {
-
-                throw;
+                return JsonConvert.DeserializeObject<AbpExternalAuthenticateConfig>(resultConfig as string);
             }
         }
 
@@ -109,7 +103,7 @@ namespace UserManage.AbpExternalAuthenticateCore.DomainService
                 else
                 {
                     return resultConfig as AbpExternalAuthenticateConfig;
-                } 
+                }
             }
         }
     }
