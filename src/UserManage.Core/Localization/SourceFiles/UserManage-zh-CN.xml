@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<localizationDictionary culture="zh-CN">
+  <texts>
+    <text name="CurrentUserDidNotLoginToTheApplication">当前用户没有登录到系统！</text>
+    <text name="HomePage" value="主页" />
+    <text name="About" value="关于我们" />
+    <text name="WellcomeMessage" value="欢迎使用 BidProject!" />
+    <text name="FormIsNotValidMessage" value="部分输入信息不符合要求，请检查并改正.." />
+    <text name="TenantNameCanNotBeEmpty" value="租户名不能为空" />
+    <text name="InvalidUserNameOrPassword" value="用户名或密码无效" />
+    <text name="ThereIsNoTenantDefinedWithName{0}" value="租户 {0}不存在" />
+    <text name="TenantIsNotActive" value="租户 {0} 未激活." />
+    <text name="UserIsNotActiveAndCanNotLogin" value="用户 {0} 未激活，不能登录." />
+    <text name="PleaseEnterLoginInformation" value="请输入登录信息" />
+    <text name="TenancyName" value="租户名称" />
+    <text name="UserNameOrEmail" value="用户名或邮箱地址" />
+    <text name="Password" value="密码" />
+    <text name="RememberMe" value="记住我" />
+    <text name="LogIn" value="登录" />
+    <text name="Users" value="用户" />
+    <text name="LoginFailed" value="登录失败!" />
+    <text name="ChangeTenant">改变租户</text>
+    <text name="NotSelected">未选择</text>
+    <text name="CurrentTenant">目前租户</text>
+    <text name="OrganizationUnits">组织</text>
+    <text name="Menus">菜单</text>
+
+    <!--菜单页面-->
+    <text name="Pages">菜单页面</text>
+    <text name="Roles">角色</text>
+    <text name="Tenants">租户</text>
+    <text name="Articles">公告</text>
+    <text name="Nproject">项目</text>
+    <text name="Orders">订单</text>
+    <text name="OrdersInvoice">发票</text>
+    <text name="Manage">系统管理</text>
+    <text name="Project">项目管理</text>
+    <text name="Business">财务管控</text>
+    <text name="Workflow">工作流模块</text>
+    <text name="MyCenter">个人中心</text>
+    <text name="FileEdit">文件编制及挂网</text>
+    <text name="ZK">质控中心</text>
+    <text name="AM">会务模块</text>
+    <text name="ADM">行政模块</text>
+    <text name="HR">人力模块</text>
+    <text name="FD">财务模块</text>
+    <text name="Report">业务系统后台管理</text>
+    <text name="Trading">交易平台管理</text>
+    <text name="Gather">汇总报表</text>
+
+    <text name="UserInfo">用户信息</text>
+    <!--2019-01-08 ProjectManage:项目管理更名为客户管理-->
+    <text name="ProjectManage">客户管理</text>
+    <text name="CustomerFile">客户档案</text>
+    <text name="NewProject">项目立项</text>
+    <text name="BidManage">投标管理</text>
+    <text name="TrainingManage">培训管理</text>
+    <text name="NetButton">挂网按钮</text>
+    <text name="Operations">操作</text>
+    <text name="LeaveOffice">离职人员</text>
+    <text name="Sync">同步</text>
+    <text name="RoleAllot">角色分配</text>
+    <text name="Attendance">个人考勤记录</text>
+    <text name="QiyeMail">企业邮箱密码</text>
+    <text name="EditOA">修改共享服务器及OA密码</text>
+    <text name="ProjectShow">项目一览</text>
+    <text name="FinanceShow">财务一览</text>
+    <text name="ProjectConfirm">项目立项确认</text>
+    <text name="Net">编制及挂网</text>
+    <text name="FileAudit">文件审核</text>
+    <text name="WinBid">中标确认及打印</text>
+    <text name="Cancel">项目取消</text>
+    <text name="History">历史项目</text>
+    <text name="EBid">电子评标</text>
+    <text name="Calendar">开标日历表</text>
+    <text name="Meeting">会议室</text>
+    <text name="FileTatol">文件汇总</text>
+    <text name="ProjectEdit">项目编辑</text>
+    <text name="ProjectNotice">项目公告审查</text>
+    <text name="Lead">电子竞价项目导入</text>
+    <text name="OldPlatform">旧平台</text>
+    <text name="NewPlatform">新平台</text>
+    <text name="SExplain">评标报告更换供应商说明</text>
+    <text name="Point">集点数据</text>
+    <text name="Issue">招标公告</text>
+    <text name="Corr">更正公告</text>
+    <text name="Result">结果公告</text>
+    <text name="Other">其他公告</text>
+    <text name="MyApply">我的报名</text>
+    <text name="Library">专家库</text>
+    <text name="Extract">专家抽取</text>
+    <text name="Expert">专家管理</text>
+    <text name="Examine">专家审核</text>
+    <text name="InvoiceButton">开票按钮</text>
+    <text name="ServiceCharge">服务费</text>
+    <text name="Margin">保证金</text>
+    <text name="RefundMargin">退保证金</text>
+    <text name="BidNotice">中标通知书审核</text>
+    <text name="Royalty">提成申报</text>
+    <text name="Rule">提成规则</text>
+    <text name="Declare">提成项目申报</text>
+    <text name="Special">特殊项目申报</text>
+    <text name="Grant">提成发放申报</text>
+    <text name="RoyaltyHistory">过往提成一览</text>
+  </texts>
+</localizationDictionary>

@@ -15,6 +15,7 @@ using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using UserManage.AbpCompanyCore.DomainService;
+using UserManage.AbpUserRoleCore.DomainService;
 using UserManage.Authentication.External;
 using UserManage.Authorization;
 using UserManage.Authorization.Users;
@@ -28,6 +29,7 @@ namespace UserManage.Validator
     {
         public IAbpSession AbpSession { get; set; }
         public UserManager UserManager { get; set; }
+        public UserRoleManager UserRoleManager { get; set; }
 
         public AbpCompanyManager CompanyManager{ get; set; }
         private readonly IExternalAuthManager _externalAuthManager;
@@ -114,12 +116,15 @@ namespace UserManage.Validator
             string orgModel = JsonConvert.SerializeObject(Mapper.Map<List<OrgLoginInfo>>(org));
             var company = await CompanyManager.FindByIdAsync(loginResult.User.CompanyId);
             string companyModel = JsonConvert.SerializeObject(Mapper.Map<CompanyLoginInfo>(company));
+            var roles = await UserManager.GetRolesAsync(loginResult.User);
+            var max_role_type = await UserRoleManager.MaxRoleType(roles);
             // Specifically add the jti (random nonce), iat (issued timestamp), and sub (subject/user) claims.
             claims.AddRange(new[]
             {
                 new Claim("UserModel",userModel),
                 new Claim("OrgModel",orgModel),
                 new Claim("CompanyModel",companyModel),
+                new Claim("MaxRoleType",max_role_type.ToString()),
                 new Claim(ClaimTypes.NameIdentifier, nameIdClaim.Value),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 //new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.Now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
