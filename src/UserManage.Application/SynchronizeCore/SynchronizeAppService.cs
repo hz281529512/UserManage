@@ -13,6 +13,7 @@ using UserManage.AbpExternalCore.DomainService;
 using UserManage.AbpOrganizationUnitCore;
 using UserManage.Authorization.Roles;
 using UserManage.Authorization.Users;
+using UserManage.QYEmail.DomainService;
 using UserManage.SynchronizeCore.Dtos;
 
 namespace UserManage.SynchronizeCore
@@ -42,6 +43,7 @@ namespace UserManage.SynchronizeCore
         private readonly IRepository<Role, int> _roleRepository;
         private readonly IRepository<UserRole, long> _userRoleRepository;
 
+        private readonly QYEmailManager QYEmailManager;
         public SynchronizeAppService(
             IAbpWeChatManager weChatManager,
             DomainService.ISynchronizeManager testManager,
@@ -51,6 +53,7 @@ namespace UserManage.SynchronizeCore
             IRepository<UserLogin, long> userLoginRepository,
             IRepository<Role, int> roleRepository,
             IRepository<UserRole, long> userRoleRepository,
+            QYEmailManager qYEmailManager,
             IPasswordHasher<User> passwordHasher
         )
         {
@@ -63,11 +66,13 @@ namespace UserManage.SynchronizeCore
             _roleRepository = roleRepository;
             _userRoleRepository = userRoleRepository;
             _passwordHasher = passwordHasher;
+            QYEmailManager = qYEmailManager;
         }
 
         public void MatchTest()
         {
-            _testManager.MatchSingleDepartmentWithoutTenant(new SyncDepartment { changetype = "update_party", id = 166, name = "test", parentid = 10 }, 1);
+            //_testManager.MatchSingleDepartmentWithoutTenant(new SyncDepartment { changetype = "update_party", id = 166, name = "test", parentid = 10 }, 1);
+            string t = QYEmailManager.Test(AbpSession.TenantId.Value);
         }
 
         /// <summary>

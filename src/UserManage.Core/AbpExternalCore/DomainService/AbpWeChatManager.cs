@@ -35,8 +35,6 @@ namespace UserManage.AbpExternalCore.DomainService
 
         // TODO:编写领域业务代码
 
-        // TODO:编写领域业务代码
-
         #region Private
 
         private async Task<ICollection<AbpWeChatDepartment>> GetAllDepartments(string accessToken)

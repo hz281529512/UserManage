@@ -69,17 +69,25 @@ namespace UserManage.AbpExternalAuthenticateCore.DomainService
             string str_tenant = AbpSession.TenantId.ToString();
 
             //读取缓存
-            var resultConfig = await _cacheManager.GetCache(providerKey).GetOrDefaultAsync(str_tenant) as AbpExternalAuthenticateConfig;
-            if (resultConfig == null)
+            try
             {
-                var auth = await _repository.FirstOrDefaultAsync(x => x.LoginProvider == providerKey);
-                if (auth == null) return null;
-                await _cacheManager.GetCache(providerKey).SetAsync(str_tenant, auth, TimeSpan.FromHours(8));
-                return auth;
+                var resultConfig = await _cacheManager.GetCache(providerKey).GetOrDefaultAsync(str_tenant);
+                if (resultConfig == null)
+                {
+                    var auth = await _repository.FirstOrDefaultAsync(x => x.LoginProvider == providerKey);
+                    if (auth == null) return null;
+                    await _cacheManager.GetCache(providerKey).SetAsync(str_tenant, auth, TimeSpan.FromHours(8));
+                    return auth;
+                }
+                else
+                {
+                    return resultConfig as AbpExternalAuthenticateConfig;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return resultConfig;
+
+                throw;
             }
         }
 
@@ -90,7 +98,7 @@ namespace UserManage.AbpExternalAuthenticateCore.DomainService
             using (_unitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
             {
                 //读取缓存
-                var resultConfig = _cacheManager.GetCache(providerKey).GetOrDefault(str_tenant) as AbpExternalAuthenticateConfig;
+                var resultConfig = _cacheManager.GetCache(providerKey).GetOrDefault(str_tenant);
                 if (resultConfig == null)
                 {
                     var auth = _repository.FirstOrDefault(x => x.LoginProvider == providerKey);
@@ -100,7 +108,7 @@ namespace UserManage.AbpExternalAuthenticateCore.DomainService
                 }
                 else
                 {
-                    return resultConfig;
+                    return resultConfig as AbpExternalAuthenticateConfig;
                 } 
             }
         }

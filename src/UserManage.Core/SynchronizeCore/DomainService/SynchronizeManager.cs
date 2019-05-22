@@ -34,7 +34,7 @@ namespace UserManage.SynchronizeCore.DomainService
         private readonly IRepository<User, long> _userRepository;
         private readonly IRepository<UserLogin, long> _userLoginRepository;
         private readonly IPasswordHasher<User> _passwordHasher;
-        //private readonly UserManager _userManager;
+        private readonly UserManager _userManager;
 
 
         ////角色
@@ -361,15 +361,23 @@ namespace UserManage.SynchronizeCore.DomainService
                                 {
                                     TenantId = tenant_id,
                                     Name = wx_user.name,
+                                    NormalizedUserName = wx_user.name,
                                     PhoneNumber = wx_user.mobile,
                                     EmailAddress = wx_user.email,
+                                    NormalizedEmailAddress = wx_user.email,
+                                    AccessFailedCount = 0,
+                                    IsDeleted = false,
                                     IsActive = true,
                                     UserName = user_name,
                                     IsEmailConfirmed = true,
+                                    IsTwoFactorEnabled = true,
+                                    IsPhoneNumberConfirmed = !string.IsNullOrEmpty(wx_user.mobile),
+
+                                    IsLockoutEnabled = true,
                                     Avatar = wx_user.avatar,
                                     Position = wx_user.position,
                                     Sex = wx_user.gender == "1" ? true : false,
-                                    Surname = wx_user.alias,
+                                    Surname = wx_user.alias ?? "",
                                 };
 
                                 user.Password = _passwordHasher.HashPassword(user, "000000");
@@ -464,7 +472,7 @@ namespace UserManage.SynchronizeCore.DomainService
                 {
                     if (wx_tag.ChangeType == "update_tag")
                     {
-                        _logger.Info("update : " + wx_tag.AddUserItems + " del : " + wx_tag.DelUserItems );
+                        _logger.Info("update : " + wx_tag.AddUserItems + " del : " + wx_tag.DelUserItems);
                         var local_role = _roleRepository.FirstOrDefault(r => r.WxTagId == wx_tag.TagId && r.TenantId == tenant_id);
                         int role_id = 0;
                         if (local_role == null)
@@ -513,7 +521,7 @@ namespace UserManage.SynchronizeCore.DomainService
                                             RoleId = role_id,
                                             TenantId = tenant_id,
                                             UserId = item.UserId
-                                        }); 
+                                        });
                                     }
                                 }
                                 CurrentUnitOfWork.SaveChanges();
