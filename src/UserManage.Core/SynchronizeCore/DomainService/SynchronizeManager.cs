@@ -405,7 +405,8 @@ namespace UserManage.SynchronizeCore.DomainService
                         case "update_user":
                             if (ul != null)
                             {
-                                var entity = _userRepository.Get(ul.UserId);
+                                var user_id = ul.UserId;
+                                var entity = _userRepository.Get(user_id);
                                 entity.TenantId = tenant_id;
                                 entity.Name = wx_user.name ?? entity.Name;
                                 entity.EmailAddress = wx_user.email ?? entity.EmailAddress;
@@ -429,19 +430,24 @@ namespace UserManage.SynchronizeCore.DomainService
                                     //var department_list = wx_user.department.Split(',');
 
                                     var wx_dept = wx_user.department.Split(',').ToList();
-                                    var local_dept = _organizationUnitRepository.GetAll().Where(x => x.TenantId == tenant_id && wx_dept.Contains(x.WXDeptId.ToString())).ToList();
-                                    var local_user_dept = _userOrganizationUnitRepository.GetAll().Where(x => x.TenantId == tenant_id && x.UserId == ul.UserId);
+                                    var local_dept = (from o in _organizationUnitRepository.GetAll()
+                                                      where o.TenantId == tenant_id && wx_dept.Contains(o.WXDeptId.ToString())
+                                                      select o.Id).ToList();
+                                    //_organizationUnitRepository.GetAll().Where(x => x.TenantId == tenant_id && wx_dept.Contains(x.WXDeptId.ToString())).ToList();
+
 
                                     //先删除 微信没有的
-                                    _userOrganizationUnitRepository.Delete(x => !local_dept.Any(d => x.OrganizationUnitId == d.Id));
+                                    _userOrganizationUnitRepository.Delete(x => x.UserId == user_id && !local_dept.Contains(x.OrganizationUnitId));//!local_dept.Any(d => x.OrganizationUnitId == d.Id));
                                     CurrentUnitOfWork.SaveChanges();
+
+                                    var local_user_dept = _userOrganizationUnitRepository.GetAll().Where(x => x.TenantId == tenant_id && x.UserId == user_id).ToList();
 
                                     //再添加 本地没有的
                                     foreach (var item in local_dept)
                                     {
-                                        if (!local_user_dept.Any(x => x.OrganizationUnitId == item.Id))
+                                        if (!local_user_dept.Any(x => x.OrganizationUnitId == item))
                                         {
-                                            _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = ul.UserId, OrganizationUnitId = item.Id });
+                                            _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = user_id, OrganizationUnitId = item });
                                         }
                                     }
                                 }
