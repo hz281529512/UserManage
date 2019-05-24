@@ -1,11 +1,14 @@
 ﻿using Abp.Runtime.Caching;
 using Abp.UI;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using UserManage.AbpExternalAuthenticateCore;
 using UserManage.AbpExternalAuthenticateCore.DomainService;
+using UserManage.AbpExternalCore;
+using UserManage.AbpExternalCore.Model;
 using UserManage.Web;
 
 namespace UserManage.QYEmail.DomainService
@@ -16,7 +19,7 @@ namespace UserManage.QYEmail.DomainService
 
         private readonly ICacheManager _cacheManager;
 
-        public const string DefaultProviderName = "QYEmail";
+        public const string DefaultProviderName = "QYmail";
 
         public QYEmailManager(
             IAbpExternalAuthenticateConfigManager authenticateConfigManager,
@@ -29,14 +32,77 @@ namespace UserManage.QYEmail.DomainService
         // TODO:编写领域业务代码
 
 
-        public string Test(int tenant_id)
+        public List<QYMailDepartment> Test(int tenant_id)
         {
-            AbpExternalAuthenticateConfig auth_config = this.GetCurrentAuthWithoutTenant(tenant_id);
-            string acc_token = this.GetToken(auth_config.AppId, auth_config.Secret);
-            return acc_token;
+            return this.GetEmailAllDepartment(tenant_id);
         }
 
 
+        public List<QYMailDepartment> GetEmailAllDepartment(int tenant_id)
+        {
+            AbpExternalAuthenticateConfig auth_config = this.GetCurrentAuthWithoutTenant(tenant_id);
+            string acc_token = this.GetToken(auth_config.AppId, auth_config.Secret);
+            string url = string.Format(@"https://api.exmail.qq.com/cgi-bin/department/list?access_token={0}", acc_token);
+
+            var content = HttpMethods.RestGet(url);
+            var result = JsonConvert.DeserializeObject<QYMailDepartmentResult>(content);
+            if (result.errmsg == "ok")
+            {
+                return result.department;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public QYMailUserInfocsForSeach GetUserInfo(int tenant_id, string email)
+        {
+            AbpExternalAuthenticateConfig auth_config = this.GetCurrentAuthWithoutTenant(tenant_id);
+            string acc_token = this.GetToken(auth_config.AppId, auth_config.Secret);
+            string url = string.Format(@"https://api.exmail.qq.com/cgi-bin/user/get?access_token={0}&userid={1}", acc_token, email);
+
+            var content = HttpMethods.RestGet(url);
+            var result = JsonConvert.DeserializeObject<QYMailUserInfocsForSeach>(content);
+            if (result.errmsg == "ok")
+            {
+                return result;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public void UpdateQYEmail(QYMailUserInfocsForUpdate model, int tenant_id, string change_type)
+        {
+            AbpExternalAuthenticateConfig auth_config = this.GetCurrentAuthWithoutTenant(tenant_id);
+            model.access_token = this.GetToken(auth_config.AppId, auth_config.Secret);
+
+            string url = change_type == "create_user" ? @"https://api.exmail.qq.com/cgi-bin/user/create" : @"https://api.exmail.qq.com/cgi-bin/user/update";
+            url = url + string.Format(@"?access_token={0}", model.access_token);
+
+            Dictionary<string, object> param = new Dictionary<string, object>();
+            //param.Add("access_token", model.access_token);
+            param.Add("department", model.department);
+
+            param.Add("extid", model.extid);
+            param.Add("gender", model.gender);
+            param.Add("mobile", model.mobile);
+            param.Add("position", model.position);
+            param.Add("name", model.name);
+            param.Add("userid", model.userid);
+            if (change_type == "create")
+            {
+                param.Add("password", model.extid + "Cailian");
+            }
+            else
+            {
+                param.Add("enable", model.enable);
+            }
+            var content = HttpMethods.RestJsonPost(url, param);
+
+        }
 
         #region Private
 
@@ -51,6 +117,7 @@ namespace UserManage.QYEmail.DomainService
             return auth_config;
         }
 
+
         /// <summary>
         /// 获取当前秘钥的token
         /// </summary>
@@ -59,13 +126,18 @@ namespace UserManage.QYEmail.DomainService
         /// <returns></returns>
         private string GetToken(string appId, string secret)
         {
-            string token_result = "";
-            var token = _cacheManager.GetCache(UserManageConsts.Abp_QYEmail_Access_Token_Cache)
-                .Get(appId, () =>
-                        this.getToken(appId, secret));
-            token_result = token?.ToString();
+            //_cacheManager.GetCache(UserManageConsts.Abp_QYEmail_Access_Token_Cache).Clear();
+            var token = _cacheManager.GetCache(UserManageConsts.Abp_QYEmail_Access_Token_Cache).GetOrDefault(appId);
 
-            return token_result;
+            if (token == null)
+            {
+                var token_result = this.getToken(appId, secret);
+                if (token_result == null) return "";
+
+                _cacheManager.GetCache(UserManageConsts.Abp_QYEmail_Access_Token_Cache).Set(appId, token_result.access_token, TimeSpan.FromSeconds(token_result.expires_in.Value));
+                return token_result.access_token;
+            }
+            return token as string;
         }
 
         /// <summary>
@@ -74,14 +146,24 @@ namespace UserManage.QYEmail.DomainService
         /// <param name="appId"></param>
         /// <param name="secret"></param>
         /// <returns></returns>
-        private string getToken(string appId, string secret)
+        private QYMailAccessToken getToken(string appId, string secret)
         {
             if (string.IsNullOrWhiteSpace(appId) || string.IsNullOrWhiteSpace(secret))
             {
-                return "";
+                return null;
             }
             string url = string.Format(@"https://api.exmail.qq.com/cgi-bin/gettoken?corpid={0}&corpsecret={1}", appId, secret);
-            return HttpMethods.RestGet(url);
+            var content = HttpMethods.RestGet(url);
+
+            var result = JsonConvert.DeserializeObject<QYMailAccessToken>(content);
+            if (result.errmsg == "ok")
+            {
+                return result;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         #endregion

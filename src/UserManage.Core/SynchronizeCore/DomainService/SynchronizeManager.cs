@@ -15,6 +15,7 @@ using UserManage.AbpExternalCore.DomainService;
 using UserManage.AbpOrganizationUnitCore;
 using UserManage.Authorization.Roles;
 using UserManage.Authorization.Users;
+using UserManage.QYEmail.DomainService;
 using UserManage.SynchronizeCore.Dto;
 
 namespace UserManage.SynchronizeCore.DomainService
@@ -41,6 +42,9 @@ namespace UserManage.SynchronizeCore.DomainService
         private readonly IRepository<Role, int> _roleRepository;
         private readonly IRepository<UserRole, long> _userRoleRepository;
 
+        //企业邮箱
+        private readonly QYEmailManager _emailManager;
+
         //Session
         public IAbpSession AbpSession { get; set; }
 
@@ -66,7 +70,8 @@ namespace UserManage.SynchronizeCore.DomainService
             IRepository<UserRole, long> userRoleRepository,
             IUnitOfWorkManager unitOfWorkManager,
             IAbpWeChatManager weChatManager,
-            IPasswordHasher<User> passwordHasher
+            IPasswordHasher<User> passwordHasher,
+            QYEmailManager emailManager
          )
         {
             _organizationUnitRepository = organizationUnitRepository;
@@ -81,6 +86,7 @@ namespace UserManage.SynchronizeCore.DomainService
             AbpSession = NullAbpSession.Instance;
             _logger = NullLogger.Instance;
             _weChatManager = weChatManager;
+            _emailManager = emailManager;
         }
 
         #region  Synchronize Department
@@ -341,15 +347,35 @@ namespace UserManage.SynchronizeCore.DomainService
                         case "delete_user":
                             if (ul != null)
                             {
-                                _userOrganizationUnitRepository.Delete(x => x.UserId == ul.UserId);
-                                _userRoleRepository.Delete(x => x.UserId == ul.UserId);
-                                _userRepository.Delete(ul.UserId);
-                                _userLoginRepository.Delete(ul);
+                                var user = _userRepository.FirstOrDefault(x => x.Id == ul.UserId);
+
+                                if (user != null)
+                                {
+                                    string user_email = user.EmailAddress;
+
+                                    _userOrganizationUnitRepository.Delete(x => x.UserId == ul.UserId);
+                                    _userRoleRepository.Delete(x => x.UserId == ul.UserId);
+
+                                    _userRepository.Delete(user);
+                                    _userLoginRepository.Delete(ul);
+
+                                    CurrentUnitOfWork.SaveChanges();
+
+                                    var mail_entity = new QYEmail.QYMailUserInfocsForUpdate
+                                    {
+                                        userid = user_email,
+                                        enable = 0,
+                                        extid = wx_user.userid
+                                    };
+                                    _emailManager.UpdateQYEmail(mail_entity, tenant_id.Value, wx_user.changetype);
+
+                                }
                             }
                             break;
                         case "create_user":
                             if (ul == null)
                             {
+
                                 var user_name = string.IsNullOrEmpty(wx_user.email) ? "" : wx_user.email.Split('@')[0];
                                 //先检查用户是否有重复
                                 if (_userRepository.GetAll().Any(x => x.UserName == wx_user.email || x.UserName == user_name || x.EmailAddress == wx_user.email))
@@ -383,6 +409,7 @@ namespace UserManage.SynchronizeCore.DomainService
                                 user.Password = _passwordHasher.HashPassword(user, "000000");
                                 var new_id = _userRepository.InsertAndGetId(user);
 
+
                                 _userLoginRepository.Insert(new UserLogin { LoginProvider = "Wechat", ProviderKey = wx_user.userid, TenantId = tenant_id, UserId = new_id });
 
                                 CurrentUnitOfWork.SaveChanges();
@@ -400,6 +427,18 @@ namespace UserManage.SynchronizeCore.DomainService
                                         CurrentUnitOfWork.SaveChanges();
                                     }
                                 }
+
+                                var mail_entity = new QYEmail.QYMailUserInfocsForUpdate
+                                {
+                                    userid = wx_user.email,
+                                    extid = wx_user.userid,
+                                    department = new List<long>() { 6786316460997752257 },
+                                    position = wx_user.position,
+                                    gender = wx_user.gender,
+                                    mobile = wx_user.mobile,
+                                    name = wx_user.name,
+                                };
+                                _emailManager.UpdateQYEmail(mail_entity, tenant_id.Value, wx_user.changetype);
                             }
                             break;
                         case "update_user":

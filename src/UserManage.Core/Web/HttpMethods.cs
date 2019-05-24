@@ -1,4 +1,5 @@
-﻿using RestSharp;
+﻿using Newtonsoft.Json;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -45,6 +46,24 @@ namespace UserManage.Web
             request.AddParameter("application/x-www-form-urlencoded", param, ParameterType.RequestBody);
             rest.ExecuteAsync(request, response => { tcs.SetResult(response.Content); });
             return tcs.Task;
+        }
+
+        public static string RestJsonPost(string route, Dictionary<string, object> param = null)
+        {
+            RestClient client = new RestClient(route);
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("Content-Type", "application/json");
+
+
+            if (param != null)
+            {
+                var json_param = JsonConvert.SerializeObject(param);
+                request.AddParameter("undefined", json_param, ParameterType.RequestBody);
+            }
+
+            IRestResponse response = client.Execute(request);
+            return response.Content;
+
         }
     }
 }

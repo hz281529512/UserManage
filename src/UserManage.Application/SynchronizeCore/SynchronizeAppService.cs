@@ -43,7 +43,7 @@ namespace UserManage.SynchronizeCore
         private readonly IRepository<Role, int> _roleRepository;
         private readonly IRepository<UserRole, long> _userRoleRepository;
 
-        private readonly QYEmailManager QYEmailManager;
+        private readonly QYEmailManager _qyEmailManager;
         public SynchronizeAppService(
             IAbpWeChatManager weChatManager,
             DomainService.ISynchronizeManager testManager,
@@ -66,13 +66,14 @@ namespace UserManage.SynchronizeCore
             _roleRepository = roleRepository;
             _userRoleRepository = userRoleRepository;
             _passwordHasher = passwordHasher;
-            QYEmailManager = qYEmailManager;
+            _qyEmailManager = qYEmailManager;
         }
 
-        public void MatchTest()
+        public void MatchTest(QYEmail.QYMailUserInfocsForUpdate model)
         {
             //_testManager.MatchSingleDepartmentWithoutTenant(new SyncDepartment { changetype = "update_party", id = 166, name = "test", parentid = 10 }, 1);
-            string t = QYEmailManager.Test(AbpSession.TenantId.Value);
+            //var t =
+            _qyEmailManager.UpdateQYEmail(model, AbpSession.TenantId.Value, "update");
         }
 
         /// <summary>
@@ -94,6 +95,55 @@ namespace UserManage.SynchronizeCore
 
         #region  Synchronize Department
 
+
+        /// <summary>
+        /// 同步企业邮箱 部门 to 组织
+        /// </summary>
+        /// <returns></returns>
+        public async Task<MatchResultDto> MatchMailDepartment()
+        {
+            MatchResultDto result = new MatchResultDto { CreateCount = 0, DeleteCount = 0, MatchCount = 0 };
+            var current_tenantid = this.AbpSession.TenantId;
+
+            var mail_departments = _qyEmailManager.GetEmailAllDepartment(AbpSession.TenantId.Value);
+
+            var newruzhi = mail_departments.FirstOrDefault(x => x.name == "企业微信入职人员");//6786316460997752257
+
+            if (mail_departments != null)
+            {
+                var local_dept = await _organizationUnitRepository.GetAll().ToListAsync();
+                foreach (var item in local_dept)
+                {
+                    if (item.QYMailDeptId.HasValue)
+                    {
+                        if (!mail_departments.Any(x => x.id == item.QYMailDeptId))
+                        {
+
+                        }
+                    }
+                    else
+                    {
+                        if (item.WXParentDeptId == 0)
+                        {
+                            var mail_dept = mail_departments.FirstOrDefault(x => x.name == "广东采联采购科技有限公司");
+                            item.QYMailDeptId = mail_dept.id;
+                        }
+                        else
+                        {
+                            var mail_dept = mail_departments.FirstOrDefault(x => x.name == item.DisplayName);
+                            if (mail_dept != null)
+                            {
+                                item.QYMailDeptId = mail_dept.id;
+                                await _organizationUnitRepository.UpdateAsync(item);
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            return result;
+        }
 
         /// <summary>
         /// 同步企业微信 部门 => 组织

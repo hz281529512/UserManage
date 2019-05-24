@@ -97,12 +97,13 @@ namespace UserManage.AbpExternalAuthenticateCore.DomainService
                 {
                     var auth = _repository.FirstOrDefault(x => x.LoginProvider == providerKey);
                     if (auth == null) return null;
-                    _cacheManager.GetCache(providerKey).Set(str_tenant, auth, TimeSpan.FromHours(8));
+                    var str_auth = JsonConvert.SerializeObject(auth);
+                    _cacheManager.GetCache(providerKey).Set(str_tenant, str_auth, TimeSpan.FromHours(8));
                     return auth;
                 }
                 else
                 {
-                    return resultConfig as AbpExternalAuthenticateConfig;
+                    return JsonConvert.DeserializeObject<AbpExternalAuthenticateConfig>(resultConfig as string);
                 }
             }
         }

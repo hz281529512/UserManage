@@ -24,6 +24,11 @@ namespace UserManage.SynchronizeCore
         /// <returns></returns>
         Task<MatchResultDto> MatchDepartment();
 
+        /// <summary>
+        /// 同步企业邮箱 部门 to 组织
+        /// </summary>
+        /// <returns></returns>
+        Task<MatchResultDto> MatchMailDepartment();
 
         /// <summary>
         /// 根据企业微信导入用户

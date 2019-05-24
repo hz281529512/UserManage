@@ -19,5 +19,11 @@ namespace UserManage.AbpOrganizationUnitCore
         /// 微信父级部门Id
         /// </summary>
         public virtual int? WXParentDeptId { get; set; }
+
+        /// <summary>
+        /// 企业邮箱部门Id
+        /// </summary>
+        public virtual long? QYMailDeptId { get; set; }
+
     }
 }

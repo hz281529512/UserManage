@@ -291,23 +291,10 @@ namespace UserManage.AbpExternalCore.DomainService
         /// <returns></returns>
         private async Task<string> GetToken(string appId, string secret)
         {
-
-            //if (string.IsNullOrWhiteSpace(appId) || string.IsNullOrWhiteSpace(secret))
-            //{
-            //    return "";
-            //}
             string token_result = "";
             var token = await _cacheManager.GetCache(UserManageConsts.Abp_Wechat_Access_Token_Cache)
                 .GetAsync(appId, () =>
                         Senparc.Weixin.Work.Containers.AccessTokenContainer.TryGetTokenAsync(appId, secret));
-            //if (token == null)
-            //{
-            //    token = await AccessTokenContainer.TryGetTokenAsync(AppId, Secret);
-            //    if (token != null)
-            //    {
-            //        await _cacheManager.GetCache("CurrentToken").SetAsync(AppId, token.ToString(), TimeSpan.FromHours(2));
-            //    }
-            //}
             token_result = token?.ToString();
 
             return token_result;
