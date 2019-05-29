@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UserManage.EntityFrameworkCore;
 
 namespace UserManage.Migrations
 {
     [DbContext(typeof(UserManageDbContext))]
-    partial class UserManageDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190527080626_AlterTableThirdPartyConfig")]
+    partial class AlterTableThirdPartyConfig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1091,8 +1093,6 @@ namespace UserManage.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<bool?>("AllowLowEdit");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasMaxLength(128);
@@ -1317,8 +1317,6 @@ namespace UserManage.Migrations
                     b.Property<DateTime>("CreationTime");
 
                     b.Property<long?>("CreatorUserId");
-
-                    b.Property<string>("CropId");
 
                     b.Property<long?>("DeleterUserId");
 

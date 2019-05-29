@@ -20,5 +20,10 @@ namespace UserManage.Roles.Dto
         /// 角色组别
         /// </summary>
         public int? RoleType { get; set; }
+
+        /// <summary>
+        /// 允许低层角色编辑
+        /// </summary>
+        public bool? AllowLowEdit { get; set; }
     }
 }

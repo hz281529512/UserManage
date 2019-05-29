@@ -16,8 +16,12 @@
 
         public const string Abp_Data_Dict_Cache = "Abp_Data_Dict_Cache";
 
+        public const string Third_Party_Config_Cache = "Third_Party_Config_Cache";
+
+        public const string Third_Party_Ticket_Cache = "Third_Party_Ticket_Cache";
+
         #endregion
 
-        
+
     }
 }

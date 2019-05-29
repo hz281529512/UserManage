@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UserManage.EntityFrameworkCore;
 
 namespace UserManage.Migrations
 {
     [DbContext(typeof(UserManageDbContext))]
-    partial class UserManageDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190529021047_20190529AbpRoleAddColumnAllowLowEdit")]
+    partial class _20190529AbpRoleAddColumnAllowLowEdit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1317,8 +1319,6 @@ namespace UserManage.Migrations
                     b.Property<DateTime>("CreationTime");
 
                     b.Property<long?>("CreatorUserId");
-
-                    b.Property<string>("CropId");
 
                     b.Property<long?>("DeleterUserId");
 

@@ -35,7 +35,10 @@ namespace UserManage.Authorization.Roles
         /// </summary>
         public int? RoleType { get; set; }
 
-
+        /// <summary>
+        /// 允许低层角色编辑
+        /// </summary>
+        public bool? AllowLowEdit { get; set; }
 
     }
 }

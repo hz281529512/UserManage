@@ -10,6 +10,7 @@ namespace UserManage.QyCallBack.DomainService
         /// <summary>
         /// 验证url
         /// </summary>
+        /// <param name="source_type">来源类型,区分开是内网还是</param>
         /// <param name="msg_signature">企业微信加密签名</param>
         /// <param name="timestamp">时间戳</param>
         /// <param name="nonce">随机数</param>
