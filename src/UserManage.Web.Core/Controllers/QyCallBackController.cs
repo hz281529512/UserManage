@@ -58,6 +58,7 @@ namespace UserManage.Controllers
             StreamReader reader = new StreamReader(Request.Body);
             string content = reader.ReadToEnd();
             _qyMsg.DecryptContent(tid, msg_signature, timestamp, nonce, content);
+
             //string content = root["Content"].InnerText;
         }
 
@@ -65,10 +66,20 @@ namespace UserManage.Controllers
         public async Task Tpmsg(string tpid, string msg_signature, string timestamp, string nonce, string echostr)
         {
 
-            //string msg = _tpManager.VerifyUrl(tpid, msg_signature, timestamp, nonce, echostr);
+            string msg = _tpManager.VerifyUrl(tpid, msg_signature, timestamp, nonce, echostr);
 
             //return Content("success : " + msg);
-            var data = Encoding.UTF8.GetBytes("success");
+         
+            var accept = Request.GetTypedHeaders().Accept;
+            var data = Encoding.UTF8.GetBytes(msg);
+            if (accept.Any(x => x.MediaType == "text/html"))
+            {
+                Response.ContentType = "text/html";
+            }
+            else
+            {
+                Response.ContentType = "text/plain";
+            }
             await Response.Body.WriteAsync(data, 0, data.Length);
         }
 
