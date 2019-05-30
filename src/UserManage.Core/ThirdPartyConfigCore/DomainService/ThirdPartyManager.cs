@@ -37,7 +37,7 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
 
         //缓存
         private readonly ICacheManager _cacheManager;
-        
+
         private ILogger _logger { get; set; }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
 
         public Task<string> Test(string tp_id)
         {
-             var _config = this.GetConfig(tp_id);
+            var _config = this.GetConfig(tp_id);
             return this.GetSuiteToken(tp_id, _config.SuiteID, _config.Secret);
         }
 
@@ -143,7 +143,7 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
                             var ComponentVerifyTicket = q.Elements("SuiteTicket").First().Value;
                             //_logger.Info(sMsg);
                             _cacheManager.GetCache(UserManageConsts.Third_Party_Ticket_Cache).Set(id, ComponentVerifyTicket, TimeSpan.FromMinutes(30));
-                            this.SetSuiteToken(corpid, _config.Secret, ComponentVerifyTicket);
+                            //this.SetSuiteToken(corpid, _config.Secret, ComponentVerifyTicket);
                             return "success";
                         case "unauthorized":
                             return string.Format("{0} 已取消授权", q.Elements("AuthorizerAppid").First().Value);
@@ -169,6 +169,26 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
         #endregion
 
         #region Token
+
+        /// <summary>
+        /// 获取第三方Token
+        /// </summary>
+        /// <param name="tpid"></param>
+        /// <returns></returns>
+        public async Task<string> GetSuiteToken(string tpid)
+        {
+            try
+            {
+
+                var _config = this.GetConfig(tpid);
+                return await this.GetSuiteToken(tpid, _config.SuiteID, _config.Secret);
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
         /// <summary>
         /// 获取第三方token
@@ -206,9 +226,14 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
             if (token == null)
             {
                 var token_result = this.getSuiteToken(suite_id, suite_secret, suite_ticket);
-                if (token_result.errmsg != "ok") return;
-
-                _cacheManager.GetCache(UserManageConsts.Third_Party_Token_Cache).SetAsync(suite_id, token_result.suite_access_token, TimeSpan.FromSeconds(token_result.expires_in.Value));
+                if (token_result.errmsg != "ok")
+                {
+                    _logger.Info(token_result.errmsg);
+                }
+                else
+                {
+                    _cacheManager.GetCache(UserManageConsts.Third_Party_Token_Cache).SetAsync(suite_id, token_result.suite_access_token, TimeSpan.FromSeconds(token_result.expires_in.Value));
+                }
             }
         }
 

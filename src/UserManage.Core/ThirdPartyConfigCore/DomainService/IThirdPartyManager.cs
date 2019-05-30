@@ -44,5 +44,12 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
         /// <returns></returns>
         string VerifySuiteTicket(string id,string signature, string timestamp, string nonce, string stringInput);
 
+        /// <summary>
+        /// 获取第三方Token
+        /// </summary>
+        /// <param name="tpid"></param>
+        /// <returns></returns>
+        Task<string> GetSuiteToken(string tpid);
+
     }
 }

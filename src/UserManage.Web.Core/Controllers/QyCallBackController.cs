@@ -94,5 +94,14 @@ namespace UserManage.Controllers
                 return Content(result);
             }
         }
+
+        public async Task<JsonResult> GetToken()
+        {
+            string tp_id = "E4B57428-BF03-493E-80B6-E38CECA47DD1";
+
+            var token = await _tpManager.GetSuiteToken(tp_id);
+
+            return Json(new { token });
+        }
     }
 }
