@@ -44,6 +44,8 @@ namespace UserManage.SynchronizeCore
         private readonly IRepository<UserRole, long> _userRoleRepository;
 
         private readonly QYEmailManager _qyEmailManager;
+        private readonly ThirdPartyConfigCore.DomainService.ThirdPartyManager _tpManager;
+
         public SynchronizeAppService(
             IAbpWeChatManager weChatManager,
             DomainService.ISynchronizeManager testManager,
@@ -53,8 +55,9 @@ namespace UserManage.SynchronizeCore
             IRepository<UserLogin, long> userLoginRepository,
             IRepository<Role, int> roleRepository,
             IRepository<UserRole, long> userRoleRepository,
+            IPasswordHasher<User> passwordHasher,
             QYEmailManager qYEmailManager,
-            IPasswordHasher<User> passwordHasher
+            ThirdPartyConfigCore.DomainService.ThirdPartyManager tpManager
         )
         {
             _testManager = testManager;
@@ -67,13 +70,15 @@ namespace UserManage.SynchronizeCore
             _userRoleRepository = userRoleRepository;
             _passwordHasher = passwordHasher;
             _qyEmailManager = qYEmailManager;
+            _tpManager = tpManager;
         }
 
         public void MatchTest(QYEmail.QYMailUserInfocsForUpdate model)
         {
             //_testManager.MatchSingleDepartmentWithoutTenant(new SyncDepartment { changetype = "update_party", id = 166, name = "test", parentid = 10 }, 1);
             //var t =
-            _qyEmailManager.UpdateQYEmail(model, AbpSession.TenantId.Value, "update");
+            //_qyEmailManager.UpdateQYEmail(model, AbpSession.TenantId.Value, "update");
+            var t = _tpManager.Test("E4B57428-BF03-493E-80B6-E38CECA47DD1");
         }
 
         /// <summary>

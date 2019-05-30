@@ -20,6 +20,8 @@
 
         public const string Third_Party_Ticket_Cache = "Third_Party_Ticket_Cache";
 
+        public const string Third_Party_Token_Cache = "Third_Party_Token_Cache";
+
         #endregion
 
 

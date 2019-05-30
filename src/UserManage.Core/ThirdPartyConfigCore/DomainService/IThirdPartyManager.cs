@@ -9,7 +9,7 @@ using UserManage.ThirdPartyConfigCore;
 
 namespace UserManage.ThirdPartyConfigCore.DomainService
 {
-    public interface IThirdPartyConfigManager : IDomainService
+    public interface IThirdPartyManager : IDomainService
     {
 
         /// <summary>
@@ -31,17 +31,6 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
         /// <param name="echostr">加密的字符串</param>
         /// <returns></returns>
         string VerifyUrl(string id, string msg_signature, string timestamp, string nonce, string echostr);
-
-        /// <summary>
-        /// 接受内容解密
-        /// </summary>
-        /// <param name="id">配置Id/param>
-        /// <param name="msg_signature">企业微信加密签名</param>
-        /// <param name="timestamp">时间戳</param>
-        /// <param name="nonce">随机数</param>
-        /// <param name="content">加密内容</param>
-        /// <returns></returns>
-        int DecryptContent(string id, string msg_signature, string timestamp, string nonce, string content);
 
 
         /// <summary>

@@ -22,13 +22,14 @@ using Abp.Runtime.Caching;
 using Newtonsoft.Json;
 using System.Xml.Linq;
 using Tencent;
+using UserManage.Web;
 
 namespace UserManage.ThirdPartyConfigCore.DomainService
 {
     /// <summary>
     /// ThirdPartyConfig领域层的业务管理
     ///</summary>
-    public class ThirdPartyConfigManager : UserManageDomainServiceBase, IThirdPartyConfigManager
+    public class ThirdPartyManager : UserManageDomainServiceBase, IThirdPartyManager
     {
 
         private readonly IRepository<ThirdPartyConfig, Guid> _repository;
@@ -39,7 +40,7 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
         /// <summary>
         /// ThirdPartyConfig的构造方法
         ///</summary>
-        public ThirdPartyConfigManager(
+        public ThirdPartyManager(
             IRepository<ThirdPartyConfig, Guid> repository,
             ICacheManager cacheManager
         )
@@ -49,18 +50,17 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
         }
 
 
-        /// <summary>
-        /// 初始化
-        ///</summary>
-        public void InitThirdPartyConfig()
-        {
-            throw new NotImplementedException();
-        }
 
         // TODO:编写领域业务代码
 
+        public Task<string> Test(string tp_id)
+        {
+             var _config = this.GetConfig(tp_id);
+            return this.GetSuiteToken(tp_id, _config.SuiteID, _config.Secret);
+        }
 
 
+        #region Config
 
         public ThirdPartyConfig GetConfig(string id)
         {
@@ -80,6 +80,9 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
                 return JsonConvert.DeserializeObject<ThirdPartyConfig>(resultConfig as string);
             }
         }
+        #endregion
+
+        #region Verify
 
         public string VerifyUrl(string id, string msg_signature, string timestamp, string nonce, string echostr)
         {
@@ -108,10 +111,6 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
             }
         }
 
-        public int DecryptContent(string id, string msg_signature, string timestamp, string nonce, string content)
-        {
-            throw new NotImplementedException();
-        }
 
         public string VerifySuiteTicket(string id, string signature, string timestamp, string nonce, string stringInput)
         {
@@ -153,5 +152,74 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
             return "参数错误！";
 
         }
+
+        internal async Task<string> GetSuiteTicketAsync(string tpid)
+        {
+            var suite_ticket = await _cacheManager.GetCache(UserManageConsts.Third_Party_Ticket_Cache).GetOrDefaultAsync(tpid);
+            return suite_ticket?.ToString() ?? "";
+        }
+
+        #endregion
+
+        #region Token
+
+        /// <summary>
+        /// 获取第三方token
+        /// </summary>
+        /// <param name="tpid"></param>
+        /// <returns></returns>
+        private async Task<string> GetSuiteToken(string tpid, string suite_id, string suite_secret)
+        {
+            var suite_ticket = await GetSuiteTicketAsync(tpid);
+
+
+            var token = _cacheManager.GetCache(UserManageConsts.Third_Party_Token_Cache).GetOrDefault(suite_id);
+
+            if (token == null)
+            {
+                var token_result = this.getSuiteToken(suite_id, suite_secret, suite_ticket);
+                if (token_result == null) return "";
+
+                await _cacheManager.GetCache(UserManageConsts.Third_Party_Token_Cache).SetAsync(suite_id, token_result.suite_access_token, TimeSpan.FromSeconds(token_result.expires_in.Value));
+                return token_result.suite_access_token;
+            }
+            return token as string;
+        }
+
+        /// <summary>
+        /// 获取当前秘钥的token
+        /// </summary>
+        /// <param name="appId"></param>
+        /// <param name="secret"></param>
+        /// <returns></returns>
+        private SuiteAccessToken getSuiteToken(string suite_id, string suite_secret, string suite_ticket)
+        {
+            if (string.IsNullOrWhiteSpace(suite_id) || string.IsNullOrWhiteSpace(suite_secret) || string.IsNullOrWhiteSpace(suite_ticket))
+            {
+                return null;
+            }
+            string url = @"https://qyapi.weixin.qq.com/cgi-bin/service/get_suite_token";
+
+            Dictionary<string, object> param = new Dictionary<string, object>();
+            param.Add("suite_id", suite_id);
+
+            param.Add("suite_secret", suite_secret);
+            param.Add("suite_ticket	", suite_ticket);
+
+            var content = HttpMethods.RestJsonPost(url, param);
+
+            var result = JsonConvert.DeserializeObject<SuiteAccessToken>(content);
+            if (result.errmsg == "ok")
+            {
+                return result;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        #endregion
+
     }
 }

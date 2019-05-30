@@ -19,13 +19,13 @@ namespace UserManage.Controllers
     {
         private readonly IQyMsg _qyMsg;
 
-        private readonly IThirdPartyConfigManager _tpManager;
+        private readonly IThirdPartyManager _tpManager;
 
-        private readonly ILogger _logger;
+        private  ILogger _logger { get; set; }
 
         public QyCallBackController(
             IQyMsg qyMsg,
-            IThirdPartyConfigManager tpManager
+            IThirdPartyManager tpManager
         )
         {
             this._qyMsg = qyMsg;
