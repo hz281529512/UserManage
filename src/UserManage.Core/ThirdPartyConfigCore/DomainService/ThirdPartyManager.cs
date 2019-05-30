@@ -23,6 +23,7 @@ using Newtonsoft.Json;
 using System.Xml.Linq;
 using Tencent;
 using UserManage.Web;
+using Castle.Core.Logging;
 
 namespace UserManage.ThirdPartyConfigCore.DomainService
 {
@@ -36,6 +37,8 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
 
         //缓存
         private readonly ICacheManager _cacheManager;
+        
+        private ILogger _logger { get; set; }
 
         /// <summary>
         /// ThirdPartyConfig的构造方法
@@ -47,6 +50,7 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
         {
             _repository = repository;
             _cacheManager = cacheManager;
+            _logger = NullLogger.Instance;
         }
 
 
@@ -129,6 +133,7 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
                     ret = wxcpt.DecryptMsg(signature, timestamp, nonce, stringInput, ref sMsg);
                     if (ret != 0)
                         return string.Format("解析错误{0}", ret);
+                    _logger.Info(sMsg);
                     var xDoc = XDocument.Parse(sMsg);
                     var q = (from c in xDoc.Elements() select c).ToList();
                     var infoType = q.Elements("InfoType").First().Value;
@@ -136,7 +141,9 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
                     {
                         case "suite_ticket":
                             var ComponentVerifyTicket = q.Elements("SuiteTicket").First().Value;
+                            //_logger.Info(sMsg);
                             _cacheManager.GetCache(UserManageConsts.Third_Party_Ticket_Cache).Set(id, ComponentVerifyTicket, TimeSpan.FromMinutes(30));
+                            this.SetSuiteToken(corpid, _config.Secret, ComponentVerifyTicket);
                             return "success";
                         case "unauthorized":
                             return string.Format("{0} 已取消授权", q.Elements("AuthorizerAppid").First().Value);
@@ -178,12 +185,31 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
             if (token == null)
             {
                 var token_result = this.getSuiteToken(suite_id, suite_secret, suite_ticket);
-                if (token_result == null) return "";
+                if (token_result.errmsg != "ok") return "";
 
                 await _cacheManager.GetCache(UserManageConsts.Third_Party_Token_Cache).SetAsync(suite_id, token_result.suite_access_token, TimeSpan.FromSeconds(token_result.expires_in.Value));
                 return token_result.suite_access_token;
             }
             return token as string;
+        }
+
+        /// <summary>
+        /// 保存第三方秘钥到缓存
+        /// </summary>
+        /// <param name="suite_id"></param>
+        /// <param name="suite_secret"></param>
+        /// <param name="suite_ticket"></param>
+        private void SetSuiteToken(string suite_id, string suite_secret, string suite_ticket)
+        {
+            var token = _cacheManager.GetCache(UserManageConsts.Third_Party_Token_Cache).GetOrDefault(suite_id);
+
+            if (token == null)
+            {
+                var token_result = this.getSuiteToken(suite_id, suite_secret, suite_ticket);
+                if (token_result.errmsg != "ok") return;
+
+                _cacheManager.GetCache(UserManageConsts.Third_Party_Token_Cache).SetAsync(suite_id, token_result.suite_access_token, TimeSpan.FromSeconds(token_result.expires_in.Value));
+            }
         }
 
         /// <summary>
@@ -204,7 +230,7 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
             param.Add("suite_id", suite_id);
 
             param.Add("suite_secret", suite_secret);
-            param.Add("suite_ticket	", suite_ticket);
+            param.Add("suite_ticket", suite_ticket);
 
             var content = HttpMethods.RestJsonPost(url, param);
 

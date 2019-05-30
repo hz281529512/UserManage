@@ -58,7 +58,7 @@ namespace UserManage.Web
             if (param != null)
             {
                 var json_param = JsonConvert.SerializeObject(param);
-                request.AddParameter("undefined", json_param, ParameterType.RequestBody);
+                request.AddParameter("", json_param, ParameterType.RequestBody);
             }
 
             IRestResponse response = client.Execute(request);

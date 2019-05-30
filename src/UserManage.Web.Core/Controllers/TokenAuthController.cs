@@ -35,7 +35,7 @@ namespace UserManage.Controllers
         private readonly IExternalAuthConfiguration _externalAuthConfiguration;
         private readonly IExternalAuthManager _externalAuthManager;
         private readonly UserRegistrationManager _userRegistrationManager;
-    
+
 
         public TokenAuthController(
             LogInManager logInManager,
@@ -53,7 +53,7 @@ namespace UserManage.Controllers
             _externalAuthConfiguration = externalAuthConfiguration;
             _externalAuthManager = externalAuthManager;
             _userRegistrationManager = userRegistrationManager;
-    
+
         }
 
         [HttpPost]
@@ -62,7 +62,7 @@ namespace UserManage.Controllers
             //var loginResult = await GetLoginResultAsync(
             //    model.UserNameOrEmailAddress,
             //    model.Password,
-             // GetTenancyNameOrNull()
+            // GetTenancyNameOrNull()
             //);
 
 
@@ -75,8 +75,8 @@ namespace UserManage.Controllers
             //    ExpireInSeconds = (int)_configuration.Expiration.TotalSeconds,
             //    UserId = loginResult.User.Id
             //};
- 
-              var httpHandler = new HttpClientHandler();
+
+            var httpHandler = new HttpClientHandler();
             httpHandler.CookieContainer.Add(
                 new Uri(_configuration.Authority),
                 new Cookie("Abp.TenantId", AbpSession.TenantId?.ToString())
@@ -100,7 +100,7 @@ namespace UserManage.Controllers
                 AccessToken = tokenResponse.AccessToken,
                 EncryptedAccessToken = GetEncrpyedAccessToken(tokenResponse.AccessToken),
                 ExpireInSeconds = tokenResponse.ExpiresIn,
-              
+
             };
             return data;
         }

@@ -73,7 +73,7 @@ namespace UserManage.SynchronizeCore
             _tpManager = tpManager;
         }
 
-        public void MatchTest(QYEmail.QYMailUserInfocsForUpdate model)
+        public void MatchTest()
         {
             //_testManager.MatchSingleDepartmentWithoutTenant(new SyncDepartment { changetype = "update_party", id = 166, name = "test", parentid = 10 }, 1);
             //var t =

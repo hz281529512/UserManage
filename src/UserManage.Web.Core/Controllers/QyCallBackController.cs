@@ -89,7 +89,7 @@ namespace UserManage.Controllers
             using (var streamReader = new StreamReader(Request.Body))
             {
                 string stringInput = streamReader.ReadToEnd();
-                _logger.Info(stringInput);
+                //_logger.Info(stringInput);
                 result = _tpManager.VerifySuiteTicket(tpid, msg_signature, timestamp, nonce, stringInput);
                 return Content(result);
             }
