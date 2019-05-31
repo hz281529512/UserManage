@@ -205,6 +205,7 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
             if (token == null)
             {
                 var token_result = this.getSuiteToken(suite_id, suite_secret, suite_ticket);
+                _logger.Info(token_result.errmsg);
                 if (token_result.errmsg != "ok") return "";
 
                 await _cacheManager.GetCache(UserManageConsts.Third_Party_Token_Cache).SetAsync(suite_id, token_result.suite_access_token, TimeSpan.FromSeconds(token_result.expires_in.Value));
@@ -226,12 +227,7 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
             if (token == null)
             {
                 var token_result = this.getSuiteToken(suite_id, suite_secret, suite_ticket);
-                if (token_result.errmsg != "ok")
-                {
-                    _logger.Info(token_result.errmsg);
-                }
-                else
-                {
+                if (token_result != null) {
                     _cacheManager.GetCache(UserManageConsts.Third_Party_Token_Cache).SetAsync(suite_id, token_result.suite_access_token, TimeSpan.FromSeconds(token_result.expires_in.Value));
                 }
             }
@@ -259,6 +255,8 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
 
             var content = HttpMethods.RestJsonPost(url, param);
 
+            _logger.Info(content);
+
             var result = JsonConvert.DeserializeObject<SuiteAccessToken>(content);
             if (result.errmsg == "ok")
             {
@@ -266,7 +264,7 @@ namespace UserManage.ThirdPartyConfigCore.DomainService
             }
             else
             {
-                return null;
+                throw new Exception(content);
             }
         }
 

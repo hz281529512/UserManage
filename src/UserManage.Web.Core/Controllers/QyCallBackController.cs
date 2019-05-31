@@ -95,6 +95,7 @@ namespace UserManage.Controllers
             }
         }
 
+        [HttpGet]
         public async Task<JsonResult> GetToken()
         {
             string tp_id = "E4B57428-BF03-493E-80B6-E38CECA47DD1";
