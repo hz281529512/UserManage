@@ -139,25 +139,25 @@ namespace UserManage.Controllers
                     }
                 case AbpLoginResultType.UnknownExternalLogin:
                     {
-                        //var newUser = await RegisterExternalUserAsync(externalUser);
-                        //if (!newUser.IsActive)
-                        //{
-                        //    return new ExternalAuthenticateResultModel
-                        //    {
-                        //        WaitingForActivation = true
-                        //    };
-                        //}
+                        var newUser = await RegisterExternalUserAsync(externalUser);
+                        if (!newUser.IsActive)
+                        {
+                            return new ExternalAuthenticateResultModel
+                            {
+                                WaitingForActivation = true
+                            };
+                        }
 
-                        //// Try to login again with newly registered user!
-                        //loginResult = await _logInManager.LoginAsync(new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider), GetTenancyNameOrNull());
-                        //if (loginResult.Result != AbpLoginResultType.Success)
-                        //{
-                        //    throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
-                        //        loginResult.Result,
-                        //        externalUser.ProviderKey,
-                        //        GetTenancyNameOrNull()
-                        //    );
-                        //}
+                        // Try to login again with newly registered user!
+                        loginResult = await _logInManager.LoginAsync(new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider), GetTenancyNameOrNull());
+                        if (loginResult.Result != AbpLoginResultType.Success)
+                        {
+                            throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
+                                loginResult.Result,
+                                externalUser.ProviderKey,
+                                GetTenancyNameOrNull()
+                            );
+                        }
 
                         return new ExternalAuthenticateResultModel
                         {
@@ -176,7 +176,7 @@ namespace UserManage.Controllers
             }
         }
 
-        private async Task<User> RegisterExternalUserAsync(ExternalAuthUserInfo externalUser)
+        private async Task<User> RegisterExternalUserAsync(AuthUserInfo externalUser)
         {
             var user = await _userRegistrationManager.RegisterAsync(
                 externalUser.Name,
