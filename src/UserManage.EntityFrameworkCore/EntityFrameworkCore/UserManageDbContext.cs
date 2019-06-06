@@ -11,6 +11,7 @@ using UserManage.AbpTagCore;
 using UserManage.AbpCompanyCore;
 using UserManage.AbpDataDictCore;
 using UserManage.ThirdPartyConfigCore;
+using UserManage.AbpServiceCore;
 
 namespace UserManage.EntityFrameworkCore
 {
@@ -48,6 +49,12 @@ namespace UserManage.EntityFrameworkCore
         /// 第三方应用配置
         /// </summary>
         public DbSet<ThirdPartyConfig> ThirdPartyConfig { get; set; }
+
+        /// <summary>
+        /// 内部应用配置
+        /// </summary>
+        public DbSet<AbpServiceConfig> AbpServiceConfig { get; set; }
+        
 
         #endregion
 

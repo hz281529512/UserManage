@@ -40,9 +40,6 @@ namespace UserManage.Authentication.External.Wechat
 
         }
 
-       
-
-
         /// <summary>
         /// 通过企业微信获取用户信息
         /// </summary>

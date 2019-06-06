@@ -121,20 +121,28 @@ namespace UserManage.Users
 
         public override async Task<UserDto> Update(UserDto input)
         {
-            CheckUpdatePermission();
-
-            var user = await _userManager.GetUserByIdAsync(input.Id);
-
-            MapToEntity(input, user);
-
-            CheckErrors(await _userManager.UpdateAsync(user));
-
-            if (input.RoleNames != null)
+            try
             {
-                CheckErrors(await _userManager.SetRoles(user, input.RoleNames));
-            }
+                CheckUpdatePermission();
 
-            return await Get(input);
+                var user = await _userManager.GetUserByIdAsync(input.Id);
+
+                MapToEntity(input, user);
+
+                CheckErrors(await _userManager.UpdateAsync(user));
+
+                if (input.RoleNames != null)
+                {
+                    CheckErrors(await _userManager.SetRoles(user, input.RoleNames));
+                }
+
+                return await Get(input);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         public override async Task Delete(EntityDto<long> input)

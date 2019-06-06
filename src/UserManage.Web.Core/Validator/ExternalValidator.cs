@@ -15,6 +15,8 @@ using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using UserManage.AbpCompanyCore.DomainService;
+using UserManage.AbpServiceCore;
+using UserManage.AbpServiceCore.DomainService;
 using UserManage.AbpUserRoleCore.DomainService;
 using UserManage.Authentication.External;
 using UserManage.Authorization;
@@ -31,66 +33,73 @@ namespace UserManage.Validator
         public UserManager UserManager { get; set; }
         public UserRoleManager UserRoleManager { get; set; }
 
-        public AbpCompanyManager CompanyManager{ get; set; }
+        public AbpCompanyManager CompanyManager { get; set; }
         private readonly IExternalAuthManager _externalAuthManager;
         private readonly LogInManager _logInManager;
         private readonly ITenantCache _tenantCache;
         private readonly AbpLoginResultTypeHelper _abpLoginResultTypeHelper;
         private readonly UserRegistrationManager _userRegistrationManager;
+        private readonly IServiceAuthManager _serviceAuthManager;
 
-        public ExternalValidator(IExternalAuthManager externalAuthManager, LogInManager logInManager, ITenantCache tenantCache, AbpLoginResultTypeHelper abpLoginResultTypeHelper, UserRegistrationManager userRegistrationManager)
+        public ExternalValidator(IExternalAuthManager externalAuthManager, LogInManager logInManager, ITenantCache tenantCache, AbpLoginResultTypeHelper abpLoginResultTypeHelper, UserRegistrationManager userRegistrationManager,
+            IServiceAuthManager serviceAuthManager)
         {
             _externalAuthManager = externalAuthManager;
             _logInManager = logInManager;
             _tenantCache = tenantCache;
             _abpLoginResultTypeHelper = abpLoginResultTypeHelper;
             _userRegistrationManager = userRegistrationManager;
+
+            _serviceAuthManager = serviceAuthManager;
         }
 
         public async Task ValidateAsync(ExtensionGrantValidationContext context)
         {
-     
-                var code = context.Request.Raw.Get("code");
-                var auth = context.Request.Raw.Get("auth");
-                ExternalAuthenticateModel model = new ExternalAuthenticateModel()
-                {
-                    AuthProvider = auth,
-                    ProviderAccessCode = code
-                };
-                var externalUser = await GetExternalUserInfo(model);
 
-                var loginResult = await _logInManager.LoginAsync(
-                    new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider),
-                    GetTenancyNameOrNull());
+            var code = context.Request.Raw.Get("code");
+            var auth = context.Request.Raw.Get("auth");
+            ExternalAuthenticateModel model = new ExternalAuthenticateModel()
+            {
+                AuthProvider = auth,
+                ProviderAccessCode = code
+            };
+            var externalUser = await GetUserInfo(model);//await GetExternalUserInfo(model);
 
-                switch (loginResult.Result)
-                {
-                    case AbpLoginResultType.Success:
-                        {
-                            context.Result = new GrantValidationResult(
-                                subject: loginResult.Identity.Claims.First(c => c.Type == JwtRegisteredClaimNames.Sub).Value,
-                                authenticationMethod: "passwrod",
-                                claims:await CreateJwtClaims(loginResult)
-                            );
-                            break;
-                        }
-                    case AbpLoginResultType.UnknownExternalLogin:
-                        {
+            //var loginResult = await _logInManager.LoginAsync(
+            //    new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider),
+            //    GetTenancyNameOrNull());
+            var loginResult = await _logInManager.LoginAsync(
+                new UserLoginInfo(externalUser.Provider, externalUser.ProviderKey, externalUser.Provider),
+                GetTenancyNameOrNull());
 
-                            context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "未绑定");
-                            break;
-                         
+            switch (loginResult.Result)
+            {
+                case AbpLoginResultType.Success:
+                    {
+                        context.Result = new GrantValidationResult(
+                            subject: loginResult.Identity.Claims.First(c => c.Type == JwtRegisteredClaimNames.Sub).Value,
+                            authenticationMethod: "passwrod",
+                            claims: await CreateJwtClaims(loginResult)
+                        );
+                        break;
+                    }
+                case AbpLoginResultType.UnknownExternalLogin:
+                    {
 
-                        }
-                    default:
-                        {
-                            throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
-                                loginResult.Result,
-                                externalUser.ProviderKey,
-                                GetTenancyNameOrNull()
-                            );
-                        }
-                }
+                        context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "未绑定");
+                        break;
+
+
+                    }
+                default:
+                    {
+                        throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
+                            loginResult.Result,
+                            externalUser.ProviderKey,
+                            GetTenancyNameOrNull()
+                        );
+                    }
+            }
 
         }
 
@@ -102,7 +111,18 @@ namespace UserManage.Validator
         {
 
             var userInfo = await _externalAuthManager.GetUserInfo(model.AuthProvider, model.ProviderAccessCode);
-      
+            //var userInfo = await _externalAuthManager.GetWechatUserInfo(model.AuthProvider, model.ProviderAccessCode);
+
+            return userInfo;
+
+        }
+
+        private async Task<AuthUserInfo> GetUserInfo(ExternalAuthenticateModel model)
+        {
+
+            var userInfo = await _serviceAuthManager.GetUserInfo(model.AuthProvider, model.ProviderAccessCode);
+            //var userInfo = await _externalAuthManager.GetWechatUserInfo(model.AuthProvider, model.ProviderAccessCode);
+
             return userInfo;
 
         }

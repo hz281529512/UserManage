@@ -10,6 +10,10 @@
 
         #region 缓存名常量
 
+        public const string Abp_Login_Token_Cache = "Abp_Login_Token_Cache";
+
+        public const string Abp_Service_Config_Cache = "Abp_Service_Config_Cache";
+
         public const string Abp_Wechat_Access_Token_Cache = "Abp_Wechat_Access_Token_Cache";
 
         public const string Abp_QYEmail_Access_Token_Cache = "Abp_QYEmail_Access_Token_Cache";

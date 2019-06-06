@@ -7,7 +7,7 @@ namespace UserManage.Models.TokenAuth
     {
         [Required]
         [StringLength(UserLogin.MaxLoginProviderLength)]
-        public string AuthProvider { get; set; }
+        public string AuthProvider { get; set; } = "Wechat";
 
         //[Required]
         //[StringLength(UserLogin.MaxProviderKeyLength)]

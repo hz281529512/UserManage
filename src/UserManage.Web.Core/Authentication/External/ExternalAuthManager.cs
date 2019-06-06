@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Abp.Dependency;
+using UserManage.Authentication.External.Wechat;
 
 namespace UserManage.Authentication.External
 {
@@ -9,11 +10,13 @@ namespace UserManage.Authentication.External
     {
         private readonly IIocResolver _iocResolver;
         private readonly IExternalAuthConfiguration _externalAuthConfiguration;
+        //private WechatAuthProviderManager _providerManager { get; set; }
 
         public ExternalAuthManager(IIocResolver iocResolver, IExternalAuthConfiguration externalAuthConfiguration)
         {
             _iocResolver = iocResolver;
             _externalAuthConfiguration = externalAuthConfiguration;
+            //_providerManager = providerManager;
         }
 
         public Task<bool> IsValidUser(string provider, string providerKey, string providerAccessCode)
@@ -23,6 +26,11 @@ namespace UserManage.Authentication.External
                 return providerApi.Object.IsValidUser(providerKey, providerAccessCode);
             }
         }
+
+        //public Task<ExternalAuthUserInfo> GetWechatUserInfo(string provider, string accessCode)
+        //{
+        //    return _providerManager.GetUserInfo(provider, accessCode);
+        //}
 
         public Task<ExternalAuthUserInfo> GetUserInfo(string provider, string accessCode)
         {

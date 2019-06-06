@@ -22,6 +22,9 @@ using UserManage.Authorization.Users;
 using UserManage.Models.TokenAuth;
 using UserManage.MultiTenancy;
 using UserManage.Validator;
+using UserManage.Authentication.External.Wechat;
+using UserManage.AbpServiceCore.DomainService;
+using UserManage.AbpServiceCore;
 
 namespace UserManage.Controllers
 {
@@ -35,6 +38,7 @@ namespace UserManage.Controllers
         private readonly IExternalAuthConfiguration _externalAuthConfiguration;
         private readonly IExternalAuthManager _externalAuthManager;
         private readonly UserRegistrationManager _userRegistrationManager;
+        private readonly IServiceAuthManager _serviceAuthManager; 
 
 
         public TokenAuthController(
@@ -44,7 +48,8 @@ namespace UserManage.Controllers
             TokenAuthConfiguration configuration,
             IExternalAuthConfiguration externalAuthConfiguration,
             IExternalAuthManager externalAuthManager,
-            UserRegistrationManager userRegistrationManager)
+            UserRegistrationManager userRegistrationManager,
+            IServiceAuthManager serviceAuthManager)
         {
             _logInManager = logInManager;
             _tenantCache = tenantCache;
@@ -53,7 +58,7 @@ namespace UserManage.Controllers
             _externalAuthConfiguration = externalAuthConfiguration;
             _externalAuthManager = externalAuthManager;
             _userRegistrationManager = userRegistrationManager;
-
+            _serviceAuthManager = serviceAuthManager;
         }
 
         [HttpPost]
@@ -114,9 +119,11 @@ namespace UserManage.Controllers
         [HttpPost]
         public async Task<ExternalAuthenticateResultModel> ExternalAuthenticate([FromBody] ExternalAuthenticateModel model)
         {
-            var externalUser = await GetExternalUserInfo(model);
+            var externalUser = await GetUserInfo(model);
 
-            var loginResult = await _logInManager.LoginAsync(new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider), GetTenancyNameOrNull());
+            var tenan_name = GetTenancyNameOrNull() ?? "Cailian";
+
+            var loginResult = await _logInManager.LoginAsync(new UserLoginInfo(externalUser.Provider, externalUser.ProviderKey, externalUser.Provider), tenan_name);
 
             switch (loginResult.Result)
             {
@@ -132,25 +139,25 @@ namespace UserManage.Controllers
                     }
                 case AbpLoginResultType.UnknownExternalLogin:
                     {
-                        var newUser = await RegisterExternalUserAsync(externalUser);
-                        if (!newUser.IsActive)
-                        {
-                            return new ExternalAuthenticateResultModel
-                            {
-                                WaitingForActivation = true
-                            };
-                        }
+                        //var newUser = await RegisterExternalUserAsync(externalUser);
+                        //if (!newUser.IsActive)
+                        //{
+                        //    return new ExternalAuthenticateResultModel
+                        //    {
+                        //        WaitingForActivation = true
+                        //    };
+                        //}
 
-                        // Try to login again with newly registered user!
-                        loginResult = await _logInManager.LoginAsync(new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider), GetTenancyNameOrNull());
-                        if (loginResult.Result != AbpLoginResultType.Success)
-                        {
-                            throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
-                                loginResult.Result,
-                                externalUser.ProviderKey,
-                                GetTenancyNameOrNull()
-                            );
-                        }
+                        //// Try to login again with newly registered user!
+                        //loginResult = await _logInManager.LoginAsync(new UserLoginInfo(model.AuthProvider, externalUser.ProviderKey, model.AuthProvider), GetTenancyNameOrNull());
+                        //if (loginResult.Result != AbpLoginResultType.Success)
+                        //{
+                        //    throw _abpLoginResultTypeHelper.CreateExceptionForFailedLoginAttempt(
+                        //        loginResult.Result,
+                        //        externalUser.ProviderKey,
+                        //        GetTenancyNameOrNull()
+                        //    );
+                        //}
 
                         return new ExternalAuthenticateResultModel
                         {
@@ -200,10 +207,19 @@ namespace UserManage.Controllers
         private async Task<ExternalAuthUserInfo> GetExternalUserInfo(ExternalAuthenticateModel model)
         {
             var userInfo = await _externalAuthManager.GetUserInfo(model.AuthProvider, model.ProviderAccessCode);
+            
+            
             //if (userInfo.ProviderKey != model.ProviderKey)
             //{
             //    throw new UserFriendlyException(L("CouldNotValidateExternalUser"));
             //}
+
+            return userInfo;
+        }
+
+        private async Task<AuthUserInfo> GetUserInfo(ExternalAuthenticateModel model)
+        {
+            var userInfo = await _serviceAuthManager.GetUserInfo(model.AuthProvider, model.ProviderAccessCode);
 
             return userInfo;
         }

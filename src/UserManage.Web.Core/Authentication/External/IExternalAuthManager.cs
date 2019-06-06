@@ -7,5 +7,7 @@ namespace UserManage.Authentication.External
         Task<bool> IsValidUser(string provider, string providerKey, string providerAccessCode);
 
         Task<ExternalAuthUserInfo> GetUserInfo(string provider, string accessCode);
+
+        //Task<ExternalAuthUserInfo> GetWechatUserInfo(string provider, string accessCode);
     }
 }
