@@ -12,6 +12,8 @@
     <Compile Remove="Migrations\20180927062408_test.cs" />
     <Compile Remove="Migrations\20190111071724_Upgraded_To_Abp_v4_1_0.cs" />
     <Compile Remove="Migrations\20190424013210_TryCreate20190424.cs" />
+    <Compile Remove="Migrations\20190619032412_20190619BaseUserRole.cs" />
+    <Compile Remove="Migrations\20190619073223_20190619BaseUserOrg.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Abp.ZeroCore.IdentityServer4.EntityFrameworkCore" Version="4.3.0" />

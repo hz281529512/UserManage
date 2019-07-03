@@ -88,6 +88,8 @@ namespace UserManage.Web.Host.Startup
                 options.SwaggerDoc("v1", new Info { Title = "UserManage API", Version = "v1" });
                 options.DocInclusionPredicate((docName, description) => true);
 
+                options.IncludeXmlComments(GetXmlCommentsPath("UserManage.Application"));
+
                 // Define the BearerAuth scheme that's in use
                 options.AddSecurityDefinition("bearerAuth", new ApiKeyScheme()
                 {
@@ -152,6 +154,11 @@ namespace UserManage.Web.Host.Startup
                     .GetManifestResourceStream("UserManage.Web.Host.wwwroot.swagger.ui.index.html");
             }); // URL: /swagger
       
+        }
+
+        protected string GetXmlCommentsPath(string name)
+        {
+            return string.Format(@"{0}/{1}.xml", AppDomain.CurrentDomain.BaseDirectory, name);
         }
     }
 }

@@ -4,6 +4,7 @@ using Abp.Reflection.Extensions;
 using UserManage.Authorization;
 using UserManage.AbpCompanyCore.Mapper;
 using UserManage.AbpDataDictCore.Mapper;
+using UserManage.BaseEntityCore.Mapper;
 
 namespace UserManage
 {
@@ -19,6 +20,8 @@ namespace UserManage
             //AutoMapper
             Configuration.Modules.AbpAutoMapper().Configurators.Add(AbpCompanyMapper.CreateMappings);
             Configuration.Modules.AbpAutoMapper().Configurators.Add(AbpDataDictMapper.CreateMappings);
+            Configuration.Modules.AbpAutoMapper().Configurators.Add(BaseUserEmpRoleMapper.CreateMappings);
+            Configuration.Modules.AbpAutoMapper().Configurators.Add(BaseUserOrgMapper.CreateMappings);
             
         }
 

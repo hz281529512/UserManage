@@ -15,6 +15,7 @@ using UserManage.AbpExternalCore.DomainService;
 using UserManage.AbpOrganizationUnitCore;
 using UserManage.Authorization.Roles;
 using UserManage.Authorization.Users;
+using UserManage.BaseEntityCore;
 using UserManage.QYEmail.DomainService;
 using UserManage.SynchronizeCore.Dto;
 
@@ -28,12 +29,15 @@ namespace UserManage.SynchronizeCore.DomainService
 
         //组织
         private readonly IRepository<AbpOrganizationUnitExtend, long> _organizationUnitRepository;
+        private readonly IRepository<BaseUserOrg, int> _baseOrgRepository;
+        private readonly IRepository<BaseUserEmpOrg, int> _baseEmpOrgRepository;
         private readonly IRepository<UserOrganizationUnit, long> _userOrganizationUnitRepository;
         private readonly OrganizationUnitManager _organizationUnitManager;
 
         //用户
         private readonly IRepository<User, long> _userRepository;
         private readonly IRepository<UserLogin, long> _userLoginRepository;
+        private readonly IRepository<BaseUserEmp, long> _baseUserRepository;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly UserManager _userManager;
 
@@ -63,6 +67,9 @@ namespace UserManage.SynchronizeCore.DomainService
         public SynchronizeManager(
             IRepository<AbpOrganizationUnitExtend, long> organizationUnitRepository,
             IRepository<UserOrganizationUnit, long> userOrganizationUnitRepository,
+            IRepository<BaseUserOrg, int> baseOrgRepository,
+            IRepository<BaseUserEmpOrg, int> baseEmpOrgRepository,
+            IRepository<BaseUserEmp, long> baseUserRepository,
             OrganizationUnitManager organizationUnitManager,
             IRepository<User, long> userRepository,
             IRepository<UserLogin, long> userLoginRepository,
@@ -76,6 +83,9 @@ namespace UserManage.SynchronizeCore.DomainService
         {
             _organizationUnitRepository = organizationUnitRepository;
             _userOrganizationUnitRepository = userOrganizationUnitRepository;
+            _baseOrgRepository = baseOrgRepository;
+            _baseEmpOrgRepository = baseEmpOrgRepository;
+            _baseUserRepository = baseUserRepository;
             _organizationUnitManager = organizationUnitManager;
             _userRepository = userRepository;
             _userLoginRepository = userLoginRepository;
@@ -103,6 +113,7 @@ namespace UserManage.SynchronizeCore.DomainService
                 using (_unitOfWorkManager.Current.DisableFilter(AbpDataFilters.MayHaveTenant))
                 {
                     var entity = _organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.id && o.TenantId == tenant_id);
+                    var base_org = _baseOrgRepository.FirstOrDefault(o => o.WxId == wx_dept.id.ToString());
                     var result_id = entity?.Id ?? null;
                     var parent_entity = wx_dept.parentid == 0 ? null : (_organizationUnitRepository.FirstOrDefault(o => o.WXDeptId == wx_dept.parentid && o.TenantId == tenant_id));
                     var parent_id = parent_entity?.Id ?? null;
@@ -113,6 +124,8 @@ namespace UserManage.SynchronizeCore.DomainService
                         case "delete_party":
                             if (result_id.HasValue)
                                 _organizationUnitRepository.Delete(result_id.Value);
+                            if (base_org != null)
+                                _baseOrgRepository.Delete(base_org);
                             break;
                         case "create_party":
                             if (entity == null)
@@ -131,6 +144,38 @@ namespace UserManage.SynchronizeCore.DomainService
                                 entity.Code = string.IsNullOrEmpty(parent_code) ? result_id.ToString() : parent_code + ":" + result_id.Value;
                                 entity.Id = result_id.Value;
                                 _organizationUnitRepository.Update(entity);
+
+                            }
+                            if (base_org == null)
+                            {
+                                if (parent_id == 1)
+                                {
+                                    _baseOrgRepository.Insert(new BaseUserOrg
+                                    {
+                                        Name = wx_dept.name,
+                                        OrgGuid = Guid.NewGuid().ToString(),
+                                        OrgOrderNo = wx_dept.id,
+                                        OrgParentGuid = "0",
+                                        ParentId = 0,
+                                        WxId = wx_dept.id.ToString()
+                                    });
+                                }
+                                else
+                                {
+                                    var parent_org = _baseOrgRepository.FirstOrDefault(x => x.WxId == wx_dept.parentid.ToString());
+                                    if (parent_org != null)
+                                    {
+                                        _baseOrgRepository.Insert(new BaseUserOrg
+                                        {
+                                            Name = wx_dept.name,
+                                            OrgGuid = Guid.NewGuid().ToString(),
+                                            OrgOrderNo = wx_dept.id,
+                                            OrgParentGuid = parent_org.OrgGuid,
+                                            ParentId = parent_org.Id,
+                                            WxId = wx_dept.id.ToString()
+                                        });
+                                    }
+                                }
                             }
                             break;
                         case "update_party":
@@ -149,6 +194,19 @@ namespace UserManage.SynchronizeCore.DomainService
                                 entity.WXDeptId = wx_dept.id;
                                 entity.DisplayName = string.IsNullOrEmpty(wx_dept.name) ? entity.DisplayName : wx_dept.name;
                                 _organizationUnitRepository.Update(entity);
+                            }
+                            if (base_org != null)
+                            {
+                                if (wx_dept.parentid.HasValue && wx_dept.parentid == 1)
+                                {
+                                    base_org.OrgParentGuid = "0";
+                                    base_org.ParentId = 0;
+                                    _baseOrgRepository.Update(base_org);
+                                }
+                                else if (wx_dept.parentid.HasValue)
+                                {
+
+                                }
                             }
                             break;
                         default:
@@ -414,6 +472,21 @@ namespace UserManage.SynchronizeCore.DomainService
 
                                 CurrentUnitOfWork.SaveChanges();
 
+
+                                var base_emp = new BaseUserEmp
+                                {
+                                    AbpUserId = new_id,
+                                    EmpOrderNo = new_id.ToString(),
+                                    EmpStationId = "",
+                                    EmpStatus = "1",
+                                    EmpUserGuid = Guid.NewGuid().ToString("N"),
+                                    IsLeader = "",
+                                    EmpUserId = wx_user.userid
+                                };
+
+                                var new_emp_id = _baseUserRepository.InsertAndGetId(base_emp);
+                                CurrentUnitOfWork.SaveChanges();
+
                                 if (!string.IsNullOrEmpty(wx_user.department))
                                 {
                                     var department_list = wx_user.department.Split(',');
@@ -424,6 +497,28 @@ namespace UserManage.SynchronizeCore.DomainService
                                         {
                                             _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = new_id, OrganizationUnitId = item.Id });
                                         }
+                                        CurrentUnitOfWork.SaveChanges();
+                                    }
+                                    var local_emp_dept = _baseOrgRepository.GetAll().Where(x => department_list.Contains(x.WxId));
+                                    if (local_emp_dept.Any())
+                                    {
+                                        int i = 0;
+                                        foreach (var item in local_emp_dept)
+                                        {
+                                            _baseEmpOrgRepository.Insert(new BaseUserEmpOrg
+                                            {
+                                                AbpUserId = new_id,
+                                                BaseUserGuid = Guid.NewGuid().ToString(),
+                                                EmpUserGuid = base_emp.EmpUserGuid,
+                                                CropId = "wx003757ee144cae06",
+                                                DepartmentGuid = item.OrgGuid,
+                                                EmpUserId = wx_user.userid,
+                                                DepartmentId = item.Id.ToString(),
+                                                IsMaster = i == 0 ? "1" : "0",
+                                            });
+                                            i++;
+                                        }
+
                                         CurrentUnitOfWork.SaveChanges();
                                     }
                                 }
@@ -439,6 +534,8 @@ namespace UserManage.SynchronizeCore.DomainService
                                     name = wx_user.name,
                                 };
                                 _emailManager.UpdateQYEmail(mail_entity, tenant_id.Value, wx_user.changetype);
+
+
                             }
                             break;
                         case "update_user":
@@ -489,6 +586,35 @@ namespace UserManage.SynchronizeCore.DomainService
                                             _userOrganizationUnitRepository.Insert(new UserOrganizationUnit { TenantId = tenant_id, UserId = user_id, OrganizationUnitId = item });
                                         }
                                     }
+
+                                    //var local_emp_dept = _baseOrgRepository.GetAll().Where(x => wx_dept.Contains(x.WxId));
+                                    //var local_emp_dept_ids = local_emp_dept.Select(x => x.OrgGuid).ToList();
+                                    ////先删除 微信没有的
+                                    //_baseEmpOrgRepository.Delete(x => x.AbpUserId == user_id && !local_emp_dept_ids.Contains(x.DepartmentGuid));//!local_dept.Any(d => x.OrganizationUnitId == d.Id));
+                                    //CurrentUnitOfWork.SaveChanges();
+
+                                    //var local_user_emp_dept = _baseEmpOrgRepository.GetAll().Where(x => x.AbpUserId == user_id).ToList();
+
+                                    ////再添加 本地没有的
+                                    //foreach (var item in local_emp_dept)
+                                    //{
+                                    //    if (!local_user_emp_dept.Any(x => x.DepartmentGuid == item.OrgGuid))
+                                    //    {
+                                    //        _baseEmpOrgRepository.Insert(
+                                    //            new BaseUserEmpOrg
+                                    //            {
+                                    //                AbpUserId = user_id,
+                                    //                BaseUserGuid = Guid.NewGuid().ToString(),
+                                    //                EmpUserGuid = base_emp.EmpUserGuid,
+                                    //                CropId = "wx003757ee144cae06",
+                                    //                DepartmentGuid = item.OrgGuid,
+                                    //                EmpUserId = wx_user.userid,
+                                    //                DepartmentId = item.Id.ToString(),
+                                    //                IsMaster = i == 0 ? "1" : "0",
+                                    //            }
+                                    //            );
+                                    //    }
+                                    //}
                                 }
                             }
                             break;

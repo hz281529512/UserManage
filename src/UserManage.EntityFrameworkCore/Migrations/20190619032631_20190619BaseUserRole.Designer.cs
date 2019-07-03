@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UserManage.EntityFrameworkCore;
 
 namespace UserManage.Migrations
 {
     [DbContext(typeof(UserManageDbContext))]
-    partial class UserManageDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190619032631_20190619BaseUserRole")]
+    partial class _20190619BaseUserRole
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1334,47 +1336,6 @@ namespace UserManage.Migrations
                     b.ToTable("BaseUserEmp");
                 });
 
-            modelBuilder.Entity("UserManage.BaseEntityCore.BaseUserEmpOrg", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<long?>("AbpUserId");
-
-                    b.Property<string>("BaseUserGuid");
-
-                    b.Property<DateTime>("CreationTime");
-
-                    b.Property<long?>("CreatorUserId");
-
-                    b.Property<string>("CropId");
-
-                    b.Property<long?>("DeleterUserId");
-
-                    b.Property<DateTime?>("DeletionTime");
-
-                    b.Property<string>("DepartmentGuid");
-
-                    b.Property<string>("DepartmentId");
-
-                    b.Property<string>("EmpUserGuid");
-
-                    b.Property<string>("EmpUserId");
-
-                    b.Property<bool>("IsDeleted");
-
-                    b.Property<string>("IsMaster");
-
-                    b.Property<DateTime?>("LastModificationTime");
-
-                    b.Property<long?>("LastModifierUserId");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("BaseUserEmpOrg");
-                });
-
             modelBuilder.Entity("UserManage.BaseEntityCore.BaseUserEmpRole", b =>
                 {
                     b.Property<int>("Id")
@@ -1410,50 +1371,11 @@ namespace UserManage.Migrations
                     b.ToTable("BaseUserEmpRole");
                 });
 
-            modelBuilder.Entity("UserManage.BaseEntityCore.BaseUserOrg", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreationTime");
-
-                    b.Property<long?>("CreatorUserId");
-
-                    b.Property<long?>("DeleterUserId");
-
-                    b.Property<DateTime?>("DeletionTime");
-
-                    b.Property<bool>("IsDeleted");
-
-                    b.Property<DateTime?>("LastModificationTime");
-
-                    b.Property<long?>("LastModifierUserId");
-
-                    b.Property<string>("Name");
-
-                    b.Property<string>("OrgGuid");
-
-                    b.Property<int?>("OrgOrderNo");
-
-                    b.Property<string>("OrgParentGuid");
-
-                    b.Property<int?>("ParentId");
-
-                    b.Property<string>("WxId");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("BaseUserOrg");
-                });
-
             modelBuilder.Entity("UserManage.BaseEntityCore.BaseUserRole", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<bool?>("AllowLowEdit");
 
                     b.Property<DateTime>("CreationTime");
 

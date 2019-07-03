@@ -12,6 +12,7 @@ using UserManage.AbpCompanyCore;
 using UserManage.AbpDataDictCore;
 using UserManage.ThirdPartyConfigCore;
 using UserManage.AbpServiceCore;
+using UserManage.BaseEntityCore;
 
 namespace UserManage.EntityFrameworkCore
 {
@@ -76,9 +77,25 @@ namespace UserManage.EntityFrameworkCore
         /// </summary>
         public DbSet<AbpUserTag> AbpUserTag { get; set; }
 
-        #endregion  
+        #endregion
 
+        #region Base_User
 
+        /// <summary>
+        /// Base User Emp
+        /// </summary>
+        public DbSet<BaseUserEmp> BaseUserEmp { get; set; }
+
+        public DbSet<BaseUserRole> BaseUserRole { get; set; }
+
+        public DbSet<BaseUserEmpRole> BaseUserEmpRole { get; set; }
+
+        public DbSet<BaseUserOrg> BaseUserOrg { get; set; }
+
+        public DbSet<BaseUserEmpOrg> BaseUserEmpOrg { get; set; }
+        
+
+        #endregion
 
         public UserManageDbContext(DbContextOptions<UserManageDbContext> options)
             : base(options)

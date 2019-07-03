@@ -25,5 +25,8 @@ namespace UserManage.AbpOrganizationUnitCore
         /// </summary>
         public virtual long? QYMailDeptId { get; set; }
 
+
+        
+
     }
 }
