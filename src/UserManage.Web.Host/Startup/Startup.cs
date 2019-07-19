@@ -39,7 +39,7 @@ namespace UserManage.Web.Host.Startup
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
 
-            var data = ConfigurationManager.AppSettings["Abp.Redis.Cache"];
+        
             // MVC
             services.AddMvc(
                 options => options.Filters.Add(new CorsAuthorizationFilterFactory(_defaultCorsPolicyName))
