@@ -24,6 +24,7 @@ using Microsoft.EntityFrameworkCore;
 using UserManage.AbpCompanyCore;
 using System;
 using System.Linq.Dynamic.Core;
+using Abp.Authorization.Users;
 
 namespace UserManage.Users
 {
@@ -33,6 +34,7 @@ namespace UserManage.Users
         private readonly UserManager _userManager;
         private readonly RoleManager _roleManager;
         private readonly IRepository<Role> _roleRepository;
+        private readonly IRepository<UserRole, long> _userRoleRepository;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IAbpSession _abpSession;
         private readonly LogInManager _logInManager;
@@ -46,7 +48,8 @@ namespace UserManage.Users
             IPasswordHasher<User> passwordHasher,
             IAbpSession abpSession,
             LogInManager logInManager,
-            IRepository<AbpCompany, Guid> companyRepository)
+            IRepository<AbpCompany, Guid> companyRepository,
+            IRepository<UserRole, long> userRoleRepository)
             : base(repository)
         {
             _userManager = userManager;
@@ -56,6 +59,7 @@ namespace UserManage.Users
             _abpSession = abpSession;
             _logInManager = logInManager;
             _companyRepository = companyRepository;
+            _userRoleRepository = userRoleRepository;
         }
 
         public async Task<PagedResultDto<UserListDto>> GetPaged(GetUserInput input)
@@ -133,7 +137,30 @@ namespace UserManage.Users
 
                 if (input.RoleNames != null)
                 {
-                    CheckErrors(await _userManager.SetRoles(user, input.RoleNames));
+                    await Repository.EnsureCollectionLoadedAsync(user, u => u.Roles);
+
+                    foreach (var userRole in user.Roles.ToList())
+                    {
+                        
+                        var role = await _roleManager.FindByIdAsync(userRole.RoleId.ToString());
+                        if (input.RoleNames.All(roleName => role.Name != roleName))
+                        {
+                            
+                            var result = await _userManager.RemoveFromRoleAsync(user, role.Name);
+                        }
+                    }
+
+                    //Add to added roles
+                    foreach (var roleName in input.RoleNames)
+                    {
+                        var role = await _roleManager.GetRoleByNameAsync(roleName);
+                        if (user.Roles.All(ur => ur.RoleId != role.Id))
+                        {
+                            var result = await _userManager.AddToRoleAsync(user, roleName);
+                        }
+                    }
+
+                    //CheckErrors(await _userManager.SetRoles(user, input.RoleNames));
                 }
 
                 return await Get(input);
@@ -145,11 +172,11 @@ namespace UserManage.Users
             }
         }
 
-        public override async Task Delete(EntityDto<long> input)
-        {
-            var user = await _userManager.GetUserByIdAsync(input.Id);
-            await _userManager.DeleteAsync(user);
-        }
+        //public override async Task Delete(EntityDto<long> input)
+        //{
+        //    var user = await _userManager.GetUserByIdAsync(input.Id);
+        //    await _userManager.DeleteAsync(user);
+        //}
 
         public async Task<ListResultDto<RoleDto>> GetRoles()
         {
@@ -377,6 +404,26 @@ namespace UserManage.Users
                 if (item.RoleNames != null)
                 {
                     CheckErrors(await _userManager.SetRoles(user, item.RoleNames));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 批量修改角色关联用户
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public async Task BatchUpdateRoleUsers(BatchRoleUsers input)
+        {
+            CheckUpdatePermission();
+            if (input.Userids.Any())
+            {
+                var tenant_id = this.AbpSession.TenantId;
+                if (!tenant_id.HasValue) throw new UserFriendlyException("无效租户！");
+                await _userRoleRepository.DeleteAsync(x => x.RoleId == input.RoleId && x.TenantId == tenant_id);
+                foreach (var item in input.Userids)
+                {
+                    await _userRoleRepository.InsertAsync( new UserRole { RoleId = input.RoleId, TenantId = tenant_id, UserId = item });
                 }
             }
         }

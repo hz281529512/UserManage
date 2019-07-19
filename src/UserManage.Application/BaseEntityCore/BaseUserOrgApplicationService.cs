@@ -164,7 +164,22 @@ namespace UserManage.BaseEntityCore
                 return null;
             }
         }
-        
+
+        /// <summary>
+        /// 设置主部门
+        /// </summary>
+        public async Task<BaseUserOrgListDto> UpdateUserOrganizationMaster(OrgsMasterInput input)
+        {
+            var orgUser = await _empOrgRepository.FirstOrDefaultAsync(x => x.DepartmentGuid == input.MasterOrgGuid && x.AbpUserId == input.AbpUserId);
+            if (orgUser != null)
+            {
+                orgUser.IsMaster = "1";
+                await _empOrgRepository.UpdateAsync(orgUser);
+                return orgUser.MapTo<BaseUserOrgListDto>(); 
+            }
+            return null;
+        }
+
         /// <summary>
         /// 删除组织
         /// </summary>
@@ -208,6 +223,8 @@ namespace UserManage.BaseEntityCore
                     EmpUserGuid = emp.EmpUserGuid,
                     CropId = "wx003757ee144cae06",
                     EmpUserId = emp.EmpUserId,
+                    DepartmentGuid = org.OrgGuid,
+                     DepartmentId = org.Id.ToString(),
                     IsMaster = item == input.MasterOrgGuid ? "1" : "0",
                 });
             }
