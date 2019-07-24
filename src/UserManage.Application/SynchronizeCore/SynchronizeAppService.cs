@@ -426,6 +426,24 @@ namespace UserManage.SynchronizeCore
                                 });
                             }
                         }
+                        else if (!bs_org_list.Any(x => x.WxId == wx_dept.ToString()))
+                        {
+                            var bs_org_entity = await _baseUserManager.GetBaseUserOrgByWxId(wx_dept);
+                            if (bs_org_entity != null)
+                            {
+                                _baseEmpOrgRepository.Insert(new BaseUserEmpOrg
+                                {
+                                    AbpUserId = AbpUserId,
+                                    BaseUserGuid = Guid.NewGuid().ToString(),
+                                    EmpUserGuid = base_user_emp.EmpUserGuid,
+                                    CropId = "wx003757ee144cae06",
+                                    DepartmentGuid = bs_org_entity.OrgGuid,
+                                    EmpUserId = ul.ProviderKey,
+                                    DepartmentId = bs_org_entity.Id.ToString(),
+                                    IsMaster = i == 0 ? "1" : "0",
+                                });
+                            }
+                        }
                         i++;
                     }
                 }
