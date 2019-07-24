@@ -15,14 +15,14 @@ namespace UserManage.BaseEntityCore.Dtos
 
 
         /// <summary>
-        /// WxId
+        /// 微信ID
         /// </summary>
         public string WxId { get; set; }
 
 
 
 		/// <summary>
-		/// Name
+		/// 部门名称
 		/// </summary>
 		public string Name { get; set; }
 
@@ -36,14 +36,14 @@ namespace UserManage.BaseEntityCore.Dtos
 
 
 		/// <summary>
-		/// OrgGuid
+		/// 部门Guid
 		/// </summary>
 		public string OrgGuid { get; set; }
 
 
 
 		/// <summary>
-		/// OrgParentGuid
+		/// 部门父级GUID
 		/// </summary>
 		public string OrgParentGuid { get; set; }
 

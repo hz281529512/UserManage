@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using UserManage.AbpExternalCore.Model;
 
 namespace UserManage.AbpExternalCore.DomainService
 {
@@ -54,5 +55,13 @@ namespace UserManage.AbpExternalCore.DomainService
         /// <param name="tenant_id"></param>
         /// <returns></returns>
         string GetTagNameById(int wechat_tag_id, int tenant_id);
+
+        /// <summary>
+        /// 根据ID获取用户
+        /// </summary>
+        /// <param name="accessToken"></param>
+        /// <param name="user_id"></param>
+        /// <returns></returns>
+        Task<AbpUserSingleResult> GetUserById(string user_id);
     }
 }

@@ -124,6 +124,45 @@ namespace UserManage.AbpExternalCore.DomainService
         }
 
         /// <summary>
+        /// 根据ID获取用户
+        /// </summary>
+        /// <param name="accessToken"></param>
+        /// <param name="user_id"></param>
+        /// <returns></returns>
+        private async Task<AbpUserSingleResult> GetUserById(string accessToken,string user_id)
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(accessToken))
+                {
+                    //参数	必须	说明
+                    //access_token 是   调用接口凭证
+                    //department_id   是 获取的部门id
+                    //fetch_child 否   1 / 0：是否递归获取子部门下面的成员
+                    //status  否   0获取全部成员，1获取已关注成员列表，2获取禁用成员列表，4获取未关注成员列表。status可叠加,未填写则默认为4
+                    var url = string.Format(Config.ApiWorkHost + "/cgi-bin/user/get?access_token={0}&userid={1}",
+                      accessToken, user_id);
+                    var redata = await Get.GetJsonAsync<AbpUserSingleResult>(url);
+                    if (redata.errcode == "0")
+                    {
+                        return redata;
+                    }
+                    else
+                    {
+                        Console.WriteLine(redata.errmsg);
+                    }
+                }
+                return null;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// 通过部门ID 获取微信用户信息
         /// </summary>
         /// <param name="parent_id"></param>
@@ -413,6 +452,19 @@ namespace UserManage.AbpExternalCore.DomainService
             AbpExternalAuthenticateConfig auth_config = await this.GetCurrentAuth();
             string acc_token = await this.GetToken(auth_config.AppId, auth_config.Secret);
             return await GetTagUserList(acc_token, wechat_tag_id);
+        }
+
+        /// <summary>
+        /// 根据ID获取用户
+        /// </summary>
+        /// <param name="accessToken"></param>
+        /// <param name="user_id"></param>
+        /// <returns></returns>
+        public async Task<AbpUserSingleResult> GetUserById(string user_id)
+        {
+            AbpExternalAuthenticateConfig auth_config = await this.GetCurrentAuth();
+            string acc_token = await this.GetToken(auth_config.AppId, auth_config.Secret);
+            return await GetUserById(acc_token, user_id);
         }
 
         /// <summary>

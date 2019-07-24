@@ -1,6 +1,8 @@
 ﻿using Abp.Authorization;
 using Abp.Authorization.Users;
+using Abp.AutoMapper;
 using Abp.Domain.Repositories;
+using Abp.UI;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -14,8 +16,10 @@ using UserManage.AbpOrganizationUnitCore;
 using UserManage.Authorization.Roles;
 using UserManage.Authorization.Users;
 using UserManage.BaseEntityCore;
+using UserManage.BaseEntityCore.DomainService;
 using UserManage.QYEmail.DomainService;
 using UserManage.SynchronizeCore.Dtos;
+using UserManage.Users.Dto;
 
 namespace UserManage.SynchronizeCore
 {
@@ -33,17 +37,22 @@ namespace UserManage.SynchronizeCore
         //组织
         private readonly IRepository<AbpOrganizationUnitExtend, long> _organizationUnitRepository;
         private readonly IRepository<UserOrganizationUnit, long> _userOrganizationUnitRepository;
+        private readonly IRepository<BaseUserEmpOrg, int> _baseEmpOrgRepository;
 
         //用户
         private readonly IRepository<User, long> _userRepository;
         private readonly IRepository<UserLogin, long> _userLoginRepository;
-        private readonly IRepository<BaseUserEmp, long> _baseUserRepository;
         private readonly IPasswordHasher<User> _passwordHasher;
 
 
         ////角色
         private readonly IRepository<Role, int> _roleRepository;
         private readonly IRepository<UserRole, long> _userRoleRepository;
+
+        //BaseUser
+        private readonly IRepository<BaseUserEmp, long> _baseUserRepository;
+        private readonly IBaseUserEmpManager _baseUserManager;
+
 
         private readonly QYEmailManager _qyEmailManager;
         private readonly ThirdPartyConfigCore.DomainService.ThirdPartyManager _tpManager;
@@ -60,7 +69,9 @@ namespace UserManage.SynchronizeCore
             IRepository<UserRole, long> userRoleRepository,
             IPasswordHasher<User> passwordHasher,
             QYEmailManager qYEmailManager,
-            ThirdPartyConfigCore.DomainService.ThirdPartyManager tpManager
+            ThirdPartyConfigCore.DomainService.ThirdPartyManager tpManager,
+            IBaseUserEmpManager baseUserManager,
+            IRepository<BaseUserEmpOrg, int> baseEmpOrgRepository
         )
         {
             _testManager = testManager;
@@ -75,6 +86,8 @@ namespace UserManage.SynchronizeCore
             _passwordHasher = passwordHasher;
             _qyEmailManager = qYEmailManager;
             _tpManager = tpManager;
+            _baseUserManager = baseUserManager;
+            _baseEmpOrgRepository = baseEmpOrgRepository;
         }
 
         public void MatchTest()
@@ -84,6 +97,7 @@ namespace UserManage.SynchronizeCore
             //_qyEmailManager.UpdateQYEmail(model, AbpSession.TenantId.Value, "update");
             var t = _tpManager.Test("E4B57428-BF03-493E-80B6-E38CECA47DD1");
         }
+
 
         /// <summary>
         /// 同步所有用户与组织关联信息
@@ -100,6 +114,7 @@ namespace UserManage.SynchronizeCore
             results.results.Add("用户与角色标签关联", await this.MatchTagUser());
             return results;
         }
+
 
 
         #region  Synchronize Department
@@ -334,6 +349,147 @@ namespace UserManage.SynchronizeCore
         #region Synchronize User
 
         /// <summary>
+        /// 按姓名同步企业微信与base user 的用户内容级组织关联(PS:暂时无法同步角色)
+        /// </summary>
+        /// <param name="AbpUserId"></param>
+        /// <returns></returns>
+        public async Task SynchronizeUserByUserId(long AbpUserId)
+        {
+            var current_tenantid = this.AbpSession.TenantId;
+            var ul = _userLoginRepository.FirstOrDefault(x => x.UserId == AbpUserId && x.TenantId == current_tenantid && x.LoginProvider == "Wechat");
+            if (ul != null)
+            {
+                var i = 0;
+                var wechat_user = await _weChatManager.GetUserById(ul.ProviderKey);
+                var base_user_emp = _baseUserRepository.GetAll().FirstOrDefault(x => x.AbpUserId == ul.UserId);
+                if (base_user_emp == null)
+                {
+                    base_user_emp = new BaseUserEmp
+                    {
+                        AbpUserId = AbpUserId,
+                        EmpOrderNo = ul.ProviderKey,
+                        EmpStationId = Guid.NewGuid().ToString("N"),
+                        EmpStatus = "1",
+                        EmpUserGuid = Guid.NewGuid().ToString("N"),
+                        IsLeader = "",
+                        EmpUserId = ul.ProviderKey
+                    };
+                    base_user_emp.Id = _baseUserRepository.InsertAndGetId(base_user_emp);
+                }
+                if (wechat_user != null)
+                {
+                    var org_list = _organizationUnitRepository.GetAll().Where(o => _userOrganizationUnitRepository.GetAll().Any(x => o.Id == x.OrganizationUnitId && x.UserId == AbpUserId && x.TenantId == current_tenantid)).ToList();
+                    var bs_org_list = await _baseUserManager.GetBaseUserOrgByAbpId(AbpUserId);
+                    foreach (var wx_dept in wechat_user.department)
+                    {
+                        if(org_list == null)
+                        {
+                            var org_entity = _organizationUnitRepository.FirstOrDefault(x => x.WXDeptId == wx_dept);
+                            if (org_entity != null)
+                            {
+                                await _userOrganizationUnitRepository.InsertAsync(new UserOrganizationUnit
+                                {
+                                    OrganizationUnitId = org_entity.Id,
+                                    UserId = AbpUserId,
+                                    TenantId = current_tenantid
+                                });
+                            }
+                        }
+                        else if (!org_list.Any(x => x.WXDeptId == wx_dept))
+                        {
+                            var org_entity = _organizationUnitRepository.FirstOrDefault(x => x.WXDeptId == wx_dept);
+                            if (org_entity != null)
+                            {
+                                await _userOrganizationUnitRepository.InsertAsync(new UserOrganizationUnit
+                                {
+                                    OrganizationUnitId = org_entity.Id,
+                                    UserId = AbpUserId,
+                                    TenantId = current_tenantid
+                                });
+                            }
+                        }
+                        if (bs_org_list == null)
+                        {
+                            var bs_org_entity = await _baseUserManager.GetBaseUserOrgByWxId(wx_dept);
+                            if (bs_org_entity != null)
+                            {
+                                _baseEmpOrgRepository.Insert(new BaseUserEmpOrg
+                                {
+                                    AbpUserId = AbpUserId,
+                                    BaseUserGuid = Guid.NewGuid().ToString(),
+                                    EmpUserGuid = base_user_emp.EmpUserGuid,
+                                    CropId = "wx003757ee144cae06",
+                                    DepartmentGuid = bs_org_entity.OrgGuid,
+                                    EmpUserId = ul.ProviderKey,
+                                    DepartmentId = bs_org_entity.Id.ToString(),
+                                    IsMaster = i == 0 ? "1" : "0",
+                                });
+                            }
+                        }
+                        i++;
+                    }
+                }
+            }
+            else
+            {
+                throw new UserFriendlyException("无法同步没有企业微信记录的数据");
+            }
+        }
+
+        /// <summary>
+        /// 根据姓名获取企业微信用户
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public async Task<List<GetWxUserDto>> GetWecharUserByName(string name)
+        {
+            var current_tenantid = this.AbpSession.TenantId;
+            //企业微信用户list
+            var elist = await _weChatManager.GetAllUsersByDepartment(1);
+            var query = elist.Where(x => x.name.Contains(name));
+
+            var result = query.ToList().MapTo<List<GetWxUserDto>>();
+
+            var ul_query = _userLoginRepository.GetAll().Where(x => x.TenantId == current_tenantid && x.LoginProvider == "Wechat" && result.Any(y => y.userid == x.ProviderKey)).ToList();
+
+            foreach (var item in result)
+            {
+                var ul = ul_query.FirstOrDefault(x => x.ProviderKey == item.userid);
+                if (ul != null)
+                {
+                    var user = _userRepository.GetAllIncluding(x => x.Roles).FirstOrDefault(x => x.Id == ul.UserId);
+                    item.AbpUser = user.MapTo<UserDto>();
+                    if (user.Roles.Any())
+                    {
+                        item.AbpUser.RoleNames = RoleManager.Roles.Where(r => user.Roles.Any(ur => ur.RoleId == r.Id)).Select(r => r.NormalizedName).ToArray();
+                    }
+
+                    item.BaseUserEmp = _baseUserRepository.GetAll().FirstOrDefault(x => x.AbpUserId == ul.UserId).MapTo<BaseUserEmpDto>();
+                    var bs_role_list = await _baseUserManager.GetBaseUserRoleByAbpId(ul.UserId);
+                    item.BaseUserRole = bs_role_list.MapTo<List<BaseUserRoleDto>>();
+                    var bs_org_list = await _baseUserManager.GetBaseUserOrgByAbpId(ul.UserId);
+                    item.BaseUserOrg = bs_org_list.MapTo<List<BaseUserDeptDto>>();
+                    if (item.BaseUserOrg != null)
+                    {
+                        var master_id = await _baseUserManager.GetMasterIdByAbpId(ul.UserId);
+                        if (master_id != 0)
+                        {
+                            item.BaseUserOrg.ForEach(buo =>
+                            {
+                                if (buo.Id == master_id)
+                                {
+                                    buo.IsMaster = true;
+                                }
+                            });
+                        }
+                    }
+
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 再次尝试获取企业微信用户与本地用户full join
         /// </summary>
         /// <param name="wx_users"></param>
@@ -540,7 +696,6 @@ namespace UserManage.SynchronizeCore
         }
 
         #endregion
-
 
         #region Synchronize Role
 
