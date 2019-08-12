@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UserManage.AbpExternalCore.Model
 {
-    internal class AbpWechatResult
+    public class AbpWechatResult
     {
         /// <summary>
         /// 错误代码 

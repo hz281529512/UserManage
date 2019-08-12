@@ -106,7 +106,7 @@ namespace UserManage.BaseEntityCore.DomainService
             var master_org = await _empOrgRepository.FirstOrDefaultAsync(x => x.AbpUserId == AbpUserId && x.IsMaster == "1");
             if (master_org != null)
             {
-                return master_org.Id;
+                return Convert.ToInt32( master_org.DepartmentId);
             }
             return 0;
         }

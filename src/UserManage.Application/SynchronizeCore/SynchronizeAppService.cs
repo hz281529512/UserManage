@@ -5,9 +5,13 @@ using Abp.Domain.Repositories;
 using Abp.UI;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using UserManage.AbpExternalCore;
@@ -20,6 +24,7 @@ using UserManage.BaseEntityCore.DomainService;
 using UserManage.QYEmail.DomainService;
 using UserManage.SynchronizeCore.Dtos;
 using UserManage.Users.Dto;
+using UserManage.Web;
 
 namespace UserManage.SynchronizeCore
 {
@@ -115,6 +120,73 @@ namespace UserManage.SynchronizeCore
             return results;
         }
 
+
+        #region change password
+
+        /// <summary>
+        /// 修改共享服务器密码
+        /// </summary>
+        /// <returns></returns>
+        public async Task<string> ChangeACPassword(ChangePasswordInput input)
+        {
+            if (input.NewPassword.Length < 8)
+            {
+                throw new UserFriendlyException(99, "新密码必须在8位以上");
+            }
+            var abp_user = await _userRepository.GetAsync(input.AbpUserId);
+            if (abp_user == null) throw new UserFriendlyException(99, "无效用户ID");
+
+            //Dictionary<string, string> param = new Dictionary<string, string>();
+            //param.Add("acct", abp_user.UserName);
+            //param.Add("old", input.OldPassword);
+            //param.Add("new", input.NewPassword);
+            //param.Add("new2", input.RepeatPassword);
+            var request_url = string.Format("https://192.168.168.118/iisadmpwd/achg.asp?acct={0}&old={1}&new={2}&new2={3}", abp_user.UserName, input.OldPassword, input.NewPassword, input.RepeatPassword);
+            //var result = HttpMethods.RestGet(request_url);
+
+            RestClient rest = new RestClient(request_url);
+            var tcs = new TaskCompletionSource<string>();
+            var request = new RestRequest(Method.GET);
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback((object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors) =>
+            {
+                return true; //总是接受  
+            });
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | (SecurityProtocolType)3072;
+
+            //设置反序列化时预先处理乱码问题，如果调用的是Execute<T>方法，那么后面无需再次调用该方法
+            request.OnBeforeDeserialization = res => RestSharpHelper.SetResponseEncoding(res, "gb2312");
+            var response = rest.Execute(request);
+            //直接读取Content还是需要调用该方法
+            RestSharpHelper.SetResponseEncoding(response, "gb2312");
+
+            var content = response.Content;
+            if (content.Contains("缺少对象"))
+            {
+                return "修改失败:该共享服务器账号异常，或账号并未建立,请联系服务器管理员进行处理";//[关东成|张仕超]
+            }
+            else if (content.Contains("无效用户名或密码"))
+            {
+                return "修改失败:旧密码无效";
+            }
+            else if (content.Contains("密码成功更改"))
+            {
+                return "密码成功更改";
+            }
+            else if (content.Contains("密码太短"))
+            {
+                return "修改失败:密码太短,或不满足密码唯一性限制";
+            }
+            else if (content.Contains("密码不匹配"))
+            {
+                return "修改失败:新密码不一致";
+            }
+            else
+            {
+                return "修改失败:发生未知错误";
+            }
+        }
+
+        #endregion
 
 
         #region  Synchronize Department
@@ -382,7 +454,7 @@ namespace UserManage.SynchronizeCore
                     var bs_org_list = await _baseUserManager.GetBaseUserOrgByAbpId(AbpUserId);
                     foreach (var wx_dept in wechat_user.department)
                     {
-                        if(org_list == null)
+                        if (org_list == null)
                         {
                             var org_entity = _organizationUnitRepository.FirstOrDefault(x => x.WXDeptId == wx_dept);
                             if (org_entity != null)

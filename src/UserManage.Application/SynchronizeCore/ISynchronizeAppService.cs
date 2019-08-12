@@ -53,6 +53,12 @@ namespace UserManage.SynchronizeCore
         /// </summary>
         /// <returns></returns>
         Task<MatchResultDto> MatchTagUser();
+
+        /// <summary>
+        /// 修改共享服务器密码
+        /// </summary>
+        /// <returns></returns>
+        Task<string> ChangeACPassword(ChangePasswordInput input);
     }
 }
 

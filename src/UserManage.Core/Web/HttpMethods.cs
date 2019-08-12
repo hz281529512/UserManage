@@ -23,7 +23,7 @@ namespace UserManage.Web
             RestClient client = new RestClient(route);
             var request = new RestRequest(Method.GET);
             var tcs = new TaskCompletionSource<string>();
-            request.AddHeader("content-type", "application/x-www-form-urlencoded");
+            request.AddHeader("content-type", "application/json;charset=UTF-8");
 
             if (param != null)
             {

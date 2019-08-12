@@ -168,16 +168,32 @@ namespace UserManage.BaseEntityCore
         /// <summary>
         /// 设置主部门
         /// </summary>
-        public async Task<BaseUserOrgListDto> UpdateUserOrganizationMaster(OrgsMasterInput input)
+        public async Task UpdateUserOrganizationMaster(OrgsMasterInput input)
         {
-            var orgUser = await _empOrgRepository.FirstOrDefaultAsync(x => x.DepartmentGuid == input.MasterOrgGuid && x.AbpUserId == input.AbpUserId);
-            if (orgUser != null)
+            //var orgUser = await _empOrgRepository.FirstOrDefaultAsync(x => x.DepartmentGuid == input.MasterOrgGuid && x.AbpUserId == input.AbpUserId);
+            //if (orgUser != null)
+            //{
+            //    orgUser.IsMaster = "1";
+            //    await _empOrgRepository.UpdateAsync(orgUser);
+            //    return orgUser.MapTo<BaseUserOrgListDto>(); 
+            //}
+            //return null;
+            var orgs = await _empOrgRepository.GetAll().Where(x => x.AbpUserId == input.AbpUserId).ToListAsync();
+            if (orgs.Any())
             {
-                orgUser.IsMaster = "1";
-                await _empOrgRepository.UpdateAsync(orgUser);
-                return orgUser.MapTo<BaseUserOrgListDto>(); 
+                foreach (var item in orgs)
+                {
+                    if (item.DepartmentGuid == input.MasterOrgGuid)
+                    {
+                        item.IsMaster = "1";
+                    }
+                    else
+                    {
+                        item.IsMaster = "0";
+                    }
+                    await _empOrgRepository.UpdateAsync(item);
+                }
             }
-            return null;
         }
 
         /// <summary>
