@@ -251,12 +251,16 @@ namespace UserManage.Controllers
         {
             var now = DateTime.UtcNow;
 
+            var t_expires = now.Add(expiration ?? _configuration.Expiration);
+            if (t_expires <= now) t_expires = t_expires.AddDays(1);
+
+
             var jwtSecurityToken = new JwtSecurityToken(
                 issuer: _configuration.Issuer,
                 audience: _configuration.Audience,
                 claims: claims,
                 notBefore: now,
-                expires: now.Add(expiration ?? _configuration.Expiration),
+                expires: t_expires,
                 signingCredentials: _configuration.SigningCredentials
             );
 
@@ -282,6 +286,12 @@ namespace UserManage.Controllers
         private string GetEncrpyedAccessToken(string accessToken)
         {
             return SimpleStringCipher.Instance.Encrypt(accessToken, AppConsts.DefaultPassPhrase);
+        }
+
+        [HttpPost]
+        public async Task<string> TryGetToken(string local_name, string CropId, string Secret)
+        {
+            return await _serviceAuthManager.GetToken(local_name, CropId, Secret);
         }
     }
 }

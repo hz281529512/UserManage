@@ -75,7 +75,6 @@ namespace UserManage
                 tokenAuthConfig.Authority = _appConfiguration["Authentication:IdentityServer4:Authority"];
                 tokenAuthConfig.ClientId = _appConfiguration["Authentication:IdentityServer4:ClientId"];
                 tokenAuthConfig.Secret = _appConfiguration["Authentication:IdentityServer4:Secret"];
-
             }
 
         }
