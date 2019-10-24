@@ -120,6 +120,27 @@ namespace UserManage.SynchronizeCore
             return results;
         }
 
+        #region GetWeChatUser
+
+        /// <summary>
+        /// 根据用户ID
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public List<string> SearchWechatUserIdByAbpUserName(AbpUserNamesDto input)
+        {
+            if (input.AbpNames?.Count > 0)
+            {
+                var query = from ul in _userLoginRepository.GetAll().AsNoTracking()
+                            join u in _userRepository.GetAll().AsNoTracking() on ul.UserId equals u.Id
+                            where ul.LoginProvider == "Wechat" && input.AbpNames.Any(x => x == u.Name)
+                            select ul.ProviderKey;
+                return query.ToList();
+            }
+            return null;
+        }
+
+        #endregion
 
         #region change password
 
@@ -187,7 +208,6 @@ namespace UserManage.SynchronizeCore
         }
 
         #endregion
-
 
         #region  Synchronize Department
 
@@ -419,6 +439,60 @@ namespace UserManage.SynchronizeCore
         #endregion
 
         #region Synchronize User
+
+        /// <summary>
+        /// 通过企业微信用户ID 直接创建abp用户
+        /// </summary>
+        /// <param name="wechatUid"></param>
+        /// <returns></returns>
+        public async Task CreateUserByWechatUserId(string wechatUid)
+        {
+            if (!string.IsNullOrEmpty(wechatUid))
+            {
+                var current_tenantid = this.AbpSession.TenantId;
+                var wechat_user = await _weChatManager.GetUserById(wechatUid);
+                if (wechat_user != null)
+                {
+
+                    var user_id = await this.AuthCreate(new CreateAuthUserDto()
+                    {
+                        EmailAddress = wechat_user.email,
+                        Name = wechat_user.name,
+                        PhoneNumber = wechat_user.mobile,
+                        Avatar = wechat_user.avatar,
+                        IsActive = true,
+                        Position = wechat_user.position,
+                        Sex = wechat_user.gender == "1" ? true : false,
+                        Surname = wechat_user.alias,
+                        UserName = wechat_user.email.Replace("@chinapsp.cn", ""),
+                        Password = "000000"
+                    });
+
+                    if (user_id != 0)
+                    {
+                        await _baseUserRepository.InsertAsync(new BaseUserEmp
+                        {
+                            AbpUserId = user_id,
+                            EmpOrderNo = user_id.ToString(),
+                            EmpStationId = "",
+                            EmpStatus = "1",
+                            EmpUserGuid = Guid.NewGuid().ToString("N"),
+                            IsLeader = "",
+                            EmpUserId = wechat_user.userid
+                        });
+
+                        await _userLoginRepository.InsertAsync(new UserLogin
+                        {
+                            UserId = user_id,
+                            LoginProvider = "Wechat",
+                            ProviderKey = wechat_user.userid,
+                            TenantId = AbpSession.TenantId
+                        });
+
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// 按姓名同步企业微信与base user 的用户内容级组织关联(PS:暂时无法同步角色)
