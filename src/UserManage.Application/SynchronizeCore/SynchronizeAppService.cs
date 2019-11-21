@@ -123,6 +123,29 @@ namespace UserManage.SynchronizeCore
         #region GetWeChatUser
 
         /// <summary>
+        /// 获取当前用户秘钥
+        /// </summary>
+        /// <returns></returns>
+        public async Task<string> SearchSecretByCurrentUser()
+        {
+            if (!AbpSession.UserId.HasValue) throw new UserFriendlyException(99,"找不到当前用户信息");
+
+            var query = from ul in _userLoginRepository.GetAll().AsNoTracking()
+                        //join u in _userRepository.GetAll().AsNoTracking() on ul.UserId equals u.Id
+                        where ul.LoginProvider == "Wechat" && ul.UserId == AbpSession.UserId.Value
+                        select ul.ProviderKey;
+            var wxid = await query.FirstOrDefaultAsync();
+            if (wxid != null)
+            {
+                //先写死，日后扩大再更改配置
+                var result = wxid.AESEncrypt("Wechat", "1000102");
+                if (!result.isOk) return null;
+                return result.text;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// 根据用户ID
         /// </summary>
         /// <param name="input"></param>
