@@ -530,6 +530,15 @@ namespace UserManage.SynchronizeCore
             {
                 var i = 0;
                 var wechat_user = await _weChatManager.GetUserById(ul.ProviderKey);
+
+                var entity = await UserManager.GetUserByIdAsync(AbpUserId);
+                entity.EmailAddress = wechat_user.email;
+                entity.Surname = wechat_user.alias;
+                entity.Avatar = wechat_user.avatar;
+                entity.Position = wechat_user.position;
+                entity.Name = wechat_user.name;
+                await UserManager.UpdateAsync(entity);
+
                 var base_user_emp = _baseUserRepository.GetAll().FirstOrDefault(x => x.AbpUserId == ul.UserId);
                 if (base_user_emp == null)
                 {
@@ -781,6 +790,7 @@ namespace UserManage.SynchronizeCore
                                         entity.EmailAddress = item.wx_email;
                                         entity.Surname = item.wx_alias;
                                         entity.Avatar = item.wx_avatar;
+                                        entity.Position = item.wx_position;
                                         entity.Name = item.wx_name;
                                         await UserManager.UpdateAsync(entity);
 

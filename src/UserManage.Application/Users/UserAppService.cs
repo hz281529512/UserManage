@@ -444,6 +444,18 @@ namespace UserManage.Users
                 CheckErrors(await _userManager.UpdateAsync(user));
             }
         }
+
+        /// <summary>
+        /// 更新客户数量限制
+        /// </summary>
+        /// <returns></returns>
+        public async Task<UserDto> UpdateClientQuota(UserClientQuotaDto input)
+        {
+            var user = await _userManager.GetUserByIdAsync(input.UserId);
+            user.ClientQuota = input.ClientQuota;
+            await _userManager.UpdateAsync(user);
+            return ObjectMapper.Map<UserDto>(user);
+        }
     }
 }
 

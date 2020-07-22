@@ -31,6 +31,11 @@ namespace UserManage.Authorization.Users
         /// </summary>
         public string Avatar { get; set; }
 
+        /// <summary>
+        /// 客户限额
+        /// </summary>
+        public int? ClientQuota { get; set; }
+
         public const string DefaultPassword = "123qwe";
 
         public static string CreateRandomPassword()

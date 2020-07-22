@@ -216,7 +216,8 @@ namespace UserManage.BaseEntityCore
             //await UserManager.RemoveFromOrganizationUnitAsync(input.UserId, input.OrganizationUnitId);
             if (input.AbpUserId.HasValue && !string.IsNullOrEmpty(input.OrgGuid))
             {
-                await _empOrgRepository.DeleteAsync(x => x.DepartmentGuid == input.OrgGuid && x.AbpUserId == input.AbpUserId);
+                var entity = await _empOrgRepository.GetAll().FirstOrDefaultAsync(x => x.DepartmentGuid == input.OrgGuid && x.AbpUserId == input.AbpUserId);
+                await _empOrgRepository.DeleteAsync(entity);
             }
         }
 

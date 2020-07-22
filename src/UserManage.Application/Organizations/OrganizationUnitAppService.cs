@@ -27,6 +27,8 @@ namespace UserManage.Organizations
         private readonly IRepository<OrganizationUnit, long> _organizationUnitRepository;
         private readonly IRepository<UserOrganizationUnit, long> _userOrganizationUnitRepository;
         private readonly IRepository<User, long> _userRepository;
+
+
         public OrganizationUnitAppService(
             RoleManager roleManager,
             OrganizationUnitManager organizationUnitManager,

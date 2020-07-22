@@ -54,6 +54,12 @@ namespace UserManage.Users.Dto
         /// 查询地区
         /// </summary>
         public string SelectDistrict { get; set; }
+
+        /// <summary>
+        /// 客户限额
+        /// </summary>
+        public int? ClientQuota { get; set; }
+
         public string[] RoleNames { get; set; }
     }
 }
