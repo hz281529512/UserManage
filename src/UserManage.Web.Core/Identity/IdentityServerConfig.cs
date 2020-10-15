@@ -15,7 +15,8 @@ namespace UserManage.Identity
             {
 
                 new ApiResource("api1", "AbpApi"),
-                new ApiResource("wechat","WechatApi")
+                //new ApiResource("wechat","WechatApi"),
+                //new ApiResource("client","client")
 
             };
         }
@@ -65,6 +66,24 @@ namespace UserManage.Identity
 
                     },
                     AllowedGrantTypes =GrantTypes.ResourceOwnerPassword,
+                    AccessTokenType = AccessTokenType.Jwt,
+                    AccessTokenLifetime=3600*24*7,
+                    AlwaysSendClientClaims = true
+                },
+                new Client
+                {
+                    ClientId = "client",
+                    ClientSecrets =
+                    {
+                        new Secret("Secret".Sha256())
+                    },
+                    AllowedScopes = {
+                        "api1",
+                        IdentityServerConstants.StandardScopes.OpenId, //必须要添加，否则报forbidden错误
+                        IdentityServerConstants.StandardScopes.Profile
+
+                    },
+                    AllowedGrantTypes =GrantTypes.ClientCredentials,
                     AccessTokenType = AccessTokenType.Jwt,
                     AccessTokenLifetime=3600*24*7,
                     AlwaysSendClientClaims = true
