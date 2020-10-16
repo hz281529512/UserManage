@@ -123,7 +123,7 @@ namespace UserManage.Authorization.Accounts
             var user = await UserManager.FindByNameAsync(userName);
             if (user == null)
             {
-                throw new UserFriendlyException(L("InvalidEmailAddress"));
+                throw new UserFriendlyException("’À∫≈Œﬁ–ß");
             }
 
             return user;

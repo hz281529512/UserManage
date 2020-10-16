@@ -48,7 +48,6 @@ namespace UserManage.Web.Host.Startup
            IdentityRegistrar.Register(services);
 
             services.AddIdentityServer()
-                .AddDeveloperSigningCredential()
                 .AddInMemoryIdentityResources(IdentityServerConfig.GetIdentityResources())
                 .AddInMemoryApiResources(IdentityServerConfig.GetApiResources())
                 .AddInMemoryClients(IdentityServerConfig.GetClients())
@@ -56,7 +55,8 @@ namespace UserManage.Web.Host.Startup
                 .AddExtensionGrantValidator<ExternalValidator>()
                 .AddAbpIdentityServer<User>()
                 .AddResourceOwnerValidator<ResourceOwnerPasswordValidator>()
-               .AddProfileService<ProfileService>();
+               .AddProfileService<ProfileService>()
+                .AddDeveloperSigningCredential();
 
             AuthConfigurer.Configure(services, _appConfiguration);
 
