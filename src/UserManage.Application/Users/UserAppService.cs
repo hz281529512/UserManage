@@ -68,30 +68,30 @@ namespace UserManage.Users
             {
 
                 var query = from u in Repository.GetAllIncluding(x => x.Roles)
-                    join c in _companyRepository.GetAll() on u.CompanyId equals c.Id.ToString()
-                    select new { u, c };
+                            join c in _companyRepository.GetAll() on u.CompanyId equals c.Id.ToString()
+                            select new { u, c };
 
                 // TODO:根据传入的参数添加过滤条件
 
                 if (!string.IsNullOrEmpty(input.Filter))
-            {
-                query = query.Where(input.Filter);
-            }
-            var count = await query.CountAsync();
+                {
+                    query = query.Where(input.Filter);
+                }
+                var count = await query.CountAsync();
 
-            var entityList = await query
-                .OrderBy(input.Sorting).AsNoTracking()
-                .PageBy(input)
-                .ToListAsync();
+                var entityList = await query
+                    .OrderBy(input.Sorting).AsNoTracking()
+                    .PageBy(input)
+                    .ToListAsync();
 
-            return new PagedResultDto<UserListDto>(count, entityList.Select(item =>
-            {
-                var roles = _roleManager.Roles.Where(r => item.u.Roles.Any(ur => ur.RoleId == r.Id)).Select(r => r.NormalizedName);
-                var dto = ObjectMapper.Map<UserListDto>(item.u);
-                dto.RoleNames = roles.ToArray();
-                dto.AbpCompany = item.c;
-                return dto;
-            }).ToList());
+                return new PagedResultDto<UserListDto>(count, entityList.Select(item =>
+                {
+                    var roles = _roleManager.Roles.Where(r => item.u.Roles.Any(ur => ur.RoleId == r.Id)).Select(r => r.NormalizedName);
+                    var dto = ObjectMapper.Map<UserListDto>(item.u);
+                    dto.RoleNames = roles.ToArray();
+                    dto.AbpCompany = item.c;
+                    return dto;
+                }).ToList());
             }
             catch (Exception e)
             {
@@ -141,11 +141,11 @@ namespace UserManage.Users
 
                     foreach (var userRole in user.Roles.ToList())
                     {
-                        
+
                         var role = await _roleManager.FindByIdAsync(userRole.RoleId.ToString());
                         if (input.RoleNames.All(roleName => role.Name != roleName))
                         {
-                            
+
                             var result = await _userManager.RemoveFromRoleAsync(user, role.Name);
                         }
                     }
@@ -423,7 +423,7 @@ namespace UserManage.Users
                 await _userRoleRepository.DeleteAsync(x => x.RoleId == input.RoleId && x.TenantId == tenant_id);
                 foreach (var item in input.Userids)
                 {
-                    await _userRoleRepository.InsertAsync( new UserRole { RoleId = input.RoleId, TenantId = tenant_id, UserId = item });
+                    await _userRoleRepository.InsertAsync(new UserRole { RoleId = input.RoleId, TenantId = tenant_id, UserId = item });
                 }
             }
         }
@@ -443,6 +443,64 @@ namespace UserManage.Users
                 user.SelectDistrict = item.Districts == null ? "" : string.Join(',', item.Districts);
                 CheckErrors(await _userManager.UpdateAsync(user));
             }
+        }
+
+        /// <summary>
+        /// 获取当前负责人旗下客户限额
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ListResultDto<UserClientQuotaDto>> GetAmClientQuota(string am = "",string district = "")
+        {
+
+            var current_user = await _userManager.FindByIdAsync(AbpSession.GetUserId().ToString());
+            var select_district = string.IsNullOrEmpty(current_user.SelectDistrict) ? "" : current_user.SelectDistrict;
+
+            if (select_district.IsNullOrEmpty())
+            {
+                throw new UserFriendlyException(99, "当前用户并未设置地区");
+            }
+            if (!district.IsNullOrEmpty())
+            {
+                if(select_district.Contains(district))
+                    select_district = district;
+                else
+                    throw new UserFriendlyException(99, "当前用户不支持目标地区");
+            }
+            var districts = select_district.Split(',');
+            var d = districts.AsQueryable();
+            //var user_query = Repository.GetAll().Where(x => districts.Any(a => x.SelectDistrict.Contains(a)));
+            //" @0.Contains(" + dictrict_name + ")", dCondiction
+            IEnumerable<User> u_list = new List<User>();
+            foreach (var item in districts)
+            {
+                var user_query = Repository.GetAll();//.Where(" @0.Contains(SelectDistrict)", select_district);
+                if (!am.IsNullOrEmpty())
+                {
+                    user_query = user_query.Where(x => x.Name == am);
+                }
+                //if (!district.IsNullOrEmpty())
+                //{
+                //    user_query = user_query.Where(x => x.SelectDistrict.Contains(district));
+                //}
+                //var user_query = UserManager.Users.FilterDistrictQuery(current_user, 1, "SelectDistrict");
+                var role1 = await _roleManager.FindByNameAsync("分公司客户经理");
+                var role2 = await _roleManager.FindByNameAsync("WX_客户经理");
+                var u_query = from u in user_query.AsNoTracking()
+                              join ur in _userRoleRepository.GetAll().AsNoTracking() on u.Id equals ur.UserId
+                              where u.SelectDistrict.Contains(item) && ur.RoleId.IsIn(role1.Id, role2.Id)
+                              select u;
+
+                if (u_query.Any()) u_list = u_list.Union(u_query.ToList());
+            }
+
+            u_list = u_list.Distinct().ToList();
+
+            return new ListResultDto<UserClientQuotaDto>(u_list.Select(item => new UserClientQuotaDto
+            {
+                UserId = item.Id,
+                Name = item.Name,
+                ClientQuota = item.ClientQuota,
+            }).ToList());
         }
 
         /// <summary>

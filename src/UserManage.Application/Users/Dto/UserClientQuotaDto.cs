@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace UserManage.Users.Dto
@@ -9,7 +10,13 @@ namespace UserManage.Users.Dto
         /// <summary>
         /// 用户ID
         /// </summary>
+        [Required]
         public long UserId { get; set; }
+
+        /// <summary>
+        /// 名称
+        /// </summary>
+        public string Name { get; set; }
 
         /// <summary>
         /// 客户限制
