@@ -102,10 +102,10 @@ namespace UserManage.Authorization.Accounts
         public async Task<ResetPasswordOutput> ResetPassword(ResetPasswordInput input)
         {
             var user = await UserManager.GetUserByIdAsync(input.UserId);
-            if (user == null || user.PasswordResetCode.IsNullOrEmpty() || user.PasswordResetCode != input.ResetCode)
-            {
-                throw new UserFriendlyException(L("InvalidPasswordResetCode"), L("InvalidPasswordResetCode_Detail"));
-            }
+            //if (user == null || user.PasswordResetCode.IsNullOrEmpty() || user.PasswordResetCode != input.ResetCode)
+            //{
+            //    throw new UserFriendlyException(L("InvalidPasswordResetCode"), L("InvalidPasswordResetCode_Detail"));
+            //}
 
             user.Password = _passwordHasher.HashPassword(user, input.Password);
             user.PasswordResetCode = null;
@@ -118,6 +118,28 @@ namespace UserManage.Authorization.Accounts
                 UserName = user.UserName
             };
         }
+
+        //用户名修改密码
+        public async Task<ResetPasswordOutput> UserResetPassword(ResetPasswordInput input)
+        {
+            var user = await UserManager.FindByNameAsync(input.UserName);
+            //if (user == null || user.PasswordResetCode.IsNullOrEmpty() || user.PasswordResetCode != input.ResetCode)
+            //{
+            //    throw new UserFriendlyException(L("InvalidPasswordResetCode"), L("InvalidPasswordResetCode_Detail"));
+            //}
+
+            user.Password = _passwordHasher.HashPassword(user, input.Password);
+            user.PasswordResetCode = null;
+            user.IsEmailConfirmed = true;
+            await UserManager.UpdateAsync(user);
+
+            return new ResetPasswordOutput
+            {
+                CanLogin = user.IsActive,
+                UserName = user.UserName
+            };
+        }
+
         private async Task<User> GetUserByChecking(string userName)
         {
             var user = await UserManager.FindByNameAsync(userName);
