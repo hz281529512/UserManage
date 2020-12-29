@@ -5,6 +5,19 @@ using UserManage.AbpExternalCore.Model;
 
 namespace UserManage.QYEmail
 {
+
+
+    public class QYMailCheckUser : AbpWechatResult
+    {
+        public List<QYMailCheckUserDtl> list { get; set; }
+    }
+    public class QYMailCheckUserDtl
+    {
+        public string user { get; set; }
+
+        public int type { get; set; }
+    }
+
     internal class QYMailUser : AbpWechatResult
     {
         /// <summary>

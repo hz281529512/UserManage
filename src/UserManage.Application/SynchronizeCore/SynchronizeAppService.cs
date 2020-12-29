@@ -100,7 +100,7 @@ namespace UserManage.SynchronizeCore
             //_testManager.MatchSingleDepartmentWithoutTenant(new SyncDepartment { changetype = "update_party", id = 166, name = "test", parentid = 10 }, 1);
             //var t =
             //_qyEmailManager.UpdateQYEmail(model, AbpSession.TenantId.Value, "update");
-            var t = _tpManager.Test("E4B57428-BF03-493E-80B6-E38CECA47DD1");
+            var t = _qyEmailManager.GetEmailAllDepartment(2);//_tpManager.Test("E4B57428-BF03-493E-80B6-E38CECA47DD1");
         }
 
 
@@ -128,10 +128,10 @@ namespace UserManage.SynchronizeCore
         /// <returns></returns>
         public async Task<string> SearchSecretByCurrentUser()
         {
-            if (!AbpSession.UserId.HasValue) throw new UserFriendlyException(99,"找不到当前用户信息");
+            if (!AbpSession.UserId.HasValue) throw new UserFriendlyException(99, "找不到当前用户信息");
 
             var query = from ul in _userLoginRepository.GetAll().AsNoTracking()
-                        //join u in _userRepository.GetAll().AsNoTracking() on ul.UserId equals u.Id
+                            //join u in _userRepository.GetAll().AsNoTracking() on ul.UserId equals u.Id
                         where ul.LoginProvider == "Wechat" && ul.UserId == AbpSession.UserId.Value
                         select ul.ProviderKey;
             var wxid = await query.FirstOrDefaultAsync();
@@ -231,6 +231,77 @@ namespace UserManage.SynchronizeCore
         }
 
         #endregion
+
+        #region Synchronize QYEmail
+
+        /// <summary>
+        /// 业务系统 => 企业邮箱
+        /// </summary>
+        /// <returns></returns>
+        public async Task MatchQyMail()
+        {
+            var users = await _userRepository.GetAll().Where(x => x.NormalizedUserName != "ADMIN").Select(x => x.EmailAddress).ToListAsync();
+            //var users = new List<string>();
+            //users.Add("linxuehong@chinapsp.cn");
+
+            var check_list = _qyEmailManager.CheckMailUser(users);
+
+
+            foreach (var item in check_list)
+            {
+                if (item.type == 0)
+                {
+                    if (item.user.IndexOf("test") > -1) continue;
+                    if (item.user.IndexOf("admin") > -1) continue;
+                    var entity = await _userRepository.FirstOrDefaultAsync(x => x.EmailAddress == item.user);
+                    var wx_id = (await _userLoginRepository.FirstOrDefaultAsync(x => x.UserId == entity.Id)).ProviderKey;
+                    var mail_entity = new QYEmail.QYMailUserInfocsForUpdate
+                    {
+                        userid = entity.EmailAddress,
+                        extid = wx_id,//entity.Id.ToString(),
+                        department = new List<long>() { 6786316460997750890 },
+                        position = entity.Position,
+                        gender = entity.Sex ? "1" : "2",
+                        mobile = entity.PhoneNumber,
+                        name = entity.Name,
+                    };
+                    _qyEmailManager.UpdateQYEmail(mail_entity, this.AbpSession.TenantId.Value, "create");
+                    entity.IsCreateEmail = true;
+                    await _userRepository.UpdateAsync(entity);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 重置成默认密码
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        [AbpAllowAnonymous]
+        public async Task ResetQyMailPassword(string email)
+        {
+            using (CurrentUnitOfWork.SetTenantId(2))
+            {
+                var entity = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.EmailAddress == email);
+                if (entity != null)
+                {
+                    var wx_id = (await _userLoginRepository.FirstOrDefaultAsync(x => x.UserId == entity.Id)).ProviderKey;
+                    var mail_entity = new QYEmail.QYMailUserInfocsForUpdate
+                    {
+                        userid = entity.EmailAddress,
+                        //extid = wx_id,//entity.Id.ToString(),
+                        //department = new List<long>() { 6786316460997750890 },
+                        //position = entity.Position,
+                        //gender = entity.Sex ? "1" : "2",
+                        //mobile = entity.PhoneNumber,
+                        //name = entity.Name,
+                    };
+                    _qyEmailManager.UpdateQYEmail(mail_entity, 2, "update");
+                }
+            }
+        }
+
+        #endregion  
 
         #region  Synchronize Department
 

@@ -425,7 +425,7 @@ namespace UserManage.SynchronizeCore.DomainService
                                         enable = 0,
                                         extid = wx_user.userid
                                     };
-                                    _emailManager.UpdateQYEmail(mail_entity, tenant_id.Value, wx_user.changetype);
+                                    _emailManager.UpdateQYEmail(mail_entity, tenant_id.Value, "update");
 
                                 }
                             }
@@ -466,7 +466,7 @@ namespace UserManage.SynchronizeCore.DomainService
 
                                 user.Password = _passwordHasher.HashPassword(user, "000000");
                                 var new_id = _userRepository.InsertAndGetId(user);
-
+                                user.Id = new_id;
 
                                 _userLoginRepository.Insert(new UserLogin { LoginProvider = "Wechat", ProviderKey = wx_user.userid, TenantId = tenant_id, UserId = new_id });
 
@@ -527,15 +527,16 @@ namespace UserManage.SynchronizeCore.DomainService
                                 {
                                     userid = wx_user.email,
                                     extid = wx_user.userid,
-                                    department = new List<long>() { 6786316460997752257 },
+                                    department = new List<long>() { 6786316460997750890 },
                                     position = wx_user.position,
-                                    gender = wx_user.gender,
+                                    gender = user.Sex ? "1" : "2",//wx_user.gender,
                                     mobile = wx_user.mobile,
                                     name = wx_user.name,
                                 };
-                                _emailManager.UpdateQYEmail(mail_entity, tenant_id.Value, wx_user.changetype);
+                                _emailManager.UpdateQYEmail(mail_entity, tenant_id.Value,"create");
 
-
+                                user.IsCreateEmail = true;
+                                _userRepository.Update(user);
                             }
                             break;
                         case "update_user":

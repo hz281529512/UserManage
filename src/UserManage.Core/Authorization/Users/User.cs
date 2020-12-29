@@ -36,6 +36,11 @@ namespace UserManage.Authorization.Users
         /// </summary>
         public int? ClientQuota { get; set; }
 
+        /// <summary>
+        /// 是否同步创建企业邮箱
+        /// </summary>
+        public bool? IsCreateEmail { get; set; }
+
         public const string DefaultPassword = "123qwe";
 
         public static string CreateRandomPassword()

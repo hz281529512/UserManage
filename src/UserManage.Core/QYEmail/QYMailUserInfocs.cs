@@ -36,11 +36,20 @@ namespace UserManage.QYEmail
 
         public int? enable { get; set; }
     }
-
+       
     public class QYMailUserInfocsForUpdate : QYMailUserInfocs {
 
         public string access_token { get; set; }
 
         public int? enable { get; set; }
+    }
+
+    public class QYMailCheckUserSearch
+    {
+        public QYMailCheckUserSearch()
+        {
+            this.userlist = new List<string>();
+        }
+        public List<string> userlist { get; set; }
     }
 }

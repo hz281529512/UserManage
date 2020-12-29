@@ -3,6 +3,7 @@ using Abp.UI;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UserManage.AbpExternalAuthenticateCore;
@@ -56,6 +57,45 @@ namespace UserManage.QYEmail.DomainService
             }
         }
 
+        public List<QYMailCheckUserDtl> CheckMailUser(List<string> userList)
+        {
+            AbpExternalAuthenticateConfig auth_config = this.GetCurrentAuthWithoutTenant(2);
+            string acc_token = this.GetToken(auth_config.AppId, auth_config.Secret);
+            string url = string.Format(@"https://api.exmail.qq.com/cgi-bin/user/batchcheck?access_token={0}", acc_token);
+            var result = new List<QYMailCheckUserDtl>();
+            //var param = new QYMailCheckUserSearch();
+            Dictionary<string, object> param = new Dictionary<string, object>();
+            var param_list = new List<string>();
+            var i = 0;
+            foreach (var item in userList)
+            {
+                param_list.Add(item);
+                if (param_list.Count == 20)
+                {
+                    param.Add("userlist", param_list);
+                    var content1 = HttpMethods.RestJsonPost(url, param);
+                    var m1 = JsonConvert.DeserializeObject<QYMailCheckUser>(content1);
+                    if (m1.errmsg == "ok")
+                    {
+                        result = result.Concat(m1.list).ToList();
+                    }
+                    param_list.Clear();
+                    param.Clear();
+                }
+            }
+            param.Add("userlist", param_list);
+            var content = HttpMethods.RestJsonPost(url, param);
+            var m = JsonConvert.DeserializeObject<QYMailCheckUser>(content);
+            if (m.errmsg == "ok")
+            {
+                result = result.Concat(m.list).ToList();
+            }
+
+            return result;
+        }
+
+        
+
         public QYMailUserInfocsForSeach GetUserInfo(int tenant_id, string email)
         {
             AbpExternalAuthenticateConfig auth_config = this.GetCurrentAuthWithoutTenant(tenant_id);
@@ -79,14 +119,14 @@ namespace UserManage.QYEmail.DomainService
             AbpExternalAuthenticateConfig auth_config = this.GetCurrentAuthWithoutTenant(tenant_id);
             model.access_token = this.GetToken(auth_config.AppId, auth_config.Secret);
 
-            string url = change_type == "create_user" ? @"https://api.exmail.qq.com/cgi-bin/user/create" : @"https://api.exmail.qq.com/cgi-bin/user/update";
+            string url = change_type == "create" ? @"https://api.exmail.qq.com/cgi-bin/user/create" : @"https://api.exmail.qq.com/cgi-bin/user/update";
             url = url + string.Format(@"?access_token={0}", model.access_token);
 
             Dictionary<string, object> param = new Dictionary<string, object>();
             //param.Add("access_token", model.access_token);
             param.Add("department", model.department);
 
-            param.Add("extid", model.extid);
+            //param.Add("extid", model.extid);
             param.Add("gender", model.gender);
             param.Add("mobile", model.mobile);
             param.Add("position", model.position);
@@ -98,8 +138,10 @@ namespace UserManage.QYEmail.DomainService
             }
             else
             {
-                param.Add("enable", model.enable);
+                param.Add("password", model.extid + "Cailian");
+                //param.Add("enable", model.enable);
             }
+            var p = JsonConvert.SerializeObject(param);
             var content = HttpMethods.RestJsonPost(url, param);
 
         }

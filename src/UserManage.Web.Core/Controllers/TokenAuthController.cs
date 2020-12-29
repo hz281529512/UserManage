@@ -38,7 +38,7 @@ namespace UserManage.Controllers
         private readonly IExternalAuthConfiguration _externalAuthConfiguration;
         private readonly IExternalAuthManager _externalAuthManager;
         private readonly UserRegistrationManager _userRegistrationManager;
-        private readonly IServiceAuthManager _serviceAuthManager; 
+        private readonly IServiceAuthManager _serviceAuthManager;
 
 
         public TokenAuthController(
@@ -207,8 +207,8 @@ namespace UserManage.Controllers
         private async Task<ExternalAuthUserInfo> GetExternalUserInfo(ExternalAuthenticateModel model)
         {
             var userInfo = await _externalAuthManager.GetUserInfo(model.AuthProvider, model.ProviderAccessCode);
-            
-            
+
+
             //if (userInfo.ProviderKey != model.ProviderKey)
             //{
             //    throw new UserFriendlyException(L("CouldNotValidateExternalUser"));
