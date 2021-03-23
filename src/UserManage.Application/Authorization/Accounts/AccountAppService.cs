@@ -111,7 +111,7 @@ namespace UserManage.Authorization.Accounts
             user.PasswordResetCode = null;
             user.IsEmailConfirmed = true;
             await UserManager.UpdateAsync(user);
-
+             
             return new ResetPasswordOutput
             {
                 CanLogin = user.IsActive,
