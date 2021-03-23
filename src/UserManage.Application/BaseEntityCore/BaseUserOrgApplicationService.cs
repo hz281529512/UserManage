@@ -27,7 +27,7 @@ namespace UserManage.BaseEntityCore
     /// <summary>
     /// BaseUserOrg应用层服务的接口实现方法  
     ///</summary>
-    [AbpAuthorize]
+    //[AbpAuthorize]
     public class BaseUserOrgAppService : UserManageAppServiceBase, IBaseUserOrgAppService
     {
         private readonly IRepository<BaseUserOrg, int> _orgRepository;
@@ -145,6 +145,7 @@ namespace UserManage.BaseEntityCore
             entity.Id = new_id;
             return entity.MapTo<BaseUserOrgListDto>();
         }
+
         /// <summary>
         /// 更新组织
         /// </summary>

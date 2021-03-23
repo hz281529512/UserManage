@@ -6,6 +6,7 @@ using UserManage.AbpCompanyCore.Mapper;
 using UserManage.AbpDataDictCore.Mapper;
 using UserManage.BaseEntityCore.Mapper;
 using UserManage.SynchronizeCore.Mapper;
+using UserManage.ReceiveSyncCore.Mapper;
 
 namespace UserManage
 {
@@ -24,7 +25,8 @@ namespace UserManage
             Configuration.Modules.AbpAutoMapper().Configurators.Add(BaseUserEmpRoleMapper.CreateMappings);
             Configuration.Modules.AbpAutoMapper().Configurators.Add(BaseUserOrgMapper.CreateMappings);
             Configuration.Modules.AbpAutoMapper().Configurators.Add(SynchronizeMapper.CreateMappings);
-            
+            Configuration.Modules.AbpAutoMapper().Configurators.Add(ReceiveSyncMapper.CreateMappings);
+
         }
 
         public override void Initialize()

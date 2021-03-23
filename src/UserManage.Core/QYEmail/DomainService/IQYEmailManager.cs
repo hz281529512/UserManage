@@ -14,5 +14,7 @@ namespace UserManage.QYEmail.DomainService
         List<QYMailDepartment> GetEmailAllDepartment(int tenant_id);
 
         QYMailUserInfocsForSeach GetUserInfo(int tenant_id, string email);
+
+        void RemoveQYEmail(QYMailUserInfocsForUpdate model, int tenant_id);
     }
 }

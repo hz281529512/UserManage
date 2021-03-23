@@ -10,22 +10,41 @@ namespace UserManage.Users.Dto
     [AutoMapFrom(typeof(User))]
     public class UserDto : EntityDto<long>
     {
+        /// <summary>
+        /// 用户名
+        /// </summary>
         [Required]
         [StringLength(AbpUserBase.MaxUserNameLength)]
         public string UserName { get; set; }
 
+        /// <summary>
+        /// 姓名
+        /// </summary>
         [Required]
         [StringLength(AbpUserBase.MaxNameLength)]
         public string Name { get; set; }
 
+        /// <summary>
+        /// 手机号码
+        /// </summary>
         public string PhoneNumber { get; set; }
 
+        /// <summary>
+        /// 邮箱
+        /// </summary>
         [Required]
         [EmailAddress]
         [StringLength(AbpUserBase.MaxEmailAddressLength)]
         public string EmailAddress { get; set; }
+
+        /// <summary>
+        /// 是否激活
+        /// </summary>
         public bool IsActive { get; set; }
 
+        /// <summary>
+        /// 全名
+        /// </summary>
         public string FullName { get; set; }
 
         public DateTime? LastLoginTime { get; set; }

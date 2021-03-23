@@ -94,7 +94,7 @@ namespace UserManage.QYEmail.DomainService
             return result;
         }
 
-        
+
 
         public QYMailUserInfocsForSeach GetUserInfo(int tenant_id, string email)
         {
@@ -141,6 +141,60 @@ namespace UserManage.QYEmail.DomainService
                 param.Add("password", model.extid + "Cailian");
                 //param.Add("enable", model.enable);
             }
+            var p = JsonConvert.SerializeObject(param);
+            var content = HttpMethods.RestJsonPost(url, param);
+
+        }
+
+        public void ResetQYEmailPassword(QYMailUserInfocsForUpdate model, int tenant_id, string change_type)
+        {
+            AbpExternalAuthenticateConfig auth_config = this.GetCurrentAuthWithoutTenant(tenant_id);
+            model.access_token = this.GetToken(auth_config.AppId, auth_config.Secret);
+
+            string url = change_type == "create" ? @"https://api.exmail.qq.com/cgi-bin/user/create" : @"https://api.exmail.qq.com/cgi-bin/user/update";
+            url = url + string.Format(@"?access_token={0}", model.access_token);
+
+            Dictionary<string, object> param = new Dictionary<string, object>();
+            //param.Add("access_token", model.access_token);
+            //param.Add("department", model.department);
+
+            //param.Add("extid", model.extid);
+            //param.Add("gender", model.gender);
+            //param.Add("mobile", model.mobile);
+            //param.Add("position", model.position);
+            //param.Add("name", model.name);
+            param.Add("userid", model.userid);
+
+            param.Add("password", model.extid + "Cailian");
+            //param.Add("enable", model.enable);
+
+            var p = JsonConvert.SerializeObject(param);
+            var content = HttpMethods.RestJsonPost(url, param);
+
+        }
+
+        public void RemoveQYEmail(QYMailUserInfocsForUpdate model, int tenant_id)
+        {
+            AbpExternalAuthenticateConfig auth_config = this.GetCurrentAuthWithoutTenant(tenant_id);
+            model.access_token = this.GetToken(auth_config.AppId, auth_config.Secret);
+
+            string url =  @"https://api.exmail.qq.com/cgi-bin/user/update";
+            url = url + string.Format(@"?access_token={0}", model.access_token);
+
+            Dictionary<string, object> param = new Dictionary<string, object>();
+            //param.Add("access_token", model.access_token);
+            //param.Add("department", model.department);
+
+            //param.Add("extid", model.extid);
+            //param.Add("gender", model.gender);
+            //param.Add("mobile", model.mobile);
+            //param.Add("position", model.position);
+            //param.Add("name", model.name);
+            param.Add("userid", model.userid);
+
+            //param.Add("password", model.extid + "Cailian");
+            param.Add("enable", 0);
+
             var p = JsonConvert.SerializeObject(param);
             var content = HttpMethods.RestJsonPost(url, param);
 

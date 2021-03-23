@@ -15,6 +15,7 @@ using Abp.Extensions;
 using Abp.Authorization;
 using Abp.Domain.Repositories;
 using Abp.Application.Services.Dto;
+using Abp.Authorization.Users;
 using Abp.Linq.Extensions;
 
 
@@ -27,7 +28,7 @@ namespace UserManage.BaseEntityCore
     /// <summary>
     /// BaseUserEmpRole应用层服务的接口实现方法  
     ///</summary>
-    [AbpAuthorize]
+    //[AbpAuthorize]
     public class BaseUserEmpRoleAppService : UserManageAppServiceBase, IBaseUserEmpRoleAppService
     {
         private readonly IRepository<BaseUserEmp, long> _empRepository;
@@ -38,6 +39,7 @@ namespace UserManage.BaseEntityCore
 
         private readonly IRepository<User, long> _userRepository;
 
+        private readonly IRepository<UserLogin, long> _userLoginRepository;
         /// <summary>
         /// 构造函数 
         ///</summary>
@@ -45,13 +47,14 @@ namespace UserManage.BaseEntityCore
             IRepository<BaseUserEmp, long> empRepository,
             IRepository<BaseUserEmpRole, int> empRoleRepository,
             IRepository<BaseUserRole, int> roleRepository,
-            IRepository<User, long> userRepository
-        )
+            IRepository<User, long> userRepository,
+            IRepository<UserLogin, long> userLoginRepository)
         {
             _empRepository = empRepository;
             _empRoleRepository = empRoleRepository;
             _roleRepository = roleRepository;
             _userRepository = userRepository;
+            _userLoginRepository = userLoginRepository;
         }
 
 
@@ -166,6 +169,49 @@ namespace UserManage.BaseEntityCore
                             EmpUserGuid = emp_user.EmpUserGuid,
                             EmpUserId = emp_user.EmpUserId
                         });
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 根据企业微信id批量更新 base user 角色ID
+        /// </summary>
+        /// <param name="AbpUserId"></param>
+        /// <param name="roles"></param>
+        /// <returns></returns>
+        public async Task BatchUpdateWxByRolesAsync(string WXId, List<int> roles)
+        {
+            var current_tenantid = 2;
+            
+            using (CurrentUnitOfWork.SetTenantId(current_tenantid))
+            {
+                if (!WXId.IsNullOrEmpty())
+                {
+                    throw new UserFriendlyException("AbpUserId 不能为0");
+                }
+
+                var abpUser =  _userLoginRepository.FirstOrDefault(x =>
+                    x.ProviderKey == WXId && x.LoginProvider == "Wechat");
+                if(abpUser  == null) throw new UserFriendlyException("无法操作未绑定");
+                var str_user_id = abpUser.Id.ToString();
+                await _empRoleRepository.DeleteAsync(x => x.AbpUserId == str_user_id);
+                if (roles?.Count > 0)
+                {
+                    var emp_user = await _empRepository.FirstOrDefaultAsync(x => x.AbpUserId == abpUser.Id);
+                    if (emp_user != null)
+                    {
+                        foreach (var item in roles)
+                        {
+                            await _empRoleRepository.InsertAsync(new BaseUserEmpRole
+                            {
+                                AbpUserId = str_user_id,
+                                BaseRoleId = item,
+                                BaseUniqueId = Guid.NewGuid().ToString(),
+                                EmpUserGuid = emp_user.EmpUserGuid,
+                                EmpUserId = emp_user.EmpUserId
+                            });
+                        }
                     }
                 }
             }

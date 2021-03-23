@@ -2,6 +2,7 @@
 using Abp.Authorization.Users;
 using Abp.AutoMapper;
 using Abp.Domain.Repositories;
+using Abp.Domain.Uow;
 using Abp.UI;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -234,13 +235,46 @@ namespace UserManage.SynchronizeCore
 
         #region Synchronize QYEmail
 
+        public async Task MatchDeleteQyMail()
+        {
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.SoftDelete))
+            {
+                var users = await _userRepository.GetAll().Where(x => x.NormalizedUserName != "ADMIN" && !x.IsCreateEmail.Value).Select(x => x.EmailAddress).ToListAsync();
+            }
+        }
+
+        /// <summary>
+        /// 移除企业邮箱
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        [AbpAllowAnonymous]
+        public async Task RemoveQyMail(string email)
+        {
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.SoftDelete))
+            {
+                using (CurrentUnitOfWork.SetTenantId(2))
+                {
+                    var entity = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.EmailAddress == email && x.IsDeleted);
+                    if (entity != null)
+                    {
+                        var mail_entity = new QYEmail.QYMailUserInfocsForUpdate
+                        {
+                            userid = entity.EmailAddress,
+                        };
+                        _qyEmailManager.RemoveQYEmail(mail_entity, 2);
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// 业务系统 => 企业邮箱
         /// </summary>
         /// <returns></returns>
         public async Task MatchQyMail()
         {
-            var users = await _userRepository.GetAll().Where(x => x.NormalizedUserName != "ADMIN").Select(x => x.EmailAddress).ToListAsync();
+            var users = await _userRepository.GetAll().Where(x => x.NormalizedUserName != "ADMIN" && !x.IsCreateEmail.Value).Select(x => x.EmailAddress ).ToListAsync();
             //var users = new List<string>();
             //users.Add("linxuehong@chinapsp.cn");
 
@@ -272,6 +306,8 @@ namespace UserManage.SynchronizeCore
             }
         }
 
+
+
         /// <summary>
         /// 重置成默认密码
         /// </summary>
@@ -289,14 +325,14 @@ namespace UserManage.SynchronizeCore
                     var mail_entity = new QYEmail.QYMailUserInfocsForUpdate
                     {
                         userid = entity.EmailAddress,
-                        //extid = wx_id,//entity.Id.ToString(),
+                        extid = wx_id,//entity.Id.ToString(),
                         //department = new List<long>() { 6786316460997750890 },
                         //position = entity.Position,
                         //gender = entity.Sex ? "1" : "2",
                         //mobile = entity.PhoneNumber,
                         //name = entity.Name,
                     };
-                    _qyEmailManager.UpdateQYEmail(mail_entity, 2, "update");
+                    _qyEmailManager.ResetQYEmailPassword(mail_entity, 2, "update");
                 }
             }
         }
@@ -631,7 +667,7 @@ namespace UserManage.SynchronizeCore
                     var bs_org_list = await _baseUserManager.GetBaseUserOrgByAbpId(AbpUserId);
                     foreach (var wx_dept in wechat_user.department)
                     {
-                        if (org_list == null)
+                        if (org_list.Count > 0)
                         {
                             var org_entity = _organizationUnitRepository.FirstOrDefault(x => x.WXDeptId == wx_dept);
                             if (org_entity != null)
