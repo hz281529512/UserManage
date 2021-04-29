@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Abp.Auditing;
+using Microsoft.AspNetCore.Mvc;
 using UserManage.Sessions.Dto;
 
 namespace UserManage.Sessions
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class SessionAppService : UserManageAppServiceBase, ISessionAppService
     {
         [DisableAuditing]

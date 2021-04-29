@@ -126,17 +126,29 @@ namespace UserManage.Organizations
                 await _organizationUnitRepository.GetAsync(input.Id)
             );
         }
-
+        /// <summary>
+        /// 删除组织单位
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public async Task DeleteOrganizationUnit(EntityDto<long> input)
         {
             await _organizationUnitManager.DeleteAsync(input.Id);
         }
-
+        /// <summary>
+        /// 从组织单位移除用户
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public async Task RemoveUserFromOrganizationUnit(UserToOrganizationUnitInput input)
         {
             await UserManager.RemoveFromOrganizationUnitAsync(input.UserId, input.OrganizationUnitId);
         }
-
+        /// <summary>
+        /// 添加用户到组织单位
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public async Task AddUsersToOrganizationUnit(UsersToOrganizationUnitInput input)
         {
             foreach (var userId in input.UserIds)
@@ -144,7 +156,11 @@ namespace UserManage.Organizations
                 await UserManager.AddToOrganizationUnitAsync(userId, input.OrganizationUnitId);
             }
         }
-
+        /// <summary>
+        /// 查询用户
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public async Task<PagedResultDto<NameValueDto>> FindUsers(FindOrganizationUnitUsersInput input)
         {
             var userIdsInOrganizationUnit = _userOrganizationUnitRepository.GetAll()

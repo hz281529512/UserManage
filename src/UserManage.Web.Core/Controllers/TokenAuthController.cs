@@ -27,7 +27,10 @@ using UserManage.AbpServiceCore.DomainService;
 using UserManage.AbpServiceCore;
 
 namespace UserManage.Controllers
-{
+{   
+    /// <summary>
+    /// token授权
+    /// </summary>
     [Route("api/[controller]/[action]")]
     public class TokenAuthController : UserManageControllerBase
     {
@@ -61,6 +64,11 @@ namespace UserManage.Controllers
             _serviceAuthManager = serviceAuthManager;
         }
 
+        /// <summary>
+        /// 用户验证
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<AuthenticateResultModel> Authenticate([FromBody] AuthenticateModel model)
         {
@@ -109,13 +117,20 @@ namespace UserManage.Controllers
             };
             return data;
         }
-
+        /// <summary>
+        /// 获取外部认证提供程序
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public List<ExternalLoginProviderInfoModel> GetExternalAuthenticationProviders()
         {
             return ObjectMapper.Map<List<ExternalLoginProviderInfoModel>>(_externalAuthConfiguration.Providers);
         }
-
+        /// <summary>
+        /// 外部验证
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ExternalAuthenticateResultModel> ExternalAuthenticate([FromBody] ExternalAuthenticateModel model)
         {
@@ -287,7 +302,13 @@ namespace UserManage.Controllers
         {
             return SimpleStringCipher.Instance.Encrypt(accessToken, AppConsts.DefaultPassPhrase);
         }
-
+        /// <summary>
+        /// 获取令牌
+        /// </summary>
+        /// <param name="local_name"></param>
+        /// <param name="CropId"></param>
+        /// <param name="Secret"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<string> TryGetToken(string local_name, string CropId, string Secret)
         {

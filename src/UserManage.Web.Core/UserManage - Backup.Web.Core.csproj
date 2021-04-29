@@ -16,8 +16,7 @@
     <RootNamespace>UserManage</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\UserManage.Web.Core.xml</DocumentationFile>
-    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>H:\ABP项目\UserManage\src\UserManage.Web.Core\UserManage.Web.Core.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\UserManage.Application\UserManage.Application.csproj" />

@@ -5,7 +5,7 @@ namespace UserManage.Dtos
     public class PagedSortedAndFilteredInputDto : PagedAndSortedInputDto
     {
         /// <summary>
-        /// 过滤
+        /// 过滤条件
         /// </summary>
         public string Filter { get; set; }
 

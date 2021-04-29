@@ -27,7 +27,10 @@ using System.Linq.Dynamic.Core;
 using Abp.Authorization.Users;
 
 namespace UserManage.Users
-{
+{   
+    /// <summary>
+    /// 用户
+    /// </summary>
     [AbpAuthorize]
     public class UserAppService : AsyncCrudAppService<User, UserDto, long, GetUsersInput, CreateUserDto, UserDto>, IUserAppService
     {
@@ -61,7 +64,11 @@ namespace UserManage.Users
             _companyRepository = companyRepository;
             _userRoleRepository = userRoleRepository;
         }
-
+        /// <summary>
+        /// 用户分页查询
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public async Task<PagedResultDto<UserListDto>> GetPaged(GetUserInput input)
         {
             try
@@ -99,7 +106,11 @@ namespace UserManage.Users
                 throw;
             }
         }
-
+        /// <summary>
+        /// 创建用户
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override async Task<UserDto> Create(CreateUserDto input)
         {
             CheckCreatePermission();
@@ -122,7 +133,11 @@ namespace UserManage.Users
 
             return MapToEntityDto(user);
         }
-
+        /// <summary>
+        /// 更新用户
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override async Task<UserDto> Update(UserDto input)
         {
             try
@@ -177,13 +192,20 @@ namespace UserManage.Users
         //    var user = await _userManager.GetUserByIdAsync(input.Id);
         //    await _userManager.DeleteAsync(user);
         //}
-
+        /// <summary>
+        /// 获取角色
+        /// </summary>
+        /// <returns></returns>
         public async Task<ListResultDto<RoleDto>> GetRoles()
         {
             var roles = await _roleRepository.GetAllListAsync();
             return new ListResultDto<RoleDto>(ObjectMapper.Map<List<RoleDto>>(roles));
         }
-
+        /// <summary>
+        /// 改变语言
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public async Task ChangeLanguage(ChangeUserLanguageDto input)
         {
             await SettingManager.ChangeSettingForUserAsync(
@@ -245,7 +267,11 @@ namespace UserManage.Users
         {
             identityResult.CheckErrors(LocalizationManager);
         }
-
+        /// <summary>
+        /// 改变密码
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public async Task<bool> ChangePassword(ChangePasswordDto input)
         {
             if (_abpSession.UserId == null)
@@ -267,7 +293,11 @@ namespace UserManage.Users
             CurrentUnitOfWork.SaveChanges();
             return true;
         }
-
+        /// <summary>
+        /// 重置密码
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public async Task<bool> ResetPassword(ResetPasswordDto input)
         {
             if (_abpSession.UserId == null)
@@ -303,9 +333,9 @@ namespace UserManage.Users
 
 
         /// <summary>
-        /// 根据用户名 ||用户ID && 公司名称  绑定公司ID
+        /// 绑定公司
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="input">根据用户名 ||用户ID && 公司名称  绑定公司ID</param>
         /// <returns></returns>
         public async Task SetCompanyName(UserCompanyInputDto input)
         {

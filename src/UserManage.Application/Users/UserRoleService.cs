@@ -18,7 +18,10 @@ using System.Linq.Dynamic.Core;
 using UserManage.Users.Dto;
 
 namespace UserManage.Users
-{
+{   
+    /// <summary>
+    /// 用户角色服务
+    /// </summary>
     [AbpAuthorize]
     public class UserRoleService : UserManageAppServiceBase, IUserRoleService
     {

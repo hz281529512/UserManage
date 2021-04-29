@@ -18,7 +18,10 @@ using UserManage.ReceiveSyncCore.Dtos;
 using UserManage.Users.Dto;
 
 namespace UserManage.ReceiveSyncCore
-{
+{   
+    /// <summary>
+    /// 接收同步
+    /// </summary>
     public class ReceiveSyncAppService : UserManageAppServiceBase, IReceiveSyncAppService
     {
         private readonly IAbpWeChatManager _weChatManager;

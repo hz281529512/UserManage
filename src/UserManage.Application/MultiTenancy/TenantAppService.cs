@@ -17,7 +17,10 @@ using UserManage.MultiTenancy.Dto;
 using Microsoft.AspNetCore.Identity;
 
 namespace UserManage.MultiTenancy
-{
+{   
+    /// <summary>
+    /// 租户
+    /// </summary>
     [AbpAuthorize(PermissionNames.Pages_Manage_Tenants)]
     public class TenantAppService : AsyncCrudAppService<Tenant, TenantDto, int, PagedTenantResultRequestDto, CreateTenantDto, TenantDto>, ITenantAppService
     {
@@ -42,7 +45,11 @@ namespace UserManage.MultiTenancy
             _roleManager = roleManager;
             _abpZeroDbMigrator = abpZeroDbMigrator;
         }
-
+        /// <summary>
+        /// 创建租户
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override async Task<TenantDto> Create(CreateTenantDto input)
         {
             CheckCreatePermission();
@@ -105,7 +112,11 @@ namespace UserManage.MultiTenancy
             entity.TenancyName = updateInput.TenancyName;
             entity.IsActive = updateInput.IsActive;
         }
-
+        /// <summary>
+        /// 删除租户
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override async Task Delete(EntityDto<int> input)
         {
             CheckDeletePermission();

@@ -15,6 +15,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using UserManage.AbpExternalCore;
 using UserManage.AbpExternalCore.DomainService;
 using UserManage.AbpOrganizationUnitCore;
@@ -95,7 +96,7 @@ namespace UserManage.SynchronizeCore
             _baseUserManager = baseUserManager;
             _baseEmpOrgRepository = baseEmpOrgRepository;
         }
-
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void MatchTest()
         {
             //_testManager.MatchSingleDepartmentWithoutTenant(new SyncDepartment { changetype = "update_party", id = 166, name = "test", parentid = 10 }, 1);
@@ -234,7 +235,10 @@ namespace UserManage.SynchronizeCore
         #endregion
 
         #region Synchronize QYEmail
-
+        /// <summary>
+        /// 删除已匹配企业邮箱
+        /// </summary>
+        /// <returns></returns>
         public async Task MatchDeleteQyMail()
         {
             using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.SoftDelete))

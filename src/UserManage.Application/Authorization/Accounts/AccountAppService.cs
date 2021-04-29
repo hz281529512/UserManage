@@ -23,7 +23,11 @@ namespace UserManage.Authorization.Accounts
             _userRegistrationManager = userRegistrationManager;
             _passwordHasher = passwordHasher;
         }
-
+        /// <summary>
+        /// 验证租户是否可用
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public async Task<IsTenantAvailableOutput> IsTenantAvailable(IsTenantAvailableInput input)
         {
             var tenant = await TenantManager.FindByTenancyNameAsync(input.TenancyName);
@@ -118,8 +122,10 @@ namespace UserManage.Authorization.Accounts
                 UserName = user.UserName
             };
         }
+        /// <summary>
+        ///  用户名修改密码
+        /// </summary>
 
-        //用户名修改密码
         public async Task<ResetPasswordOutput> UserResetPassword(ResetPasswordInput input)
         {
             var user = await UserManager.FindByNameAsync(input.UserName);

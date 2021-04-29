@@ -18,6 +18,9 @@ using System.Linq.Dynamic.Core;
 
 namespace UserManage.Roles
 {
+    /// <summary>
+    /// 角色
+    /// </summary>
     [AbpAuthorize]
     public class RoleAppService : AsyncCrudAppService<Role, RoleDto, int, GetRolesFilter, CreateRoleDto, RoleDto>, IRoleAppService
     {
@@ -31,6 +34,11 @@ namespace UserManage.Roles
             _userManager = userManager;
         }
 
+        /// <summary>
+        /// 创建角色
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override async Task<RoleDto> Create(CreateRoleDto input)
         {
             CheckCreatePermission();
@@ -49,7 +57,11 @@ namespace UserManage.Roles
 
             return MapToEntityDto(role);
         }
-
+        /// <summary>
+        /// 获取角色
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public async Task<ListResultDto<RoleListDto>> GetRolesAsync(GetRolesInput input)
         {
             var roles = await _roleManager
@@ -62,7 +74,11 @@ namespace UserManage.Roles
 
             return new ListResultDto<RoleListDto>(ObjectMapper.Map<List<RoleListDto>>(roles));
         }
-
+        /// <summary>
+        /// 更新角色
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override async Task<RoleDto> Update(RoleDto input)
         {
             CheckUpdatePermission();
@@ -82,7 +98,11 @@ namespace UserManage.Roles
 
             return MapToEntityDto(role);
         }
-
+        /// <summary>
+        /// 删除角色
+        /// </summary>
+        /// <param name="input">角色id</param>
+        /// <returns></returns>
         public override async Task Delete(EntityDto<int> input)
         {
             CheckDeletePermission();
@@ -97,7 +117,10 @@ namespace UserManage.Roles
 
             CheckErrors(await _roleManager.DeleteAsync(role));
         }
-
+        /// <summary>
+        /// 获取权限
+        /// </summary>
+        /// <returns></returns>
         public Task<ListResultDto<PermissionDto>> GetAllPermissions()
         {
             var permissions = PermissionManager.GetAllPermissions();
@@ -117,12 +140,16 @@ namespace UserManage.Roles
             }
             return query;
         }
-
+        /// <summary>
+        /// 根据id获取角色
+        /// </summary>
+        /// <param name="id">主键id</param>
+        /// <returns></returns>
         protected override async Task<Role> GetEntityByIdAsync(int id)
         {
             return await Repository.GetAllIncluding(x => x.Permissions).FirstOrDefaultAsync(x => x.Id == id);
         }
-
+        
         protected override IQueryable<Role> ApplySorting(IQueryable<Role> query, GetRolesFilter input)
         {
             return query.OrderBy(r => r.DisplayName);
@@ -132,7 +159,11 @@ namespace UserManage.Roles
         {
             identityResult.CheckErrors(LocalizationManager);
         }
-
+        /// <summary>
+        /// 批量修改角色
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public async Task<GetRoleForEditOutput> GetRoleForEdit(EntityDto input)
         {
             var permissions = PermissionManager.GetAllPermissions();

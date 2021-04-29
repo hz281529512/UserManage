@@ -14,6 +14,7 @@ using UserManage.ThirdPartyConfigCore.DomainService;
 
 namespace UserManage.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Route("api/[controller]/[action]")]
     public class QyCallBackController : UserManageControllerBase
     {

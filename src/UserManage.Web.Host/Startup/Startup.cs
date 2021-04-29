@@ -88,8 +88,9 @@ namespace UserManage.Web.Host.Startup
                 options.SwaggerDoc("v1", new Info { Title = "UserManage API", Version = "v1" });
                 options.DocInclusionPredicate((docName, description) => true);
 
-                options.IncludeXmlComments(GetXmlCommentsPath("UserManage.Application"));
-
+                options.IncludeXmlComments(GetXmlCommentsPath("UserManage.Application"),true);
+                options.IncludeXmlComments(GetXmlCommentsPath("UserManage.Web.Core"), true);
+                
                 // Define the BearerAuth scheme that's in use
                 options.AddSecurityDefinition("bearerAuth", new ApiKeyScheme()
                 {
